@@ -2,10 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
+import { environment } from 'environment/environment';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+
+    private _url: string = `${environment.url}/auth`
+
     private _authenticated: boolean = false;
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
@@ -23,6 +27,14 @@ export class AuthService {
 
     get accessToken(): string {
         return localStorage.getItem('accessToken') ?? '';
+    }
+
+    set refreshToken(token: string) {
+        localStorage.setItem('refreshToken', token);
+    }
+
+    get refreshToken(): string {
+        return localStorage.getItem('refreshToken') ?? '';
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -58,16 +70,22 @@ export class AuthService {
             return throwError('User is already logged in.');
         }
 
-        return this._httpClient.post('api/auth/sign-in', credentials).pipe(
+        return this._httpClient.post(`${this._url}/login`, credentials).pipe(
             switchMap((response: any) => {
                 // Store the access token in the local storage
-                this.accessToken = response.accessToken;
+                this.accessToken = response.access_token;
+                this.refreshToken = response.refresh_token;
 
                 // Set the authenticated flag to true
                 this._authenticated = true;
 
                 // Store the user on the user service
-                this._userService.user = response.user;
+                this._userService.user = {
+                    id: '1',
+                    email: 'admin@admin.com',
+                    name: 'Admin',
+                    // avatar: 'assets/images/avatars/1.jpg'
+                };
 
                 // Return a new observable with the response
                 return of(response);
@@ -81,8 +99,8 @@ export class AuthService {
     signInUsingToken(): Observable<any> {
         // Sign in using the token
         return this._httpClient
-            .post('api/auth/sign-in-with-token', {
-                accessToken: this.accessToken,
+            .post(`${this._url}/refresh`, {
+                refreshToken: this.refreshToken,
             })
             .pipe(
                 catchError(() =>
@@ -97,15 +115,22 @@ export class AuthService {
                     // in using the token, you should generate a new one on the server
                     // side and attach it to the response object. Then the following
                     // piece of code can replace the token with the refreshed one.
-                    if (response.accessToken) {
-                        this.accessToken = response.accessToken;
+                    if (response.access_token) {
+                        this.accessToken = response.access_token;
+                        this.refreshToken = response.refresh_token;
                     }
 
                     // Set the authenticated flag to true
                     this._authenticated = true;
 
                     // Store the user on the user service
-                    this._userService.user = response.user;
+                    // Store the user on the user service
+                    this._userService.user = {
+                        id: '1',
+                        email: 'admin@admin.com',
+                        name: 'Admin',
+                        // avatar: 'assets/images/avatars/1.jpg'
+                    };
 
                     // Return true
                     return of(true);

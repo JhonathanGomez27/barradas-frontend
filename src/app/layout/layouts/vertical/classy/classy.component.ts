@@ -29,17 +29,11 @@ import { Subject, takeUntil } from 'rxjs';
     imports: [
         FuseLoadingBarComponent,
         FuseVerticalNavigationComponent,
-        NotificationsComponent,
         UserComponent,
         MatIconModule,
         MatButtonModule,
-        LanguagesComponent,
         FuseFullscreenComponent,
-        SearchComponent,
-        ShortcutsComponent,
-        MessagesComponent,
-        RouterOutlet,
-        QuickChatComponent,
+        RouterOutlet
     ],
 })
 export class ClassyLayoutComponent implements OnInit, OnDestroy {
