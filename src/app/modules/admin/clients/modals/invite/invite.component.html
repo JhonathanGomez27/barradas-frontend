@@ -1,37 +1,87 @@
-<h2 mat-dialog-title>Invitar cliente</h2>
-<form [formGroup]="inviteForm" (ngSubmit)="onSubmit()" class="space-y-4 p-2">
-  <mat-form-field appearance="outline" class="w-full">
-    <mat-label>Nombre</mat-label>
-    <input matInput formControlName="firstName" required />
-    <mat-error *ngIf="inviteForm.get('firstName')?.hasError('required')">El nombre es obligatorio</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="w-full">
-    <mat-label>Apellido</mat-label>
-    <input matInput formControlName="lastName" required />
-    <mat-error *ngIf="inviteForm.get('lastName')?.hasError('required')">El apellido es obligatorio</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="w-full">
-    <mat-label>Correo</mat-label>
-    <input matInput formControlName="email" type="email" required />
-    <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">El correo es obligatorio</mat-error>
-    <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">Ingresa un correo válido</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="w-full">
-    <mat-label>Teléfono</mat-label>
-    <input matInput formControlName="phone" required />
-    <mat-error *ngIf="inviteForm.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
-  </mat-form-field>
-
-  <div class="w-full">
-    <label class="block mb-1 font-medium">Contrato</label>
-    <input type="file" (change)="onFileChange($event)" accept=".pdf,.doc,.docx" />
+<div class="bg-card">
+  <!-- Título con icono -->
+  <div class="flex items-center px-6 py-4 border-b bg-primary-50">
+    <mat-icon class="mr-3 text-primary-500" fontIcon="person_add"></mat-icon>
+    <h2 mat-dialog-title class="text-xl font-semibold m-0 text-primary-700">Invitar Cliente</h2>
   </div>
 
-  <div class="flex justify-end gap-2 mt-4">
-    <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-    <button mat-raised-button color="primary" type="submit" [disabled]="inviteForm.invalid">Invitar</button>
-  </div>
-</form>
+  <!-- Formulario con estilos mejorados -->
+  <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()" class="p-6">
+    <div class="grid grid-cols-1 gap-4">
+      <!-- Nombre -->
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="name" required />
+        <mat-icon matSuffix fontIcon="person"></mat-icon>
+        <mat-error *ngIf="inviteForm.get('name')?.hasError('required')">El nombre es obligatorio</mat-error>
+      </mat-form-field>
+
+      <!-- Apellido -->
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Apellido</mat-label>
+        <input matInput formControlName="last_name" required />
+        <mat-icon matSuffix fontIcon="badge"></mat-icon>
+        <mat-error *ngIf="inviteForm.get('last_name')?.hasError('required')">El apellido es obligatorio</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 mt-3">
+      <!-- Correo -->
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Correo</mat-label>
+        <input matInput formControlName="email" type="email" required />
+        <mat-icon matSuffix fontIcon="email"></mat-icon>
+        <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">El correo es obligatorio</mat-error>
+        <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">Ingresa un correo válido</mat-error>
+      </mat-form-field>
+
+      <!-- Teléfono -->
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="phone" required />
+        <mat-icon matSuffix fontIcon="phone"></mat-icon>
+        <mat-error *ngIf="inviteForm.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Contrato -->
+    <div class="mt-5 mb-3">
+      <div class="border border-dashed border-gray-300 rounded-md p-4 bg-gray-50">
+        <div class="flex items-center">
+          <mat-icon class="mr-3 text-gray-500" fontIcon="upload_file"></mat-icon>
+          <label class="font-medium text-gray-700">Archivo de contrato</label>
+        </div>
+        <div class="mt-3 flex flex-col items-center justify-center pt-2 pb-4">
+          <mat-icon *ngIf="!contractFile" class="text-gray-400 text-4xl">description</mat-icon>
+          <span *ngIf="!contractFile" class="mt-1 text-sm text-gray-500">
+            Arrastra y suelta el archivo aquí o
+          </span>
+          <div class="mt-2 flex text-sm">
+            <label for="file-upload" class="relative cursor-pointer bg-primary-50 rounded-md font-medium text-primary-600 hover:text-primary-500 p-2">
+              <span>Seleccionar archivo</span>
+              <input id="file-upload" name="file-upload" type="file" class="sr-only" (change)="onFileChange($event)" accept=".pdf,.doc,.docx, image/*">
+            </label>
+            <p *ngIf="!contractFile" class="pl-1 pt-2">o arrastra y suelta</p>
+          </div>
+          <p *ngIf="contractFile" class="text-sm text-gray-600 mt-2 flex items-center">
+            <mat-icon class="mr-1 text-green-500" fontIcon="check_circle"></mat-icon>
+            {{ contractFile.name }} ({{ (contractFile.size / 1024).toFixed(1) }} KB)
+          </p>
+          <p *ngIf="!contractFile" class="text-xs text-gray-500 mt-2">
+            Formatos admitidos: PDF, DOC, DOCX, imágenes (JPG, PNG). Tamaño máximo: 5 MB.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex justify-end gap-2 mt-6 pt-3 border-t">
+      <button mat-button type="button" (click)="onCancel()" class="px-6">
+        <mat-icon class="mr-1" fontIcon="close"></mat-icon> Cancelar
+      </button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="inviteForm.invalid || !contractFile" class="px-6">
+        <mat-icon class="mr-1" fontIcon="send"></mat-icon> Invitar
+      </button>
+    </div>
+  </form>
+</div>

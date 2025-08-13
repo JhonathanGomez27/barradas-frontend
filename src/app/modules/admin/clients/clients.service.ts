@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, tap, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -19,15 +19,30 @@ export class ClientsService {
         private httpClient: HttpClient
     ) { }
 
-    getClients(params: HttpParams): void {
-        this.httpClient.get<any[]>(`${this._url}/users`, { params }).subscribe((clients) => {
-            this._clients.next(clients);
-        });
+    getClients(params: HttpParams): Observable<any> {
+        return this.httpClient.get<any[]>(`${this._url}/users`, { params }).pipe(
+            tap((clients) => {
+                this._clients.next(clients);
+            })
+        )
     }
 
-    getClient(id: number): void {
-        this.httpClient.get<any>(`${this._url}/users/${id}`).subscribe((client) => {
-            this._client.next(client);
-        });
+    getClient(id: number): Observable<any> {
+        return this.httpClient.get<any>(`${this._url}/users/${id}`).pipe(
+            tap((client) => {
+                this._client.next(client);
+            })
+        );
+    }
+
+    uploadFileToClient(client_id: string, file: File, document_type: string): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}`, formData);
+    }
+
+    inviteClient(data: any): Observable<any> {
+        return this.httpClient.post(`${this._url}/invitations`, data);
     }
 }

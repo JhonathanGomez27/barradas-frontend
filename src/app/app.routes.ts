@@ -60,7 +60,7 @@ export const appRoutes: Route[] = [
             layout: 'empty'
         },
         children: [
-            {path: 'home', loadChildren: () => import('app/modules/landing/home/home.routes')},
+            {path: 'complete', loadChildren: () => import('app/modules/landing/complete-profile/complete-profile.routes')}
         ]
     },
 

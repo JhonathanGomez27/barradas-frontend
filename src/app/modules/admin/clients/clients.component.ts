@@ -13,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { InviteComponent } from './modals/invite/invite.component';
 import { MatDialogModule } from '@angular/material/dialog';
-
+import Swal from 'sweetalert2'
 
 @Component({
   selector: 'app-clients',
@@ -29,8 +29,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatIconModule,
     MatDialogModule
   ],
-  templateUrl: './clients.component.html',
-  styleUrl: './clients.component.scss'
+  templateUrl: './clients.component.html'
 })
 export class ClientsComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -40,14 +39,34 @@ export class ClientsComponent implements OnInit, OnDestroy {
     pageSize: number = 10;
     nameFilter: string = '';
     statusFilter: string = '';
-    statusOptions: string[] = ['COMPLETED', 'PENDING', 'INACTIVE'];
+    statusOptions: string[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'COMPLETED'];
+    statusMapper: { [key: string]: string } = {
+        'CREATED': 'Creado',
+        'INVITED': 'Invitado',
+        'IN_PROGRESS': 'En Progreso',
+        'COMPLETED': 'Completado'
+    };
     displayedColumns: string[] = ['email', 'name', 'phone', 'status'];
+
+    Toast: any;
 
     constructor(
         private _clientsService: ClientsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _dialog: MatDialog
-    ) {}
+    ) {
+        this.Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            },
+        });
+    }
 
     ngOnInit(): void {
         this._clientsService.clients$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
@@ -68,7 +87,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
         if (this.statusFilter) {
             params.status = this.statusFilter;
         }
-        this._clientsService.getClients(params);
+
+        this._clientsService.getClients(params).pipe(takeUntil(this._unsubscribeAll)).subscribe();
     }
 
     onFilterChange(): void {
@@ -92,8 +112,13 @@ export class ClientsComponent implements OnInit, OnDestroy {
             if (result) {
                 // Aquí puedes manejar los datos del formulario
                 console.log('Cliente invitado:', result);
-                // Implementa la lógica para enviar los datos al servicio
-                // this._clientsService.inviteClient(result).subscribe(...);
+                this.Toast.fire({
+                    icon: 'success',
+                    title: 'Cliente invitado exitosamente',
+                    text: 'Se ha enviado una invitación al cliente a su correo electronico.'
+                });
+                this.page = 1;
+                this.loadClients();
             }
         });
     }
