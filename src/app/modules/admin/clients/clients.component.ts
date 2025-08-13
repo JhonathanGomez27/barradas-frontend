@@ -10,6 +10,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+import { InviteComponent } from './modals/invite/invite.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 
 @Component({
@@ -23,7 +26,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatDialogModule
   ],
   templateUrl: './clients.component.html',
   styleUrl: './clients.component.scss'
@@ -41,7 +45,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
     constructor(
         private _clientsService: ClientsService,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _dialog: MatDialog
     ) {}
 
     ngOnInit(): void {
@@ -75,6 +80,22 @@ export class ClientsComponent implements OnInit, OnDestroy {
         this.page = event.pageIndex + 1;
         this.pageSize = event.pageSize;
         this.loadClients();
+    }
+
+    openInviteDialog(): void {
+        const dialogRef = this._dialog.open(InviteComponent, {
+            width: '500px',
+            disableClose: true
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                // Aquí puedes manejar los datos del formulario
+                console.log('Cliente invitado:', result);
+                // Implementa la lógica para enviar los datos al servicio
+                // this._clientsService.inviteClient(result).subscribe(...);
+            }
+        });
     }
 
     ngOnDestroy(): void {
