@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, PLATFORM_ID, Inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -65,8 +65,7 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
         private _formBuilder: FormBuilder,
         private _route: ActivatedRoute,
         private _router: Router,
-        private _completeProfileService: CompleteProfileService,
-        @Inject(PLATFORM_ID) private platformId: Object
+        private _completeProfileService: CompleteProfileService
     ) {
         this.profileForm = this._formBuilder.group({
             locationAddress: ['', Validators.required],
@@ -81,11 +80,6 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
             this.token = params.get('token');
             this.tokenValid = true;
         });
-
-        // Inicializar mapa si estamos en un navegador
-        if (isPlatformBrowser(this.platformId)) {
-            this.initMap();
-        }
     }
 
     validateToken(): void {
@@ -107,12 +101,6 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
                     // Redirigir a página de error o mostrar mensaje
                 }
             });
-    }
-
-    initMap(): void {
-        // Aquí implementarías la inicialización del mapa usando Google Maps o similar
-        // Por ahora lo dejamos como un placeholder
-        console.log('Inicializando mapa...');
     }
 
     onFileChange(event: any, fileType: string): void {
