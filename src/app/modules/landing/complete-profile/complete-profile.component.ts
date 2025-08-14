@@ -60,6 +60,8 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
       CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true }
     };
 
+    profileCompleted: boolean = true;
+
     Toast: any;
 
     constructor(
@@ -90,16 +92,14 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         // Obtener token de la URL
-        this._route.paramMap.pipe(takeUntil(this._unsubscribeAll)).subscribe(params => {
+        this._route.queryParamMap.pipe(takeUntil(this._unsubscribeAll)).subscribe(params => {
             this.token = params.get('token');
-
             this.tokenValid = true;
         });
 
         this._completeProfileService.tokenInfo$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
             this.tokenInfo = response;
             this.clientInfo = this.tokenInfo?.client || null;
-            console.log(this.clientInfo);
             this._changeDetectorRef.markForCheck();
         });
     }
@@ -121,11 +121,15 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
 
 
     onSubmit(): void {
+
         if (this.profileForm.invalid) {
+            this.Toast.fire({
+                icon: 'error',
+                title: 'Por favor, complete todos los campos requeridos.'
+            });
             return;
         }
 
-        this.submitted = true;
         this.loading = true;
 
         // Crear FormData con los datos del formulario
@@ -141,7 +145,17 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
             }
         });
 
+        // Object.keys(this.fileUploads).forEach(key => {
+        //     if (this.fileUploads[key].file) {
+        //         formData.append('files', this.fileUploads[key].file as File);
+        //     }
+        // });
+
         if (!this.token) {
+            this.Toast.fire({
+                icon: 'error',
+                title: 'Token no válido'
+            });
             this.loading = false;
             return;
         }
@@ -153,7 +167,8 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
                 next: (response) => {
                     this.loading = false;
                     // Mostrar mensaje de éxito y redireccionar
-                    console.log('Perfil completado exitosamente', response);
+                    this.submitted = true;
+                    this.profileCompleted = true;
                 },
                 error: (error) => {
                     this.loading = false;
