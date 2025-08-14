@@ -1,14 +1,14 @@
 <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
     <!-- Encabezado con logo de la empresa -->
     <header class="bg-white shadow-md p-4">
-        <div class="container mx-auto flex justify-center">
-            <img src="assets/images/logo/logo.svg" alt="Logo" class="h-12">
+        <div class="container mx-auto flex justify-start">
+            <img src="images/logo/logo.png" alt="Logo" class="h-12 w-24">
         </div>
     </header>
     <!-- Main -->
     <div class="flex-auto p-6 sm:p-10">
 
-        <div class="flex-1 container mx-auto p-4 md:p-8 w-full">
+        <div class="flex-1 container mx-auto p-4 md:p-8 w-2/3">
             <!-- Estado de carga -->
             <div *ngIf="loading" class="flex flex-col items-center justify-center p-8">
                 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -31,142 +31,162 @@
                     </p>
                 </div>
 
-                <!-- Stepper para el proceso de completado -->
-                <mat-horizontal-stepper linear #stepper [selectedIndex]="currentStep" class="bg-white">
-                    <!-- Paso 1: Ubicación -->
-                    <mat-step [completed]="profileForm.valid">
-                        <ng-template matStepLabel>Ubicación</ng-template>
-                        <div class="p-6">
-                            <h2 class="text-xl font-semibold text-gray-800 mb-4">Información de ubicación</h2>
-                            <form [formGroup]="profileForm" class="space-y-4">
+                <!-- Formulario en un solo paso -->
+                <div class="p-6">
+                    <!-- Información del cliente -->
+                    <div *ngIf="clientInfo" class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-primary-50 p-4 border-b border-primary-100">
+                            <div class="flex items-center">
+                                <mat-icon class="text-primary-600 mr-2">person</mat-icon>
+                                <h3 class="text-lg font-semibold text-gray-800">Información del Cliente</h3>
+                            </div>
+                        </div>
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500 mb-1">Nombre</span>
+                                <span class="font-medium text-gray-800">{{ clientInfo.firstName || 'No disponible' }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500 mb-1">Apellido</span>
+                                <span class="font-medium text-gray-800">{{ clientInfo.lastName || 'No disponible' }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500 mb-1">Email</span>
+                                <div class="flex items-center">
+                                    <mat-icon class="text-gray-400 text-sm mr-1">email</mat-icon>
+                                    <span class="font-medium text-gray-800">{{ clientInfo.email || 'No disponible' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de ubicación -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                            <mat-icon class="align-middle mr-2 text-primary-500">location_on</mat-icon>
+                            Información de ubicación
+                        </h2>
+
+                        <form [formGroup]="profileForm" class="space-y-4">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Dirección</mat-label>
+                                <input matInput formControlName="locationAddress"
+                                    placeholder="Ingrese la dirección completa">
+                                <mat-icon matSuffix>location_on</mat-icon>
+                                <mat-error *ngIf="profileForm.get('locationAddress')?.hasError('required')">
+                                    La dirección es obligatoria
+                                </mat-error>
+                            </mat-form-field>
+
+                            <!-- Instrucciones para la ubicación -->
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                                <div class="flex items-start">
+                                    <mat-icon class="text-blue-600 mr-2">info</mat-icon>
+                                    <div>
+                                        <p class="text-blue-700 font-medium">Información importante</p>
+                                        <p class="text-sm text-blue-600">Por favor ingrese la dirección completa incluyendo calle, número, colonia, ciudad y estado. Los campos de latitud y longitud son coordenadas GPS.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <mat-form-field appearance="outline" class="w-full">
-                                    <mat-label>Dirección</mat-label>
-                                    <input matInput formControlName="locationAddress"
-                                        placeholder="Ingrese la dirección completa">
-                                    <mat-icon matSuffix>location_on</mat-icon>
-                                    <mat-error *ngIf="profileForm.get('locationAddress')?.hasError('required')">
-                                        La dirección es obligatoria
+                                    <mat-label>Latitud</mat-label>
+                                    <input matInput formControlName="locationLat" placeholder="Latitud">
+                                    <mat-error *ngIf="profileForm.get('locationLat')?.hasError('required')">
+                                        La latitud es obligatoria
                                     </mat-error>
                                 </mat-form-field>
 
-                                <!-- Instrucciones para la ubicación -->
-                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-                                    <div class="flex items-start">
-                                        <mat-icon class="text-blue-600 mr-2">info</mat-icon>
-                                        <div>
-                                            <p class="text-blue-700 font-medium">Información importante</p>
-                                            <p class="text-sm text-blue-600">Por favor ingrese la dirección completa incluyendo calle, número, colonia, ciudad y estado. Los campos de latitud y longitud son coordenadas GPS.</p>
+                                <mat-form-field appearance="outline" class="w-full">
+                                    <mat-label>Longitud</mat-label>
+                                    <input matInput formControlName="locationLng" placeholder="Longitud">
+                                    <mat-error *ngIf="profileForm.get('locationLng')?.hasError('required')">
+                                        La longitud es obligatoria
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Separador visual -->
+                    <div class="border-t border-gray-200 my-8"></div>
+
+                    <!-- Sección de documentos -->
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                            <mat-icon class="align-middle mr-2 text-primary-500">upload_file</mat-icon>
+                            Carga de documentos
+                        </h2>
+                        <p class="text-gray-600 mb-6">Por favor sube los siguientes documentos en formato JPG, PNG o PDF:</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Tarjeta para cada tipo de archivo -->
+                            <ng-container *ngFor="let fileUpload of fileUploads | keyvalue">
+                                <mat-card class="rounded-lg overflow-hidden">
+                                    <div class="p-4 bg-gray-50 border-b">
+                                        <div class="flex items-center">
+                                            <mat-icon class="text-gray-500 mr-2">description</mat-icon>
+                                            <h3 class="font-medium">{{ fileUpload.value.label }}</h3>
+                                            <span *ngIf="fileUpload.value.required"
+                                                class="ml-1 text-red-600">*</span>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Latitud</mat-label>
-                                        <input matInput formControlName="locationLat" placeholder="Latitud">
-                                        <mat-error *ngIf="profileForm.get('locationLat')?.hasError('required')">
-                                            La latitud es obligatoria
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Longitud</mat-label>
-                                        <input matInput formControlName="locationLng" placeholder="Longitud">
-                                        <mat-error *ngIf="profileForm.get('locationLng')?.hasError('required')">
-                                            La longitud es obligatoria
-                                        </mat-error>
-                                    </mat-form-field>
-                                </div>
-                            </form>
-
-                            <div class="flex justify-end mt-6 pt-4 border-t border-gray-100">
-                                <button mat-raised-button color="primary" [disabled]="!profileForm.valid"
-                                    (click)="nextStep()">
-                                    Siguiente
-                                    <mat-icon>arrow_forward</mat-icon>
-                                </button>
-                            </div>
-                        </div>
-                    </mat-step>
-
-                    <!-- Paso 2: Documentos -->
-                    <mat-step [completed]="areFilesValid()">
-                        <ng-template matStepLabel>Documentos</ng-template>
-                        <div class="p-6">
-                            <h2 class="text-xl font-semibold text-gray-800 mb-4">Carga de documentos</h2>
-                            <p class="text-gray-600 mb-6">Por favor sube los siguientes documentos en formato JPG, PNG o
-                                PDF:</p>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Tarjeta para cada tipo de archivo -->
-                                <ng-container *ngFor="let fileUpload of fileUploads | keyvalue">
-                                    <mat-card class="rounded-lg overflow-hidden">
-                                        <div class="p-4 bg-gray-50 border-b">
-                                            <div class="flex items-center">
-                                                <mat-icon class="text-gray-500 mr-2">description</mat-icon>
-                                                <h3 class="font-medium">{{ fileUpload.value.label }}</h3>
-                                                <span *ngIf="fileUpload.value.required"
-                                                    class="ml-1 text-red-600">*</span>
-                                            </div>
+                                    <div class="p-4">
+                                        <div *ngIf="!fileUpload.value.file"
+                                            class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
+                                            <mat-icon class="text-4xl text-gray-400">cloud_upload</mat-icon>
+                                            <p class="text-sm text-gray-500 mt-2 text-center">Haz clic o arrastra
+                                                para subir</p>
+                                            <input type="file" class="absolute inset-0 opacity-0 cursor-pointer"
+                                                [id]="fileUpload.value.name"
+                                                (change)="onFileChange($event, fileUpload.value.name)"
+                                                accept=".jpg,.jpeg,.png,.pdf">
                                         </div>
 
-                                        <div class="p-4">
-                                            <div *ngIf="!fileUpload.value.file"
-                                                class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
-                                                <mat-icon class="text-4xl text-gray-400">cloud_upload</mat-icon>
-                                                <p class="text-sm text-gray-500 mt-2 text-center">Haz clic o arrastra
-                                                    para subir</p>
-                                                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer"
-                                                    [id]="fileUpload.value.name"
-                                                    (change)="onFileChange($event, fileUpload.value.name)"
-                                                    accept=".jpg,.jpeg,.png,.pdf">
+                                        <div *ngIf="fileUpload.value.file" class="mt-2">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    <mat-icon class="text-green-500 mr-1">check_circle</mat-icon>
+                                                    <span class="text-sm truncate max-w-[200px]">{{
+                                                        fileUpload.value.file.name }}</span>
+                                                </div>
+                                                <button mat-icon-button color="warn"
+                                                    (click)="fileUpload.value.file = null; fileUpload.value.preview = null">
+                                                    <mat-icon>delete</mat-icon>
+                                                </button>
                                             </div>
 
-                                            <div *ngIf="fileUpload.value.file" class="mt-2">
-                                                <div class="flex items-center justify-between">
-                                                    <div class="flex items-center">
-                                                        <mat-icon class="text-green-500 mr-1">check_circle</mat-icon>
-                                                        <span class="text-sm truncate max-w-[200px]">{{
-                                                            fileUpload.value.file.name }}</span>
-                                                    </div>
-                                                    <button mat-icon-button color="warn"
-                                                        (click)="fileUpload.value.file = null; fileUpload.value.preview = null">
-                                                        <mat-icon>delete</mat-icon>
-                                                    </button>
-                                                </div>
+                                            <!-- Vista previa si es imagen -->
+                                            <div *ngIf="fileUpload.value.preview && (fileUpload.value.file.type.includes('image'))"
+                                                class="mt-3">
+                                                <img [src]="fileUpload.value.preview"
+                                                    class="max-h-36 rounded-lg mx-auto">
+                                            </div>
 
-                                                <!-- Vista previa si es imagen -->
-                                                <div *ngIf="fileUpload.value.preview && (fileUpload.value.file.type.includes('image'))"
-                                                    class="mt-3">
-                                                    <img [src]="fileUpload.value.preview"
-                                                        class="max-h-36 rounded-lg mx-auto">
-                                                </div>
-
-                                                <!-- Icono para PDF -->
-                                                <div *ngIf="fileUpload.value.file.type.includes('pdf')"
-                                                    class="mt-3 flex justify-center">
-                                                    <mat-icon class="text-4xl text-red-600">picture_as_pdf</mat-icon>
-                                                </div>
+                                            <!-- Icono para PDF -->
+                                            <div *ngIf="fileUpload.value.file.type.includes('pdf')"
+                                                class="mt-3 flex justify-center">
+                                                <mat-icon class="text-4xl text-red-600">picture_as_pdf</mat-icon>
                                             </div>
                                         </div>
-                                    </mat-card>
-                                </ng-container>
-                            </div>
-
-                            <div class="flex justify-between mt-8 pt-4 border-t border-gray-100">
-                                <button mat-stroked-button (click)="prevStep()">
-                                    <mat-icon>arrow_back</mat-icon>
-                                    Anterior
-                                </button>
-                                <button mat-raised-button color="primary" [disabled]="!areFilesValid()"
-                                    (click)="onSubmit()">
-                                    Finalizar
-                                    <mat-icon>check</mat-icon>
-                                </button>
-                            </div>
+                                    </div>
+                                </mat-card>
+                            </ng-container>
                         </div>
-                    </mat-step>
-                </mat-horizontal-stepper>
+                    </div>
+
+                    <!-- Botón de envío -->
+                    <div class="flex justify-end mt-8 pt-4 border-t border-gray-100">
+                        <button mat-raised-button color="primary"
+                            [disabled]="!profileForm.valid || !areFilesValid()"
+                            (click)="onSubmit()">
+                            Completar Perfil
+                            <mat-icon class="ml-1">check_circle</mat-icon>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Mensaje de éxito después de enviar el formulario -->

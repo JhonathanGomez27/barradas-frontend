@@ -11,6 +11,7 @@ export class CompleteProfileService {
     private _url: string = environment.url;
 
     private tokenInfo: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+    public tokenInfo$ = this.tokenInfo.asObservable();
 
     constructor(private _httpClient: HttpClient) {}
 

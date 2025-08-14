@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -7,11 +7,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { MatStepperModule } from '@angular/material/stepper';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { CompleteProfileService } from './complete-profile.service';
+import Swal from 'sweetalert2';
 
 interface FileUpload {
   file: File | null;
@@ -31,7 +31,6 @@ interface FileUpload {
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    MatStepperModule,
     MatCardModule,
     MatProgressBarModule,
     MatSelectModule
@@ -47,8 +46,8 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
     submitted = false;
     tokenValid = false;
     clientInfo: any = null;
-    currentStep = 0;
 
+    tokenInfo: any = null;
     // Archivos para subir
     fileUploads: { [key: string]: FileUpload } = {
       INTERIOR_1: { file: null, preview: null, name: 'INTERIOR_1', label: 'Interior 1', required: true },
@@ -61,16 +60,31 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
       CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true }
     };
 
+    Toast: any;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _route: ActivatedRoute,
         private _router: Router,
-        private _completeProfileService: CompleteProfileService
+        private _completeProfileService: CompleteProfileService,
+        private _changeDetectorRef: ChangeDetectorRef
     ) {
         this.profileForm = this._formBuilder.group({
             locationAddress: ['', Validators.required],
             locationLat: ['', Validators.required],
             locationLng: ['', Validators.required]
+        });
+
+        this.Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            },
         });
     }
 
@@ -78,29 +92,16 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
         // Obtener token de la URL
         this._route.paramMap.pipe(takeUntil(this._unsubscribeAll)).subscribe(params => {
             this.token = params.get('token');
+
             this.tokenValid = true;
         });
-    }
 
-    validateToken(): void {
-        if (!this.token) return;
-
-        this.loading = true;
-        this._completeProfileService.validateToken(this.token)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: (response) => {
-                    this.clientInfo = response;
-                    this.tokenValid = true;
-                    this.loading = false;
-                },
-                error: (error) => {
-                    console.error('Token inválido', error);
-                    this.tokenValid = false;
-                    this.loading = false;
-                    // Redirigir a página de error o mostrar mensaje
-                }
-            });
+        this._completeProfileService.tokenInfo$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
+            this.tokenInfo = response;
+            this.clientInfo = this.tokenInfo?.client || null;
+            console.log(this.clientInfo);
+            this._changeDetectorRef.markForCheck();
+        });
     }
 
     onFileChange(event: any, fileType: string): void {
@@ -117,13 +118,7 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
         }
     }
 
-    nextStep(): void {
-        this.currentStep++;
-    }
 
-    prevStep(): void {
-        this.currentStep--;
-    }
 
     onSubmit(): void {
         if (this.profileForm.invalid) {
@@ -162,7 +157,11 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
                 },
                 error: (error) => {
                     this.loading = false;
-                    console.error('Error al completar perfil', error);
+                    this.Toast.fire({
+                        icon: 'error',
+                        title: 'Ha ocurrido un error',
+                        text: 'Por favor, inténtelo de nuevo más tarde.'
+                    });
                     // Mostrar mensaje de error
                 }
             });
