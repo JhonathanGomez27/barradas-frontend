@@ -14,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { InviteComponent } from './modals/invite/invite.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import Swal from 'sweetalert2'
+import { ClientDetailsComponent } from './modals/client-details/client-details.component';
 
 @Component({
   selector: 'app-clients',
@@ -126,5 +127,25 @@ export class ClientsComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+    }
+
+    onClick(row: any): void {
+        this.obtenerDetallesCliente(row.id);
+    }
+
+    obtenerDetallesCliente(client_id: string): void {
+        this._clientsService.getClient(client_id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (response:any) => {
+                this._dialog.open(ClientDetailsComponent, {
+                    data: response,
+                    // width: '600px's
+                });
+            },error: (error) => {
+                this.Toast.fire({
+                    icon: 'error',
+                    title: 'Error al obtener detalles del cliente'
+                });
+            }
+        });
     }
 }

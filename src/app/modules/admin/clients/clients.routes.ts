@@ -13,7 +13,6 @@ const ClientsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: R
     let params = new HttpParams();
     params = params.set('page', 1);
     params = params.set('limit', limit);
-    params = params.set('status', 'INVITED');
 
     return _ClientsService.getClients(params);
 }

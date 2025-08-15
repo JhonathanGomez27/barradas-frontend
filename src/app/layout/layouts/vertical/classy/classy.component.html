@@ -3,7 +3,7 @@
 
 <!-- Navigation -->
 <fuse-vertical-navigation
-    class="dark bg-gray-900 print:hidden"
+    class="dark bg-primary print:hidden"
     [mode]="isScreenSmall ? 'over' : 'side'"
     [name]="'mainNavigation'"
     [navigation]="navigation.default"
@@ -14,7 +14,7 @@
         <div class="flex w-full items-center p-4 pl-6">
             <!-- Logo -->
             <div class="flex items-center justify-center">
-                <img class="w-8" src="images/logo/logo.svg" />
+                <img class="w-30" src="images/logo/logo.png" />
             </div>
             <!-- Components -->
             <div class="ml-auto flex items-center">
@@ -46,7 +46,7 @@
                     {{ user.name }}
                 </div>
                 <div
-                    class="text-secondary mt-0.5 w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-md font-medium leading-normal"
+                    class="text-gray-200 mt-0.5 w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-md font-medium leading-normal"
                 >
                     {{ user.email }}
                 </div>

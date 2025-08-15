@@ -27,7 +27,7 @@ export class ClientsService {
         )
     }
 
-    getClient(id: number): Observable<any> {
+    getClient(id: string): Observable<any> {
         return this.httpClient.get<any>(`${this._url}/users/${id}`).pipe(
             tap((client) => {
                 this._client.next(client);
@@ -40,6 +40,20 @@ export class ClientsService {
         formData.append('file', file);
 
         return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}`, formData);
+    }
+
+    getFileClient(file_id: string, doc_title: string): void{
+        this.httpClient.get(`${this._url}/documents/${file_id}/download`, {responseType: 'blob'}).subscribe(blob => {
+            // Crear URL objeto y simular click en enlace de descarga
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = doc_title || 'documento'; // Nombre por defecto, se sobreescribirá con el del Content-Disposition
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        });
     }
 
     inviteClient(data: any): Observable<any> {

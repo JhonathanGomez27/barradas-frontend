@@ -11,7 +11,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
     // },
     {
         id   : 'clients',
-        title: 'Clients',
+        title: 'Clientes',
         type : 'basic',
         icon : 'heroicons_outline:user-group',
         link : '/clients'

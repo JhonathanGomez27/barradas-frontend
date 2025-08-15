@@ -1,0 +1,158 @@
+<div mat-dialog-title class="flex bg-primary">
+    <div class="flex items-center justify-between w-full text-on-primary mt-3">
+        <div class="text-lg font-medium flex items-center">
+            <mat-icon class="mr-2 text-current">person</mat-icon>
+            Detalles del cliente
+        </div>
+        <button mat-icon-button (click)="closeDialog()" [tabIndex]="-1">
+            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+</div>
+<mat-dialog-content class="flex flex-col flex-auto p-0 min-w-0"
+    [ngClass]="{'mt-2': clientDetails?.documents?.length > 4}">
+
+    <!-- Contenido del diálogo -->
+    <div class="p-6" *ngIf="clientDetails">
+        <!-- Estado del cliente con badge de color -->
+        <div class="flex justify-end mb-4">
+            <span class="px-3 py-1 rounded-full text-sm font-medium"
+                [ngClass]="{
+                    'bg-green-100 text-green-800': clientDetails.status === 'COMPLETED',
+                    'bg-blue-100 text-blue-800': clientDetails.status === 'INVITED',
+                    'bg-yellow-100 text-yellow-800': clientDetails.status === 'IN_PROGRESS',
+                    'bg-gray-100 text-gray-800': clientDetails.status === 'CREATED'
+                }">
+                {{ statusMapper[clientDetails.status] || clientDetails.status }}
+            </span>
+        </div>
+
+        <!-- Información personal -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
+            <div class="bg-gray-50 p-4 border-b border-gray-100">
+                <h3 class="font-semibold text-gray-800">Información Personal</h3>
+            </div>
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">Nombre completo</span>
+                    <span class="font-medium text-gray-800">{{ clientDetails.firstName }} {{ clientDetails.lastName }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">Email</span>
+                    <span class="font-medium text-gray-800 break-all">{{ clientDetails.email }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">Teléfono</span>
+                    <span class="font-medium text-gray-800">{{ clientDetails.phone || 'No disponible' }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">ID</span>
+                    <span class="font-medium text-gray-800 text-xs break-all">{{ clientDetails.id }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de ubicación -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
+            <div class="bg-gray-50 p-4 border-b border-gray-100">
+                <h3 class="font-semibold text-gray-800">Ubicación</h3>
+            </div>
+            <div class="p-4">
+                <div class="mb-4">
+                    <span class="text-sm text-gray-500 block mb-1">Dirección</span>
+                    <span class="font-medium text-gray-800">{{ clientDetails.locationAddress || 'No disponible' }}</span>
+                </div>
+                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-500">Latitud</span>
+                        <span class="font-medium text-gray-800">{{ clientDetails.locationLat || 'No disponible' }}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-500">Longitud</span>
+                        <span class="font-medium text-gray-800">{{ clientDetails.locationLng || 'No disponible' }}</span>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+
+        <!-- Fechas importantes -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
+            <div class="bg-gray-50 p-4 border-b border-gray-100">
+                <h3 class="font-semibold text-gray-800">Fechas</h3>
+            </div>
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">Creado</span>
+                    <span class="font-medium text-gray-800">{{ formatDate(clientDetails.createdAt) }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">Última actualización</span>
+                    <span class="font-medium text-gray-800">{{ formatDate(clientDetails.updatedAt) }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm text-gray-500">Completado</span>
+                    <span class="font-medium text-gray-800">{{ formatDate(clientDetails.completedAt) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentos -->
+        <div *ngIf="clientDetails.documents && clientDetails.documents.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gray-50 p-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-semibold text-gray-800">Documentos</h3>
+                <span class="px-2 py-1 rounded-full bg-primary-50 text-primary-900 text-sm font-medium">
+                    {{ clientDetails.documents.length }} documentos
+                </span>
+            </div>
+            <div class="overflow-x-auto overflow-y-auto" [ngClass]="{'max-h-72': clientDetails.documents.length > 4}">
+                <table class="w-full divide-y divide-gray-200 table-fixed">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th class="w-2/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                            <th class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaño</th>
+                            <th class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th class="w-1/12 px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr *ngFor="let doc of clientDetails.documents" class="group cursor-pointer hover:bg-gray-50">
+                            <td class="px-3 py-3">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 inline-block">
+                                    {{ docTypeMapper[doc.docType] || doc.docType }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3">
+                                <div class="flex items-center overflow-hidden">
+                                    <mat-icon class="flex-shrink-0 text-gray-400 mr-2">{{ getFileIcon(doc.mimeType) }}</mat-icon>
+                                    <span class="text-sm text-gray-900 truncate" matTooltip="{{ doc.title }}">{{ doc.title }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 text-sm text-gray-500">
+                                {{ getFileSize(doc.sizeBytes) }}
+                            </td>
+                            <td class="px-3 py-3 text-sm text-gray-500">
+                                {{ formatDate(doc.uploadedAt) }}
+                            </td>
+                            <td class="px-3 py-3 text-right text-sm font-medium">
+                                <button mat-icon-button color="primary" (click)="openDocument(doc.id, doc.title); $event.stopPropagation();" matTooltip="Ver documento">
+                                    <mat-icon>visibility</mat-icon>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay documentos -->
+        <div *ngIf="!clientDetails.documents || clientDetails.documents.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden p-8 text-center">
+            <mat-icon class="text-gray-300 text-6xl mb-4">folder_open</mat-icon>
+            <h3 class="text-lg font-medium text-gray-700 mb-1">No hay documentos</h3>
+            <p class="text-gray-500">Este cliente no tiene documentos asociados</p>
+        </div>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions class="justify-end py-3 px-4 bg-gray-50 border-t border-gray-200">
+    <button mat-stroked-button class="bg-card" (click)="closeDialog()" [tabIndex]="-1">Cerrar</button>
+</mat-dialog-actions>

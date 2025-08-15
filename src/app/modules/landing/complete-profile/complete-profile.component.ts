@@ -60,7 +60,7 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
       CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true }
     };
 
-    profileCompleted: boolean = true;
+    profileCompleted: boolean = false;
 
     Toast: any;
 
@@ -73,8 +73,8 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
     ) {
         this.profileForm = this._formBuilder.group({
             locationAddress: ['', Validators.required],
-            locationLat: ['', Validators.required],
-            locationLng: ['', Validators.required]
+            // locationLat: ['', Validators.required],
+            // locationLng: ['', Validators.required]
         });
 
         this.Toast = Swal.mixin({
