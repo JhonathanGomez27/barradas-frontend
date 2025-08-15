@@ -5,6 +5,7 @@ import {
     HttpRequest,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'app/core/auth/auth.service';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { Observable, catchError, throwError } from 'rxjs';
@@ -20,6 +21,7 @@ export const authInterceptor = (
     next: HttpHandlerFn
 ): Observable<HttpEvent<unknown>> => {
     const authService = inject(AuthService);
+    const router = inject(Router);
 
     // Clone the request object
     let newReq = req.clone();
@@ -52,8 +54,11 @@ export const authInterceptor = (
                 // Sign out
                 authService.signOut();
 
+                // Navigate to the login page
+                router.navigate(['/invalid-token']);
+
                 // Reload the app
-                location.reload();
+                // location.reload();
             }
 
             return throwError(error);

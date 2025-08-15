@@ -13,8 +13,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { InviteComponent } from './modals/invite/invite.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import Swal from 'sweetalert2'
 import { ClientDetailsComponent } from './modals/client-details/client-details.component';
+import { environment } from 'environment/environment';
 
 @Component({
   selector: 'app-clients',
@@ -28,7 +30,8 @@ import { ClientDetailsComponent } from './modals/client-details/client-details.c
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   templateUrl: './clients.component.html'
 })
@@ -47,9 +50,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
         'IN_PROGRESS': 'En Progreso',
         'COMPLETED': 'Completado'
     };
-    displayedColumns: string[] = ['email', 'name', 'phone', 'status'];
+    displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'actions'];
 
     Toast: any;
+
+    urlComplete: string = environment.hostComplete;
 
     constructor(
         private _clientsService: ClientsService,
@@ -116,7 +121,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
                 this.Toast.fire({
                     icon: 'success',
                     title: 'Cliente invitado exitosamente',
-                    text: 'Se ha enviado una invitación al cliente a su correo electronico.'
+                    text: 'Se ha enviado una invitación al cliente a su correo electronico. Se ha copiado el enlace de invitación al portapapeles.'
                 });
                 this.page = 1;
                 this.loadClients();
@@ -131,6 +136,44 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
     onClick(row: any): void {
         this.obtenerDetallesCliente(row.id);
+    }
+    
+    /**
+     * Copia el enlace de completado de perfil al portapapeles
+     * @param client Cliente del que se copiará el enlace
+     * @param event Evento del click para prevenir la propagación
+     */
+    copyProfileLink(client: any, event: Event): void {
+        event.stopPropagation(); // Evita que se abra el diálogo de detalles
+        
+        // Verificar si el cliente tiene enlaces
+        if (client.links && client.links.length > 0) {
+            const link = `${this.urlComplete}?token=${client.links[0].token}`;
+            
+            navigator.clipboard.writeText(link).then(
+                () => {
+                    this.Toast.fire({
+                        icon: 'success',
+                        title: 'Enlace copiado al portapapeles',
+                        text: 'El enlace de completado de perfil ha sido copiado'
+                    });
+                },
+                (err) => {
+                    console.error('Error al copiar al portapapeles:', err);
+                    this.Toast.fire({
+                        icon: 'error',
+                        title: 'Error al copiar al portapapeles',
+                        text: 'No se pudo copiar el enlace'
+                    });
+                }
+            );
+        } else {
+            this.Toast.fire({
+                icon: 'warning',
+                title: 'No hay enlace disponible',
+                text: 'Este cliente no tiene un enlace de completado de perfil'
+            });
+        }
     }
 
     obtenerDetallesCliente(client_id: string): void {

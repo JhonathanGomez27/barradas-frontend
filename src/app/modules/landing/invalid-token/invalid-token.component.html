@@ -1,1 +1,62 @@
-<p>invalid-token works!</p>
+<div class="flex flex-col min-h-screen bg-gray-50">
+    <!-- Encabezado -->
+    <header class="bg-white shadow-sm p-4">
+        <div class="container mx-auto">
+            <div class="container mx-auto flex justify-between">
+                <img src="images/logo/logo.png" alt="Logo barradas" class="h-12 w-24">
+                <img src="images/logo/confia_negro.png" alt="Logo confía" class="h-16 w-26" />
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="max-w-lg w-full bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Sección superior con icono -->
+            <div class="bg-red-50 p-8 flex flex-col items-center border-b border-red-100">
+                <div class="rounded-full bg-red-100 p-4 mb-4">
+                    <mat-icon class="text-red-600 text-5xl">error_outline</mat-icon>
+                </div>
+                <h1 class="text-2xl font-bold text-red-800 mb-2">Enlace inválido o expirado</h1>
+                <p class="text-red-600 text-center">
+                    El enlace que intentas usar ya no es válido o ha expirado.
+                </p>
+            </div>
+
+            <!-- Información y opciones -->
+            <div class="p-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <mat-icon class="text-gray-600 mr-2">info</mat-icon>
+                        <div>
+                            <h2 class="font-medium text-gray-800 mb-1">¿Qué puedo hacer?</h2>
+                            <ul class="text-gray-600 text-sm space-y-2 list-disc ml-5">
+                                <li>Verifica que hayas copiado el enlace completo</li>
+                                <li>Solicita un nuevo enlace de invitación</li>
+                                <li>Contacta con el administrador si el problema persiste</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button mat-raised-button color="primary" (click)="navigateToHome()">
+                        <mat-icon class="mr-2">home</mat-icon>
+                        Ir a la página principal
+                    </button>
+                    <button mat-stroked-button color="primary" (click)="navigateToContact()">
+                        <mat-icon class="mr-2">contact_support</mat-icon>
+                        Contactar soporte
+                    </button>
+                </div> -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="bg-gray-800 text-white p-4 mt-auto">
+        <div class="container mx-auto text-center text-sm">
+            <p>&copy; 2025 Barradas App. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</div>

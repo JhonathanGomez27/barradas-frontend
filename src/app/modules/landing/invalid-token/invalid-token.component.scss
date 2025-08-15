@@ -1,0 +1,36 @@
+/* Estilos para el componente de token inválido */
+:host {
+    display: block;
+
+    .mat-icon {
+        height: auto;
+        width: auto;
+        font-size: 2rem;
+    }
+
+    .bg-red-50 {
+        animation: pulse 2s infinite;
+        animation-delay: 1s;
+    }
+
+    @keyframes pulse {
+        0% {
+            background-color: #fef2f2;
+        }
+        50% {
+            background-color: #fee2e2;
+        }
+        100% {
+            background-color: #fef2f2;
+        }
+    }
+
+    /* Efecto de escalado suave en los botones al pasar el cursor */
+    button {
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+    }
+}

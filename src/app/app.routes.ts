@@ -60,7 +60,8 @@ export const appRoutes: Route[] = [
             layout: 'empty'
         },
         children: [
-            {path: 'complete', loadChildren: () => import('app/modules/landing/complete-profile/complete-profile.routes')}
+            {path: 'complete', loadChildren: () => import('app/modules/landing/complete-profile/complete-profile.routes')},
+            {path: 'invalid-token', loadChildren: () => import('app/modules/landing/invalid-token/invalid-token.routes')}
         ]
     },
 

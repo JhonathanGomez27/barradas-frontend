@@ -87,6 +87,20 @@
                         </td>
                     </ng-container>
 
+                    <!-- Actions Column -->
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef class="text-center">Acciones</th>
+                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100 text-center">
+                            <button mat-icon-button *ngIf="client.status === 'INVITED'"
+                                    color="primary"
+                                    (click)="copyProfileLink(client, $event)"
+                                    [disabled]="!client.links || client.links.length === 0"
+                                    matTooltip="Copiar enlace de completado de perfil">
+                                <mat-icon>content_copy</mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
                     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                     <tr mat-row *matRowDef="let row; columns: displayedColumns;"
                         class="group cursor-pointer transition-colors duration-150"

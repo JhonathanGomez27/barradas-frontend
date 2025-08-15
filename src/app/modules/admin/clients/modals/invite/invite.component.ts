@@ -13,6 +13,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
 import { ClientsService } from '../../clients.service';
+import Swal from 'sweetalert2';
+import {ClipboardModule} from '@angular/cdk/clipboard';
 
 @Component({
     selector: 'app-invite',
@@ -24,6 +26,7 @@ import { ClientsService } from '../../clients.service';
         MatButtonModule,
         MatDialogModule,
         MatIconModule,
+        ClipboardModule
     ],
     templateUrl: './invite.component.html',
 })
@@ -33,16 +36,30 @@ export class InviteComponent {
     inviteForm: FormGroup;
     contractFile: File | null = null;
 
+    Toast: any
+
     constructor(
         private _formBuilder: FormBuilder,
         public dialogRef: MatDialogRef<InviteComponent>,
-        private _clientsService: ClientsService
+        private _clientsService: ClientsService,
     ) {
         this.inviteForm = this._formBuilder.group({
             name: ['', [Validators.required]],
             last_name: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
             phone: ['', [Validators.required]],
+        });
+
+        this.Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            },
         });
     }
 
@@ -61,7 +78,20 @@ export class InviteComponent {
     }
 
     onSubmit(): void {
+
+        if(!this.inviteForm.valid) {
+            this.Toast.fire({
+                icon: 'error',
+                title: 'Por favor completa todos los campos requeridos.'
+            });
+            return;
+        }
+
+
+
         if (this.inviteForm.valid) {
+
+            this.inviteForm.disable();
             const clientData = {
                 ...this.inviteForm.value,
             };
@@ -72,10 +102,21 @@ export class InviteComponent {
                 .subscribe({
                     next: (response: any) => {
                         console.log('Cliente invitado exitosamente:', response);
+
+                        // Copiar enlace de invitación al portapapeles si existe
+                        if (response.link) {
+                            this.copyToClipboard(response.link);
+                        }
+
                         this.uploadFileToClient(response.clientId);
                     },
                     error: (error) => {
                         console.error('Error al invitar al cliente:', error);
+                        this.Toast.fire({
+                            icon: 'error',
+                            title: 'Error al invitar al cliente.'
+                        });
+                        this.inviteForm.enable();
                     },
                 });
         }
@@ -96,19 +137,47 @@ export class InviteComponent {
                             'Archivo de contrato subido exitosamente:',
                             response
                         );
-                        this.dialogRef.close(client_id);
+                        this.dialogRef.close({
+                            success: true,
+                            clientId: client_id
+                        });
                     },
                     error: (error) => {
                         console.error(
                             'Error al subir el archivo de contrato:',
                             error
                         );
+                        this.Toast.fire({
+                            icon: 'error',
+                            title: 'Error al subir el archivo de contrato.'
+                        });
+                        this.inviteForm.enable();
                     },
                 });
+        } else {
+            // Si no hay archivo de contrato, solo cerramos el diálogo
+            this.dialogRef.close({
+                success: true,
+                clientId: client_id
+            });
         }
     }
 
     onCancel(): void {
         this.dialogRef.close();
+    }
+
+    /**
+     * Copia el texto proporcionado al portapapeles y muestra una notificación
+     * @param text Texto a copiar al portapapeles
+     */
+    copyToClipboard(text: string): void {
+        // Usar la API del navegador para copiar al portapapeles
+        navigator.clipboard.writeText(text).then(
+            () => {
+            },
+            (err) => {
+            }
+        );
     }
 }
