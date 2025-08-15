@@ -34,12 +34,12 @@
         <div class="p-6 bg-white rounded shadow">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
                 <div class="flex gap-2 items-center">
-                    <mat-form-field appearance="outline" class="w-48">
+                    <!-- <mat-form-field appearance="outline" class="w-48">
                         <mat-label>Buscar por nombre</mat-label>
                         <input matInput [(ngModel)]="nameFilter" (input)="onFilterChange()" placeholder="Nombre" />
-                    </mat-form-field>
+                    </mat-form-field> -->
                     <mat-form-field appearance="outline" class="w-40">
-                        <mat-label>Status</mat-label>
+                        <mat-label>Estado</mat-label>
                         <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
                             <mat-option value="">Todos</mat-option>
                             <mat-option *ngFor="let status of statusOptions" [value]="status">
