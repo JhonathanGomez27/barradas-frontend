@@ -14,41 +14,41 @@ export class IconsService {
         // Register icon sets
         matIconRegistry.addSvgIconSet(
             domSanitizer.bypassSecurityTrustResourceUrl(
-                'icons/material-twotone.svg'
+                'icons-files/material-twotone.svg'
             )
         );
         matIconRegistry.addSvgIconSetInNamespace(
             'mat_outline',
             domSanitizer.bypassSecurityTrustResourceUrl(
-                'icons/material-outline.svg'
+                'icons-files/material-outline.svg'
             )
         );
         matIconRegistry.addSvgIconSetInNamespace(
             'mat_solid',
             domSanitizer.bypassSecurityTrustResourceUrl(
-                'icons/material-solid.svg'
+                'icons-files/material-solid.svg'
             )
         );
         matIconRegistry.addSvgIconSetInNamespace(
             'feather',
-            domSanitizer.bypassSecurityTrustResourceUrl('icons/feather.svg')
+            domSanitizer.bypassSecurityTrustResourceUrl('icons-files/feather.svg')
         );
         matIconRegistry.addSvgIconSetInNamespace(
             'heroicons_outline',
             domSanitizer.bypassSecurityTrustResourceUrl(
-                'icons/heroicons-outline.svg'
+                'icons-files/heroicons-outline.svg'
             )
         );
         matIconRegistry.addSvgIconSetInNamespace(
             'heroicons_solid',
             domSanitizer.bypassSecurityTrustResourceUrl(
-                'icons/heroicons-solid.svg'
+                'icons-files/heroicons-solid.svg'
             )
         );
         matIconRegistry.addSvgIconSetInNamespace(
             'heroicons_mini',
             domSanitizer.bypassSecurityTrustResourceUrl(
-                'icons/heroicons-mini.svg'
+                'icons-files/heroicons-mini.svg'
             )
         );
     }
