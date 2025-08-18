@@ -137,7 +137,6 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
     openInviteDialog(): void {
         const dialogRef = this._dialog.open(InviteComponent, {
-            width: '500px',
             disableClose: true
         });
 

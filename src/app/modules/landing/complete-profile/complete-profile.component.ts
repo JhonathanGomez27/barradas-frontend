@@ -50,14 +50,16 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
     tokenInfo: any = null;
     // Archivos para subir
     fileUploads: { [key: string]: FileUpload } = {
-      INTERIOR_1: { file: null, preview: null, name: 'INTERIOR_1', label: 'Interior 1', required: true },
-      INTERIOR_2: { file: null, preview: null, name: 'INTERIOR_2', label: 'Interior 2', required: true },
-      INE_FRONT: { file: null, preview: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
-      INE_BACK: { file: null, preview: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
-      PROOF_ADDRESS: { file: null, preview: null, name: 'PROOF_ADDRESS', label: 'Comprobante de domicilio', required: true },
-      PROOF_ADDRESS_OWNER: { file: null, preview: null, name: 'PROOF_ADDRESS_OWNER', label: 'Comprobante del propietario', required: false },
-      FACADE: { file: null, preview: null, name: 'FACADE', label: 'Fachada', required: true },
-      CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true }
+        INTERIOR_1: { file: null, preview: null, name: 'INTERIOR_1', label: 'Interior 1', required: true },
+        INTERIOR_2: { file: null, preview: null, name: 'INTERIOR_2', label: 'Interior 2', required: true },
+        INE_FRONT: { file: null, preview: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
+        INE_BACK: { file: null, preview: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
+        PROOF_ADDRESS: { file: null, preview: null, name: 'PROOF_ADDRESS', label: 'Comprobante de domicilio', required: true },
+        PROOF_ADDRESS_OWNER: { file: null, preview: null, name: 'PROOF_ADDRESS_OWNER', label: 'Comprobante del propietario', required: false },
+        FACADE: { file: null, preview: null, name: 'FACADE', label: 'Fachada', required: true },
+        CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true },
+        QUOTE: { file: null, preview: null, name: 'QUOTE', label: 'Cotización', required: true },
+        INITIAL_PAYMENT: { file: null, preview: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
     };
 
     profileCompleted: boolean = false;
@@ -135,8 +137,6 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
         // Crear FormData con los datos del formulario
         const formData = new FormData();
         formData.append('locationAddress', this.profileForm.get('locationAddress')?.value);
-        formData.append('locationLat', this.profileForm.get('locationLat')?.value);
-        formData.append('locationLng', this.profileForm.get('locationLng')?.value);
 
         // Agregar todos los archivos
         Object.keys(this.fileUploads).forEach(key => {

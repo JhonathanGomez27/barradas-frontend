@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
-import { BehaviorSubject, tap, Observable } from 'rxjs';
+import { BehaviorSubject, tap, Observable, catchError, throwError, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +40,29 @@ export class ClientsService {
         formData.append('file', file);
 
         return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}`, formData);
+    }
+
+    /**
+     * Obtener archivo para visualizar
+     * @param fileId El ID del archivo
+     * @returns Observable con el blob y su tipo MIME
+     */
+    getFileUrlClient(fileId: string): Observable<{blob: Blob, mimeType: string}> {
+        return this.httpClient.get(`${this._url}/documents/${fileId}/download`, {
+            responseType: 'blob',
+            observe: 'response'
+        }).pipe(
+            map(response => {
+                const blob = response.body;
+                // Obtener el tipo MIME del Content-Type header o del blob
+                const contentType = response.headers.get('Content-Type') || blob.type || 'application/octet-stream';
+                return { blob: blob, mimeType: contentType };
+            }),
+            catchError(error => {
+                console.error('Error obteniendo el archivo:', error);
+                return throwError(() => error);
+            })
+        );
     }
 
     getFileClient(file_id: string, doc_title: string): void{
