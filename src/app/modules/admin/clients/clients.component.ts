@@ -3,7 +3,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ClientsService } from './clients.service';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +17,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import Swal from 'sweetalert2'
 import { ClientDetailsComponent } from './modals/client-details/client-details.component';
 import { environment } from 'environment/environment';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
   selector: 'app-clients',
@@ -31,7 +33,9 @@ import { environment } from 'environment/environment';
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   templateUrl: './clients.component.html'
 })
@@ -50,11 +54,15 @@ export class ClientsComponent implements OnInit, OnDestroy {
         'IN_PROGRESS': 'En Progreso',
         'COMPLETED': 'Completado'
     };
-    displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'actions'];
-
+    displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'created_at', 'updated_at', 'actions'];
     Toast: any;
 
     urlComplete: string = environment.hostComplete;
+
+    // bound al input date range
+    today: Date = new Date();
+    start?: Date | null;
+    end?: Date | null;
 
     constructor(
         private _clientsService: ClientsService,
@@ -94,17 +102,36 @@ export class ClientsComponent implements OnInit, OnDestroy {
             params.status = this.statusFilter;
         }
 
+        // Añadir filtros de fecha si están establecidos
+        if( this.start && this.end) {
+            if (this.start) params.createdAtStart = this.toUtcStartISO(this.start);
+            if (this.end)   params.createdAtEnd   = this.toUtcEndISO(this.end);
+        }
+
         this._clientsService.getClients(params).pipe(takeUntil(this._unsubscribeAll)).subscribe();
     }
 
     onFilterChange(): void {
-        this.page = 1;
-        this.loadClients();
+        // this.page = 1;
+        // this.loadClients();
     }
 
     onPageMatChange(event: any): void {
         this.page = event.pageIndex + 1;
         this.pageSize = event.pageSize;
+        this.loadClients();
+    }
+
+    // Añadir método para aplicar el filtro de fechas
+    applyDateFilter(): void {
+        this.page = 1;
+        this.loadClients();
+    }
+
+    // Método para limpiar el filtro de fechas
+    clearDateFilter(): void {
+        this.start = this.end = null;
+        this.page = 1;
         this.loadClients();
     }
 
@@ -137,7 +164,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
     onClick(row: any): void {
         this.obtenerDetallesCliente(row.id);
     }
-    
+
     /**
      * Copia el enlace de completado de perfil al portapapeles
      * @param client Cliente del que se copiará el enlace
@@ -145,11 +172,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
      */
     copyProfileLink(client: any, event: Event): void {
         event.stopPropagation(); // Evita que se abra el diálogo de detalles
-        
+
         // Verificar si el cliente tiene enlaces
         if (client.links && client.links.length > 0) {
             const link = `${this.urlComplete}?token=${client.links[0].token}`;
-            
+
             navigator.clipboard.writeText(link).then(
                 () => {
                     this.Toast.fire({
@@ -190,5 +217,14 @@ export class ClientsComponent implements OnInit, OnDestroy {
                 });
             }
         });
+    }
+
+    private toUtcStartISO(d: Date) {
+      const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
+      return dt.toISOString(); // 2025-01-01T00:00:00.000Z
+    }
+    private toUtcEndISO(d: Date) {
+      const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
+      return dt.toISOString(); // 2025-08-17T23:59:59.999Z
     }
 }

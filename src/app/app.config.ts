@@ -3,10 +3,11 @@ import {
     ApplicationConfig,
     inject,
     isDevMode,
+    LOCALE_ID,
     provideAppInitializer,
 } from '@angular/core';
 import { LuxonDateAdapter } from '@angular/material-luxon-adapter';
-import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideFuse } from '@fuse';
@@ -17,6 +18,11 @@ import { provideIcons } from 'app/core/icons/icons.provider';
 import { MockApiService } from 'app/mock-api';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { CustomMatPaginatorIntl } from './shared/utils/customPaginatorConfiguration';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
+registerLocaleData(localeEs);
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -29,22 +35,31 @@ export const appConfig: ApplicationConfig = {
 
         // Material Date Adapter
         {
+            provide: LOCALE_ID,
+            useValue: 'es-ES',
+        },
+        {
             provide: DateAdapter,
             useClass: LuxonDateAdapter,
+            deps: [MAT_DATE_LOCALE],
         },
         {
             provide: MAT_DATE_FORMATS,
             useValue: {
                 parse: {
-                    dateInput: 'D',
+                    dateInput: 'dd/MM/yyyy',
                 },
                 display: {
-                    dateInput: 'DDD',
-                    monthYearLabel: 'LLL yyyy',
+                    dateInput: 'dd/MM/yyyy',
+                    monthYearLabel: 'MMM yyyy',
                     dateA11yLabel: 'DD',
-                    monthYearA11yLabel: 'LLLL yyyy',
+                    monthYearA11yLabel: 'MMMM yyyy',
                 },
             },
+        },
+        {
+            provide: MAT_DATE_LOCALE,
+            useValue: 'es-ES',
         },
 
         // Transloco Config
@@ -121,5 +136,9 @@ export const appConfig: ApplicationConfig = {
                 ],
             },
         }),
+        {
+            provide: MatPaginatorIntl,
+            useClass: CustomMatPaginatorIntl
+        }
     ],
 };

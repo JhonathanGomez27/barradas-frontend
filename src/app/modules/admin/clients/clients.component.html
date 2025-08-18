@@ -38,7 +38,7 @@
                         <mat-label>Buscar por nombre</mat-label>
                         <input matInput [(ngModel)]="nameFilter" (input)="onFilterChange()" placeholder="Nombre" />
                     </mat-form-field> -->
-                    <mat-form-field appearance="outline" class="w-40">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
                         <mat-label>Estado</mat-label>
                         <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
                             <mat-option value="">Todos</mat-option>
@@ -47,6 +47,28 @@
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
+
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>Filtro por fecha</mat-label>
+                        <mat-date-range-input [rangePicker]="picker" [max]="today">
+                            <input matStartDate placeholder="Inicio" [(ngModel)]="start" name="start">
+                            <input matEndDate placeholder="Fin" [(ngModel)]="end" name="end">
+                        </mat-date-range-input>
+                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-date-range-picker #picker></mat-date-range-picker>
+                    </mat-form-field>
+
+                    <div class="flex items-center justify-center">
+                        <button mat-stroked-button color="primary" class="h-10" (click)="applyDateFilter()">
+                            <mat-icon class="icon-size-5">filter_alt</mat-icon>
+                            <span class="ml-1">Filtrar</span>
+                        </button>
+
+                        <button mat-icon-button color="warn" class="ml-2 h-10" (click)="clearDateFilter()"
+                            [disabled]="!start && !end" matTooltip="Limpiar filtro de fechas">
+                            <mat-icon>clear</mat-icon>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -62,7 +84,8 @@
                     <!-- Name Column -->
                     <ng-container matColumnDef="name">
                         <th mat-header-cell *matHeaderCellDef class="text-left">Nombre</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">{{ client.firstName | titlecase }} {{ client.lastName | titlecase }}</td>
+                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">{{ client.firstName |
+                            titlecase }} {{ client.lastName | titlecase }}</td>
                     </ng-container>
 
                     <!-- Phone Column -->
@@ -75,8 +98,7 @@
                     <ng-container matColumnDef="status">
                         <th mat-header-cell *matHeaderCellDef class="text-left">Status</th>
                         <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">
-                            <span class="px-2 py-1 rounded-full text-md font-medium"
-                                  [ngClass]="{
+                            <span class="px-2 py-1 rounded-full text-md font-medium" [ngClass]="{
                                     'bg-green-100 text-green-800': client.status === 'COMPLETED',
                                     'bg-blue-100 text-blue-800': client.status === 'INVITED',
                                     'bg-yellow-100 text-yellow-800': client.status === 'IN_PROGRESS',
@@ -87,15 +109,35 @@
                         </td>
                     </ng-container>
 
+                    <!-- Created At Column -->
+                    <ng-container matColumnDef="created_at">
+                        <th mat-header-cell *matHeaderCellDef class="text-left">Creado</th>
+                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">
+                            {{ client.createdAt | date:'medium' }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Updated At Column -->
+                    <ng-container matColumnDef="updated_at">
+                        <th mat-header-cell *matHeaderCellDef class="text-left">Actualizado</th>
+                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">
+                            <span *ngIf="client.status !== 'CREATED' && client.status !== 'INVITED'; else noUpdatedAt">
+                                {{ client.updatedAt ? (client.updatedAt | date:'medium') : 'N/A' }}
+                            </span>
+                            <ng-template #noUpdatedAt>
+                                <span class="text-gray-500">N/A</span>
+                            </ng-template>
+                        </td>
+                    </ng-container>
+
                     <!-- Actions Column -->
                     <ng-container matColumnDef="actions">
                         <th mat-header-cell *matHeaderCellDef class="text-center">Acciones</th>
                         <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100 text-center">
-                            <button mat-icon-button *ngIf="client.status === 'INVITED'"
-                                    color="primary"
-                                    (click)="copyProfileLink(client, $event)"
-                                    [disabled]="!client.links || client.links.length === 0"
-                                    matTooltip="Copiar enlace de completado de perfil">
+                            <button mat-icon-button *ngIf="client.status === 'INVITED'" color="primary"
+                                (click)="copyProfileLink(client, $event)"
+                                [disabled]="!client.links || client.links.length === 0"
+                                matTooltip="Copiar enlace de completado de perfil">
                                 <mat-icon>content_copy</mat-icon>
                             </button>
                         </td>
@@ -103,8 +145,7 @@
 
                     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                     <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                        class="group cursor-pointer transition-colors duration-150"
-                        (click)="onClick(row)">
+                        class="group cursor-pointer transition-colors duration-150" (click)="onClick(row)">
                     </tr>
                     <!-- <tr *ngIf="clients.length === 0">
                         <td colspan="5" class="text-center py-4">No hay clientes para mostrar.</td>
