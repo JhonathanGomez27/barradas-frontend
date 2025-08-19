@@ -35,7 +35,8 @@
                             "crypto-js/enc-utf8",
                             "crypto-js/hmac-sha256",
                             "crypto-js/enc-base64",
-                            "quill-delta"
+                            "quill-delta",
+                            "sweetalert2"
                         ],
                         "assets": [
                             {
