@@ -140,6 +140,10 @@
                                 matTooltip="Copiar enlace de completado de perfil">
                                 <mat-icon>content_copy</mat-icon>
                             </button>
+                            <!-- delete -->
+                            <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
                         </td>
                     </ng-container>
 

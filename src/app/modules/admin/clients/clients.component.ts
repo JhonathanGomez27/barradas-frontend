@@ -19,6 +19,7 @@ import { ClientDetailsComponent } from './modals/client-details/client-details.c
 import { environment } from 'environment/environment';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 
 @Component({
   selector: 'app-clients',
@@ -67,7 +68,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
     constructor(
         private _clientsService: ClientsService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _dialog: MatDialog
+        private _dialog: MatDialog,
+        private _fuseConfirmationService: FuseConfirmationService
     ) {
         this.Toast = Swal.mixin({
             toast: true,
@@ -225,5 +227,49 @@ export class ClientsComponent implements OnInit, OnDestroy {
     private toUtcEndISO(d: Date) {
       const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
       return dt.toISOString(); // 2025-08-17T23:59:59.999Z
+    }
+
+    confirmDeleteClient(id: string, event: Event): void {
+        event.stopPropagation();
+
+        const dialog = this._fuseConfirmationService.open({
+            title: 'Confirmar eliminación',
+            message: '¿Estás seguro de que deseas eliminar este cliente?',
+            actions: {
+                confirm: {
+                    label: 'Eliminar',
+                    color: 'warn'
+                },
+                cancel: {
+                    label: 'Cancelar'
+                }
+            }
+        });
+
+        dialog.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this.deleteClient(id);
+            }
+        });
+    }
+
+    private deleteClient(id: string): void {
+        this._clientsService.deleteClient(id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: () => {
+                this.Toast.fire({
+                    icon: 'success',
+                    title: 'Cliente eliminado',
+                    text: 'El cliente ha sido eliminado exitosamente'
+                });
+                this.loadClients();
+            },
+            error: (error) => {
+                this.Toast.fire({
+                    icon: 'error',
+                    title: 'Error al eliminar cliente',
+                    text: 'No se pudo eliminar el cliente'
+                });
+            }
+        });
     }
 }

@@ -82,4 +82,8 @@ export class ClientsService {
     inviteClient(data: any): Observable<any> {
         return this.httpClient.post(`${this._url}/invitations`, data);
     }
+
+    deleteClient(id: string): Observable<any> {
+        return this.httpClient.delete(`${this._url}/users/${id}`);
+    }
 }

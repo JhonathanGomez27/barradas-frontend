@@ -1,5 +1,5 @@
-// const host = 'http://localhost:3000';
-const host = 'https://www.confiabarradas.com';
+const host = 'http://localhost:3000';
+// const host = 'https://www.confiabarradas.com';
 
 export const environment = {
     host: `${host}`,
