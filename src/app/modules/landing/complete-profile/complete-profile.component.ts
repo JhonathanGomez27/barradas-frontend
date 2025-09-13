@@ -138,6 +138,17 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
         const formData = new FormData();
         formData.append('locationAddress', this.profileForm.get('locationAddress')?.value);
 
+        //validate fileUploads
+        for (const key in this.fileUploads) {
+            if (this.fileUploads[key].required && !this.fileUploads[key].file) {
+                this.Toast.fire({
+                    icon: 'error',
+                    title: `Por favor, suba el archivo requerido: ${this.fileUploads[key].label}`
+                });
+                return;
+            }
+        }
+
         // Agregar todos los archivos
         Object.keys(this.fileUploads).forEach(key => {
             if (this.fileUploads[key].file) {

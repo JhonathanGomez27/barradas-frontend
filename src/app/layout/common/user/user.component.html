@@ -23,12 +23,12 @@
 <mat-menu [xPosition]="'before'" #userActions="matMenu">
     <button mat-menu-item>
         <span class="flex flex-col leading-none">
-            <span>Signed in as</span>
+            <span>Sesión iniciada como:</span>
             <span class="mt-1.5 text-md font-medium">{{ user.email }}</span>
         </span>
     </button>
     <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item>
+    <!-- <button mat-menu-item>
         <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
         <span>Profile</span>
     </button>
@@ -42,12 +42,12 @@
         ></mat-icon>
         <span>Status</span>
     </button>
-    <mat-divider class="my-2"></mat-divider>
+    <mat-divider class="my-2"></mat-divider> -->
     <button mat-menu-item (click)="signOut()">
         <mat-icon
             [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"
         ></mat-icon>
-        <span>Sign out</span>
+        <span>Cerrar sesión</span>
     </button>
 </mat-menu>
 
