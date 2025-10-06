@@ -207,9 +207,17 @@ export class ClientsComponent implements OnInit, OnDestroy {
     obtenerDetallesCliente(client_id: string): void {
         this._clientsService.getClient(client_id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response:any) => {
-                this._dialog.open(ClientDetailsComponent, {
+
+                const dialog = this._dialog.open(ClientDetailsComponent, {
                     data: response,
                     // width: '600px's
+                });
+
+                dialog.afterClosed().subscribe(result => {
+                    console.log(result);
+                    if (result) {
+                        this.loadClients();
+                    }
                 });
             },error: (error) => {
                 this.Toast.fire({

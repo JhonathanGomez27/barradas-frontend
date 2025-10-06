@@ -201,6 +201,34 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         this.clientesService.getFileClient(file_id, doc_title);
     }
 
+    // Obtener icono según el estado del cliente
+    getStatusIcon(status: string): string {
+        switch (status) {
+            case 'COMPLETED': return 'check_circle';
+            case 'INVITED': return 'mail_outline';
+            case 'IN_PROGRESS': return 'hourglass_empty';
+            case 'CREATED': return 'fiber_new';
+            default: return 'help_outline';
+        }
+    }
+
+    // Obtener icono según el tipo de documento
+    getDocumentIcon(docType: string): string {
+        switch (docType) {
+            case 'INTERIOR_1':
+            case 'INTERIOR_2':
+            case 'FACADE': return 'photo_camera';
+            case 'INE_FRONT':
+            case 'INE_BACK': return 'badge';
+            case 'PROOF_ADDRESS':
+            case 'PROOF_ADDRESS_OWNER': return 'home';
+            case 'CONTRACT_SIGNED': return 'description';
+            case 'QUOTE': return 'receipt';
+            case 'INITIAL_PAYMENT': return 'payment';
+            default: return 'insert_drive_file';
+        }
+    }
+
     // Cerrar el diálogo
     closeDialog(): void {
         this.matDialogRef.close();

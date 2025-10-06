@@ -1,11 +1,16 @@
-<div mat-dialog-title class="flex bg-primary">
-    <div class="flex items-center justify-between w-full text-on-primary mt-3">
-        <div class="text-lg font-medium flex items-center">
-            <mat-icon class="mr-2 text-current">person</mat-icon>
-            Detalles del cliente
+<div mat-dialog-title class="flex bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+    <div class="flex items-center justify-between w-full text-white py-4 px-6">
+        <div class="text-xl font-semibold flex items-center">
+            <div class="bg-white/20 p-2 rounded-full mr-3">
+                <mat-icon class="text-white">person</mat-icon>
+            </div>
+            <div>
+                <div class="text-xl">Detalles del cliente</div>
+                <div class="text-sm opacity-90" *ngIf="clientDetails">{{ clientDetails.firstName }} {{ clientDetails.lastName }}</div>
+            </div>
         </div>
-        <button mat-icon-button (click)="closeDialog()" [tabIndex]="-1">
-            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        <button mat-icon-button (click)="closeDialog()" [tabIndex]="-1" class="hover:bg-white/20 transition-colors duration-200">
+            <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
         </button>
     </div>
 </div>
@@ -13,77 +18,150 @@
     <!-- Contenido del diálogo -->
     <div class="p-6" *ngIf="clientDetails" [formGroup]="editClientForm">
         <!-- Botón para alternar entre vista y edición -->
-        <div class="flex justify-end mb-4">
-            <button mat-raised-button color="primary" (click)="toggleEditMode()">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-2">
+                <span class="px-3 py-1 rounded-full text-sm font-medium transition-all duration-300"
+                    [ngClass]="{
+                        'bg-green-100 text-green-800': clientDetails.status === 'COMPLETED',
+                        'bg-blue-100 text-blue-800': clientDetails.status === 'INVITED',
+                        'bg-yellow-100 text-yellow-800': clientDetails.status === 'IN_PROGRESS',
+                        'bg-gray-100 text-gray-800': clientDetails.status === 'CREATED'
+                    }">
+                    <mat-icon class="mr-1 text-sm">{{ getStatusIcon(clientDetails.status) }}</mat-icon>
+                    {{ statusMapper[clientDetails.status] || clientDetails.status }}
+                </span>
+            </div>
+            <button mat-raised-button 
+                    [color]="isEditMode ? 'warn' : 'primary'" 
+                    (click)="toggleEditMode()"
+                    class="transition-all duration-300 shadow-md hover:shadow-lg">
+                <mat-icon class="mr-2">{{ isEditMode ? 'close' : 'edit' }}</mat-icon>
                 {{ isEditMode ? 'Cancelar Edición' : 'Editar Cliente' }}
             </button>
         </div>
 
         <!-- Información personal editable -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
-            <div class="bg-gray-50 p-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-800">Información Personal</h3>
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-lg">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="bg-primary-100 p-2 rounded-lg mr-3">
+                        <mat-icon class="text-primary-600">account_circle</mat-icon>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 text-lg">Información Personal</h3>
+                    <div class="ml-auto" *ngIf="isEditMode">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <mat-icon class="mr-1 text-sm">edit</mat-icon>
+                            Modo Edición
+                        </span>
+                    </div>
+                </div>
             </div>
-            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="flex flex-col">
-                    <label for="firstName" class="text-sm text-gray-500">Nombre</label>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else firstNameView">
-                        <input matInput id="firstName" formControlName="firstName" placeholder="Nombre" />
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="flex flex-col group">
+                    <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">person</mat-icon>
+                        <label for="firstName" class="text-sm font-medium text-gray-600">Nombre</label>
+                    </div>
+                    <mat-form-field appearance="outline" *ngIf="isEditMode; else firstNameView" class="w-full">
+                        <mat-label>Nombre</mat-label>
+                        <input matInput id="firstName" formControlName="firstName" placeholder="Ingrese el nombre" />
+                        <mat-icon matSuffix class="text-gray-400">person</mat-icon>
                         <mat-error *ngIf="editClientForm.get('firstName')?.hasError('required')">El nombre es obligatorio</mat-error>
                     </mat-form-field>
                     <ng-template #firstNameView>
-                        <span class="font-medium text-gray-800">{{ clientDetails.firstName }}</span>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                            <span class="font-medium text-gray-800">{{ clientDetails.firstName || 'No especificado' }}</span>
+                        </div>
                     </ng-template>
                 </div>
-                <div class="flex flex-col">
-                    <label for="lastName" class="text-sm text-gray-500">Apellido</label>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else lastNameView">
-                        <input matInput id="lastName" formControlName="lastName" placeholder="Apellido" />
+                <div class="flex flex-col group">
+                    <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">person_outline</mat-icon>
+                        <label for="lastName" class="text-sm font-medium text-gray-600">Apellido</label>
+                    </div>
+                    <mat-form-field appearance="outline" *ngIf="isEditMode; else lastNameView" class="w-full">
+                        <mat-label>Apellido</mat-label>
+                        <input matInput id="lastName" formControlName="lastName" placeholder="Ingrese el apellido" />
+                        <mat-icon matSuffix class="text-gray-400">person_outline</mat-icon>
                         <mat-error *ngIf="editClientForm.get('lastName')?.hasError('required')">El apellido es obligatorio</mat-error>
                     </mat-form-field>
                     <ng-template #lastNameView>
-                        <span class="font-medium text-gray-800">{{ clientDetails.lastName }}</span>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                            <span class="font-medium text-gray-800">{{ clientDetails.lastName || 'No especificado' }}</span>
+                        </div>
                     </ng-template>
                 </div>
-                <div class="flex flex-col">
-                    <label for="email" class="text-sm text-gray-500">Email</label>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else emailView">
-                        <input matInput id="email" formControlName="email" placeholder="Email" />
+                <div class="flex flex-col group">
+                    <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">email</mat-icon>
+                        <label for="email" class="text-sm font-medium text-gray-600">Email</label>
+                    </div>
+                    <mat-form-field appearance="outline" *ngIf="isEditMode; else emailView" class="w-full">
+                        <mat-label>Email</mat-label>
+                        <input matInput id="email" formControlName="email" placeholder="Ingrese el email" type="email" />
+                        <mat-icon matSuffix class="text-gray-400">email</mat-icon>
                         <mat-error *ngIf="editClientForm.get('email')?.hasError('required')">El email es obligatorio</mat-error>
+                        <mat-error *ngIf="editClientForm.get('email')?.hasError('email')">Ingrese un email válido</mat-error>
                     </mat-form-field>
                     <ng-template #emailView>
-                        <span class="font-medium text-gray-800">{{ clientDetails.email }}</span>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                            <span class="font-medium text-gray-800 break-all">{{ clientDetails.email || 'No especificado' }}</span>
+                        </div>
                     </ng-template>
                 </div>
-                <div class="flex flex-col">
-                    <label for="phone" class="text-sm text-gray-500">Teléfono</label>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else phoneView">
-                        <input matInput id="phone" formControlName="phone" placeholder="Teléfono" />
+                <div class="flex flex-col group">
+                    <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">phone</mat-icon>
+                        <label for="phone" class="text-sm font-medium text-gray-600">Teléfono</label>
+                    </div>
+                    <mat-form-field appearance="outline" *ngIf="isEditMode; else phoneView" class="w-full">
+                        <mat-label>Teléfono</mat-label>
+                        <input matInput id="phone" formControlName="phone" placeholder="Ingrese el teléfono" type="tel" />
+                        <mat-icon matSuffix class="text-gray-400">phone</mat-icon>
                         <mat-error *ngIf="editClientForm.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
                     </mat-form-field>
                     <ng-template #phoneView>
-                        <span class="font-medium text-gray-800">{{ clientDetails.phone || 'No disponible' }}</span>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                            <span class="font-medium text-gray-800">{{ clientDetails.phone || 'No disponible' }}</span>
+                        </div>
                     </ng-template>
                 </div>
-                <div class="flex flex-col">
-                    <label for="locationAddress" class="text-sm text-gray-500">Dirección</label>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else locationAddressView">
-                        <input matInput id="locationAddress" formControlName="locationAddress" placeholder="Dirección" />
+                <div class="flex flex-col group">
+                    <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">location_on</mat-icon>
+                        <label for="locationAddress" class="text-sm font-medium text-gray-600">Dirección</label>
+                    </div>
+                    <mat-form-field appearance="outline" *ngIf="isEditMode; else locationAddressView" class="w-full">
+                        <mat-label>Dirección</mat-label>
+                        <input matInput id="locationAddress" formControlName="locationAddress" placeholder="Ingrese la dirección" />
+                        <mat-icon matSuffix class="text-gray-400">location_on</mat-icon>
                     </mat-form-field>
                     <ng-template #locationAddressView>
-                        <span class="font-medium text-gray-800">{{ clientDetails.locationAddress || 'No disponible' }}</span>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                            <span class="font-medium text-gray-800">{{ clientDetails.locationAddress || 'No disponible' }}</span>
+                        </div>
                     </ng-template>
                 </div>
             </div>
         </div>
 
         <!-- Documentos existentes -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
-            <div class="bg-gray-50 p-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="font-semibold text-gray-800">Documentos</h3>
-                <span class="px-2 py-1 rounded-full bg-primary-50 text-primary-900 text-sm font-medium">
-                    {{ clientDetails.documents.length }} documentos
-                </span>
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-lg">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                            <mat-icon class="text-blue-600">folder</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-lg">Documentos</h3>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
+                            <mat-icon class="mr-1 text-sm">description</mat-icon>
+                            {{ clientDetails.documents?.length || 0 }} documentos
+                        </span>
+                    </div>
+                </div>
             </div>
             <div class="overflow-x-auto overflow-y-auto" [ngClass]="{'max-h-72': clientDetails.documents.length > 4}">
                 <table class="w-full divide-y divide-gray-200 table-fixed">
@@ -144,21 +222,59 @@
         </div>
 
         <!-- Subir documentos -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6" *ngIf="isEditMode">
-            <div class="bg-gray-50 p-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-800">Subir Documentos</h3>
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-lg" *ngIf="isEditMode">
+            <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-2 rounded-lg mr-3">
+                        <mat-icon class="text-green-600">cloud_upload</mat-icon>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 text-lg">Subir Documentos</h3>
+                        <p class="text-sm text-gray-600 mt-1">Seleccione los archivos que desea actualizar o agregar</p>
+                    </div>
+                </div>
             </div>
-            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div *ngFor="let docType of fileUploads | keyvalue" class="flex flex-col">
-                    <label [for]="docType.key" class="text-sm text-gray-500">{{ docType.value.label }}</label>
-                    <input [id]="docType.key" type="file" (change)="onFileSelected($event, docType.key)" class="form-input mt-1" />
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div *ngFor="let docType of fileUploads | keyvalue" class="flex flex-col group">
+                    <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">{{ getDocumentIcon(docType.key) }}</mat-icon>
+                        <label [for]="docType.key" class="text-sm font-medium text-gray-600">{{ docType.value.label }}</label>
+                        <span *ngIf="docType.value.required" class="text-red-500 ml-1">*</span>
+                    </div>
+                    <div class="relative">
+                        <input [id]="docType.key" 
+                               type="file" 
+                               (change)="onFileSelected($event, docType.key)" 
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-2 transition-all duration-200 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200"
+                               accept="image/*,.pdf" />
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Botón para guardar cambios -->
-        <div class="flex justify-end" *ngIf="isEditMode">
-            <button mat-raised-button color="primary" (click)="updateClient()" [disabled]="editClientForm.invalid">Guardar Cambios</button>
+        <!-- Botones de acción -->
+        <div class="flex justify-end space-x-3" *ngIf="isEditMode">
+            <button mat-stroked-button 
+                    color="warn" 
+                    (click)="toggleEditMode()"
+                    class="transition-all duration-300">
+                <mat-icon class="mr-2">cancel</mat-icon>
+                Cancelar
+            </button>
+            <button mat-raised-button 
+                    color="primary" 
+                    (click)="updateClient()" 
+                    [disabled]="editClientForm.invalid || isLoading"
+                    class="transition-all duration-300 shadow-md hover:shadow-lg relative overflow-hidden">
+                <div *ngIf="!isLoading" class="flex items-center">
+                    <mat-icon class="mr-2">save</mat-icon>
+                    Guardar Cambios
+                </div>
+                <div *ngIf="isLoading" class="flex items-center">
+                    <mat-icon class="mr-2 animate-spin">refresh</mat-icon>
+                    Guardando...
+                </div>
+            </button>
         </div>
     </div>
 </mat-dialog-content>
