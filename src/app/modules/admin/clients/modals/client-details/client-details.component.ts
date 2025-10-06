@@ -9,6 +9,18 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClientsService } from '../../clients.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+
+interface FileUpload {
+  file: File | null;
+  preview: string | null;
+  name: string;
+  label: string;
+  required: boolean;
+}
 
 @Component({
   selector: 'app-client-details',
@@ -20,7 +32,10 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
     MatIconModule,
     MatTabsModule,
     MatDividerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule
   ],
   templateUrl: './client-details.component.html'
 })
@@ -51,17 +66,49 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'INITIAL_PAYMENT': 'Pago inicial',
     };
 
+    editClientForm: FormGroup;
+    isLoading: boolean = false;
+    isEditMode: boolean = false;
+    documentFiles: { [key: string]: File | null } = {};
+
+    // Archivos para subir
+    fileUploads: { [key: string]: FileUpload } = {
+        INTERIOR_1: { file: null, preview: null, name: 'INTERIOR_1', label: 'Interior 1', required: true },
+        INTERIOR_2: { file: null, preview: null, name: 'INTERIOR_2', label: 'Interior 2', required: true },
+        INE_FRONT: { file: null, preview: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
+        INE_BACK: { file: null, preview: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
+        PROOF_ADDRESS: { file: null, preview: null, name: 'PROOF_ADDRESS', label: 'Comprobante de domicilio', required: true },
+        PROOF_ADDRESS_OWNER: { file: null, preview: null, name: 'PROOF_ADDRESS_OWNER', label: 'Comprobante del propietario', required: false },
+        FACADE: { file: null, preview: null, name: 'FACADE', label: 'Fachada', required: true },
+        CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true },
+        QUOTE: { file: null, preview: null, name: 'QUOTE', label: 'Cotización', required: true },
+        INITIAL_PAYMENT: { file: null, preview: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
+    };
+
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: any,
         public matDialogRef: MatDialogRef<ClientDetailsComponent>,
         private clientesService : ClientsService,
         private dialog: MatDialog,
-        private sanitizer: DomSanitizer
-    ) { }
+        private sanitizer: DomSanitizer,
+        private fb: FormBuilder,
+        private http: HttpClient
+    ) {
+        this.editClientForm = this.fb.group({
+            email: ['', [Validators.required, Validators.email]],
+            firstName: ['', Validators.required],
+            lastName: ['', Validators.required],
+            phone: [''],
+            extra: [''],
+            locationAddress: [''],
+            locationLat: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
+            locationLng: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)]
+        });
+    }
 
     ngOnInit(): void {
         this.clientDetails = this.data;
-        console.log(this.clientDetails);
+        this.editClientForm.patchValue(this.clientDetails);
     }
 
     // Formatear fecha
@@ -157,6 +204,66 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     // Cerrar el diálogo
     closeDialog(): void {
         this.matDialogRef.close();
+    }
+
+    toggleEditMode(): void {
+        this.isEditMode = !this.isEditMode;
+        if (this.isEditMode) {
+            // Cuando entramos en modo edición, actualizamos el formulario con los datos actuales
+            this.editClientForm.patchValue({
+                email: this.clientDetails.email,
+                firstName: this.clientDetails.firstName,
+                lastName: this.clientDetails.lastName,
+                phone: this.clientDetails.phone,
+                locationAddress: this.clientDetails.locationAddress
+            });
+        } else {
+            // Cuando salimos del modo edición, limpiamos los archivos seleccionados
+            this.documentFiles = {};
+        }
+    }
+
+    onFileSelected(event: any, docType: string): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.documentFiles[docType] = file;
+        }
+    }
+
+    updateClient(): void {
+        if (this.editClientForm.invalid) {
+            return;
+        }
+
+        this.isLoading = true;
+        const formData = new FormData();
+
+        // Append form fields
+        Object.keys(this.editClientForm.value).forEach(key => {
+            const value = this.editClientForm.get(key)?.value;
+            if (value) {
+                formData.append(key, value);
+            }
+        });
+
+        // Append files
+        Object.keys(this.documentFiles).forEach(docType => {
+            const file = this.documentFiles[docType];
+            if (file) {
+                formData.append(docType, file);
+            }
+        });
+
+        this.clientesService.updateClient(this.clientDetails.id, formData).subscribe({
+            next: () => {
+                this.isLoading = false;
+                this.matDialogRef.close(true);
+            },
+            error: () => {
+                this.isLoading = false;
+                alert('Error al actualizar el cliente.');
+            }
+        });
     }
 
     ngOnDestroy(): void {

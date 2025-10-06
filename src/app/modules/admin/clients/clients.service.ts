@@ -86,4 +86,8 @@ export class ClientsService {
     deleteClient(id: string): Observable<any> {
         return this.httpClient.delete(`${this._url}/users/${id}`);
     }
+
+    updateClient(id: string, data: any): Observable<any> {
+        return this.httpClient.patch(`${this._url}/users/${id}`, data);
+    }
 }
