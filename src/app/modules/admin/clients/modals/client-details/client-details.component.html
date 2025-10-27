@@ -31,8 +31,8 @@
                     {{ statusMapper[clientDetails.status] || clientDetails.status }}
                 </span>
             </div>
-            <button mat-raised-button 
-                    [color]="isEditMode ? 'warn' : 'primary'" 
+            <button mat-raised-button
+                    [color]="isEditMode ? 'warn' : 'primary'"
                     (click)="toggleEditMode()"
                     class="transition-all duration-300 shadow-md hover:shadow-lg">
                 <mat-icon class="mr-2">{{ isEditMode ? 'close' : 'edit' }}</mat-icon>
@@ -242,9 +242,9 @@
                         <span *ngIf="docType.value.required" class="text-red-500 ml-1">*</span>
                     </div>
                     <div class="relative">
-                        <input [id]="docType.key" 
-                               type="file" 
-                               (change)="onFileSelected($event, docType.key)" 
+                        <input [id]="docType.key"
+                               type="file"
+                               (change)="onFileSelected($event, docType.key)"
                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-2 transition-all duration-200 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200"
                                accept="image/*,.pdf" />
                     </div>
@@ -254,16 +254,16 @@
 
         <!-- Botones de acción -->
         <div class="flex justify-end space-x-3" *ngIf="isEditMode">
-            <button mat-stroked-button 
-                    color="warn" 
+            <button mat-stroked-button
+                    color="warn"
                     (click)="toggleEditMode()"
                     class="transition-all duration-300">
                 <mat-icon class="mr-2">cancel</mat-icon>
                 Cancelar
             </button>
-            <button mat-raised-button 
-                    color="primary" 
-                    (click)="updateClient()" 
+            <button mat-raised-button
+                    color="primary"
+                    (click)="updateClient()"
                     [disabled]="editClientForm.invalid || isLoading"
                     class="transition-all duration-300 shadow-md hover:shadow-lg relative overflow-hidden">
                 <div *ngIf="!isLoading" class="flex items-center">
