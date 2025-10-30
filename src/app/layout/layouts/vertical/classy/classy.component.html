@@ -3,7 +3,7 @@
 
 <!-- Navigation -->
 <fuse-vertical-navigation
-    class="dark bg-primary print:hidden"
+    class="dark bg-gradient-to-b from-primary-800 to-primary-900 print:hidden shadow-2xl"
     [mode]="isScreenSmall ? 'over' : 'side'"
     [name]="'mainNavigation'"
     [navigation]="navigation.default"
@@ -11,44 +11,63 @@
 >
     <!-- Navigation header hook -->
     <ng-container fuseVerticalNavigationContentHeader>
-        <div class="flex w-full items-center p-4 pl-6">
+        <!-- Logo Section -->
+        <div class="flex w-full items-center justify-between p-4 pl-6 border-b border-primary-700/30 bg-gradient-to-r from-primary-700/20 to-primary-800/20">
             <!-- Logo -->
-            <div class="flex items-center justify-center">
-                <img class="w-30" src="images/logo/logo.png" />
+            <div class="flex items-center justify-center group">
+                <div class="relative overflow-hidden rounded-lg bg-white/10 p-2 transition-all duration-300 group-hover:bg-white/20 group-hover:shadow-lg">
+                    <img class="w-28 transition-transform duration-300 group-hover:scale-105" src="images/logo/logo.png" alt="Logo" />
+                </div>
             </div>
             <!-- Components -->
-            <div class="ml-auto flex items-center">
+            <div class="flex items-center">
                 <!-- <notifications></notifications> -->
-                <user [showAvatar]="false"></user>
+                <div class="bg-white/10 rounded-lg p-1 transition-all duration-300 hover:bg-white/20">
+                    <user [showAvatar]="false"></user>
+                </div>
             </div>
         </div>
-        <!-- User -->
-        <div class="flex w-full flex-col items-center p-4">
-            <div class="relative h-24 w-24">
-                @if (user.avatar) {
-                    <img
-                        class="h-full w-full rounded-full"
-                        [src]="user.avatar"
-                        alt="User avatar"
-                    />
-                }
-                @if (!user.avatar) {
-                    <mat-icon
-                        class="icon-size-24"
-                        [svgIcon]="'heroicons_solid:user-circle'"
-                    ></mat-icon>
-                }
+
+        <!-- User Profile Section -->
+        <div class="flex w-full flex-col items-center p-6 bg-gradient-to-b from-primary-700/10 to-transparent">
+            <!-- Avatar Container with Glow Effect -->
+            <div class="relative">
+                <div class="absolute inset-0 bg-white/20 rounded-full blur-md"></div>
+                <div class="relative h-24 w-24 group cursor-pointer">
+                    @if (user.avatar) {
+                        <img
+                            class="h-full w-full rounded-full border-4 border-white/30 shadow-xl transition-all duration-300 group-hover:border-white/50 group-hover:shadow-2xl group-hover:scale-105"
+                            [src]="user.avatar"
+                            alt="User avatar"
+                        />
+                    }
+                    @if (!user.avatar) {
+                        <div class="h-full w-full rounded-full border-4 border-white/30 shadow-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center transition-all duration-300 group-hover:border-white/50 group-hover:shadow-2xl group-hover:scale-105">
+                            <mat-icon
+                                class="icon-size-16 text-white"
+                                [svgIcon]="'heroicons_solid:user-circle'"
+                            ></mat-icon>
+                        </div>
+                    }
+                    <!-- Online Status Indicator -->
+                    <div class="absolute bottom-1 right-1 h-6 w-6 rounded-full border-4 border-primary-800 bg-green-400 shadow-lg">
+                        <div class="h-full w-full rounded-full bg-green-400 animate-pulse"></div>
+                    </div>
+                </div>
             </div>
-            <div class="mt-6 flex w-full flex-col items-center justify-center">
-                <div
-                    class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center font-medium leading-normal"
-                >
+
+            <!-- User Info -->
+            <div class="mt-4 flex w-full flex-col items-center justify-center space-y-1">
+                <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center font-semibold leading-normal text-white text-lg tracking-wide">
                     {{ user.name }}
                 </div>
-                <div
-                    class="text-gray-200 mt-0.5 w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-md font-medium leading-normal"
-                >
+                <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium leading-normal text-primary-200/80 bg-white/10 rounded-full px-3 py-1 backdrop-blur-sm">
                     {{ user.email }}
+                </div>
+                <!-- Role Badge -->
+                <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                    Administrador
                 </div>
             </div>
         </div>
@@ -66,16 +85,63 @@
 <!-- Wrapper -->
 <div class="flex w-full min-w-0 flex-auto flex-col">
     <!-- Header -->
-    <div
-        class="bg-card relative z-49 flex h-16 w-full flex-0 items-center px-4 shadow dark:border-b dark:bg-transparent dark:shadow-none md:px-6 print:hidden"
-    >
+    <div class="bg-white relative z-49 flex h-16 w-full flex-0 items-center px-4 shadow-lg border-b border-gray-200 dark:border-b dark:bg-transparent dark:shadow-none md:px-6 print:hidden backdrop-blur-sm bg-white/95">
         <!-- Navigation toggle button -->
-        <button mat-icon-button (click)="toggleNavigation('mainNavigation')">
-            <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+        <button
+            mat-icon-button
+            (click)="toggleNavigation('mainNavigation')"
+            class="transition-all duration-300 hover:bg-primary-50 hover:text-primary-600 rounded-lg p-2 group">
+            <mat-icon
+                [svgIcon]="'heroicons_outline:bars-3'"
+                class="transition-transform duration-300 group-hover:scale-110">
+            </mat-icon>
         </button>
+
+        <!-- Breadcrumb or Page Title (Optional Enhancement) -->
+        <!-- <div class="ml-4 hidden md:flex items-center space-x-2 text-gray-600">
+            <mat-icon class="text-primary-500" style="font-size: 20px;">dashboard</mat-icon>
+            <span class="font-medium">Panel de Control</span>
+        </div> -->
+
         <!-- Components -->
-        <div class="ml-auto flex items-center space-x-0.5 pl-2 sm:space-x-2">
-            <fuse-fullscreen class="hidden md:block"></fuse-fullscreen>
+        <div class="ml-auto flex items-center space-x-2 pl-2">
+            <!-- Search Button -->
+            <!-- <button
+                mat-icon-button
+                class="hidden sm:flex transition-all duration-300 hover:bg-gray-100 rounded-lg group"
+                matTooltip="Buscar">
+                <mat-icon
+                    class="text-gray-600 group-hover:text-primary-600 transition-colors duration-300"
+                    style="font-size: 20px;">search</mat-icon>
+            </button> -->
+
+            <!-- Notifications Button -->
+            <!-- <button
+                mat-icon-button
+                class="hidden sm:flex transition-all duration-300 hover:bg-gray-100 rounded-lg relative group"
+                matTooltip="Notificaciones">
+                <mat-icon
+                    class="text-gray-600 group-hover:text-primary-600 transition-colors duration-300"
+                    style="font-size: 20px;">notifications</mat-icon>
+                <span class="absolute top-1 right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                </span>
+            </button> -->
+
+            <!-- Fullscreen Toggle -->
+            <div class="hidden md:block bg-gray-50 rounded-lg p-1 transition-all duration-300 hover:bg-primary-50">
+                <fuse-fullscreen></fuse-fullscreen>
+            </div>
+
+            <!-- Settings Button -->
+            <!-- <button
+                mat-icon-button
+                class="transition-all duration-300 hover:bg-gray-100 rounded-lg group"
+                matTooltip="Configuración">
+                <mat-icon
+                    class="text-gray-600 group-hover:text-primary-600 transition-colors duration-300"
+                    style="font-size: 20px;">settings</mat-icon>
+            </button> -->
         </div>
     </div>
 
@@ -91,7 +157,7 @@
     <!-- Footer -->
     <!--<div class="relative flex flex-0 items-center justify-start w-full h-14 px-4 md:px-6 z-49 border-t bg-card dark:bg-transparent print:hidden">
         <span class="font-medium text-secondary">Fuse &copy; {{currentYear}}</span>
-    </div>-->
+    </div> -->
 </div>
 
 <!-- Quick chat -->

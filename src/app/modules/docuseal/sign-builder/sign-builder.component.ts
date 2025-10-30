@@ -18,18 +18,42 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
     signatureData: any = null;
 
     token: string = '';
+    roles: string[] = ['Cliente'];
     fieldTypes: string[] = [
         'signature'
     ]
 
-    submitters: any[] = [
-        {
-            email: 'email@example.com',
-            role: 'Cliente',
-            name: 'Nombre Cliente',
-            phone: '555-1234'
+    submitters: any[] = [];
+
+    customCss = `
+        .docuseal-builder-container {
+            border: none;
+            box-shadow: none;
         }
-    ]
+
+        .send-button {
+            border-color: #30509b;
+            color: #30509b;
+        }
+
+        .send-button:hover {
+            background-color: #20376f;
+            border: 0;
+        }
+
+        .recipients-modal {
+            box-shadow: none;
+            background-color: #ffffff;
+        }
+
+        .recipients-modal-send-button {
+            background-color: #30509b;
+        }
+
+        .recipients-modal-send-button:hover {
+            background-color: #20376f;
+        }
+    `;
 
     constructor(
         private _docusealService: DocusealService,
@@ -40,6 +64,15 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
         this._docusealService.signatureBuilder$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
             this.signatureData = response;
             this.token = response.token;
+
+            this.submitters = [
+                {
+                    email: this.signatureData.signerEmail,
+                    name: this.signatureData.signerName,
+                    role: 'Cliente'
+                }
+            ]
+
             this._changeDetectorRef.markForCheck();
         });
     }

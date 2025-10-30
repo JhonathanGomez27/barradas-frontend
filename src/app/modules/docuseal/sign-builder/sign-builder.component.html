@@ -4,7 +4,7 @@
         <!-- CONTENT GOES HERE -->
         <div class="h-full w-full">
             @if(token){
-                <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="['Cliente']" [submitters]="submitters" class="h-full w-full rounded-2xl"></docuseal-builder>
+                <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="roles" [submitters]="submitters" [customCss]="customCss" class="h-full w-full rounded-2xl"></docuseal-builder>
             }@else {
                 <!-- No token available -->
                 <p class="text-center text-gray-500 mt-20">No hay token disponible para el documento.</p>
