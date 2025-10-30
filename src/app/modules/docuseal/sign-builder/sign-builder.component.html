@@ -1,0 +1,14 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-white" cdkScrollable>
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <!-- CONTENT GOES HERE -->
+        <div class="h-full w-full">
+            @if(token){
+                <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="['Cliente']" [submitters]="submitters" class="h-full w-full rounded-2xl"></docuseal-builder>
+            }@else {
+                <!-- No token available -->
+                <p class="text-center text-gray-500 mt-20">No hay token disponible para el documento.</p>
+            }
+        </div>
+    </div>
+</div>

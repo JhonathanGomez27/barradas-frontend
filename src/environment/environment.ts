@@ -1,4 +1,4 @@
-const host = 'http://localhost:3000';
+const host = 'http://localhost:3001';
 // const host = 'https://www.confiabarradas.com';
 
 export const environment = {

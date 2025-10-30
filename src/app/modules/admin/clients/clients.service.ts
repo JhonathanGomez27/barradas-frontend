@@ -90,4 +90,8 @@ export class ClientsService {
     updateClient(id: string, data: any): Observable<any> {
         return this.httpClient.patch(`${this._url}/users/${id}`, data);
     }
+
+    getTokenSign(clientId: string, documentId: string): Observable<any> {
+        return this.httpClient.post(`${this._url}/users/${clientId}/documents/${documentId}/sign`, {});
+    }
 }

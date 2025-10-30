@@ -1,109 +1,200 @@
-<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-gray-50" cdkScrollable>
 
     <!-- Header -->
-    <div
-        class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
-        <div class="min-w-0 flex-1">
-            <!-- Breadcrumbs -->
-            <div>
-                <div class="hidden flex-wrap items-center font-medium sm:flex">
-                    <div>
-                        <a class="whitespace-nowrap text-primary-500">Clientes</a>
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-6 sm:px-10 sm:py-8">
+            <div class="min-w-0 flex-1">
+                <!-- Breadcrumbs -->
+                <div class="mb-2">
+                    <div class="flex items-center font-medium text-primary-100">
+                        <mat-icon class="mr-2 text-white">people</mat-icon>
+                        <span class="text-white">Gestión de Clientes</span>
                     </div>
                 </div>
+                <!-- Title -->
+                <div class="flex items-center">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                        Clientes
+                    </h2>
+                    <span class="ml-4 px-3 py-1 bg-white/20 rounded-full text-sm font-medium text-white">
+                        {{ totalClients }} total
+                    </span>
+                </div>
             </div>
-            <!-- Title -->
-            <div class="mt-2">
-                <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
-                    Clientes
-                </h2>
+            <!-- Actions -->
+            <div class="mt-4 sm:mt-0 sm:ml-4">
+                <button mat-raised-button
+                        class="bg-white text-primary-700 hover:bg-primary-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+                        (click)="openInviteDialog()">
+                    <mat-icon class="mr-2">person_add</mat-icon>
+                    <span>Invitar Cliente</span>
+                </button>
             </div>
-        </div>
-        <!-- Actions -->
-        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
-            <button mat-stroked-button (click)="openInviteDialog()">
-                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:pencil-square'"></mat-icon>
-                <span class="ml-2">Invitar</span>
-            </button>
         </div>
     </div>
 
     <!-- Main -->
-    <div class="flex-auto p-6 sm:p-10">
-        <!-- CONTENT GOES HERE -->
-        <div class="p-6 bg-white rounded shadow">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-                <div class="flex gap-2 items-center">
-                    <!-- <mat-form-field appearance="outline" class="w-48">
-                        <mat-label>Buscar por nombre</mat-label>
-                        <input matInput [(ngModel)]="nameFilter" (input)="onFilterChange()" placeholder="Nombre" />
-                    </mat-form-field> -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                        <mat-label>Estado</mat-label>
-                        <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
-                            <mat-option value="">Todos</mat-option>
-                            <mat-option *ngFor="let status of statusOptions" [value]="status">
-                                {{ statusMapper[status] }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                        <mat-label>Filtro por fecha</mat-label>
-                        <mat-date-range-input [rangePicker]="picker" [max]="today">
-                            <input matStartDate placeholder="Inicio" [(ngModel)]="start" name="start">
-                            <input matEndDate placeholder="Fin" [(ngModel)]="end" name="end">
-                        </mat-date-range-input>
-                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                        <mat-date-range-picker #picker></mat-date-range-picker>
-                    </mat-form-field>
-
-                    <div class="flex items-center justify-center">
-                        <button mat-stroked-button color="primary" class="h-10" (click)="applyDateFilter()">
-                            <mat-icon class="icon-size-5">filter_alt</mat-icon>
-                            <span class="ml-1">Filtrar</span>
-                        </button>
-
-                        <button mat-icon-button color="warn" class="ml-2 h-10" (click)="clearDateFilter()"
-                            [disabled]="!start && !end" matTooltip="Limpiar filtro de fechas">
-                            <mat-icon>clear</mat-icon>
-                        </button>
+    <div class="flex-auto p-4 sm:p-6 md:p-10">
+        <!-- Filtros -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="bg-primary-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                        <mat-icon class="text-primary-600 text-xl">filter_alt</mat-icon>
                     </div>
+                    <h3 class="font-semibold text-gray-800 text-base md:text-lg">Filtros de Búsqueda</h3>
                 </div>
             </div>
 
-            <div class="overflow-x-auto" *ngIf="clients.length > 0; else noClientsTemplate">
-                <table mat-table [dataSource]="clients" class="min-w-full mat-elevation-z2">
+            <div class="p-4 sm:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Filtro de Estado -->
+                    <div class="flex flex-col">
+                        <label class="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                            <mat-icon class="mr-1 text-gray-400" style="font-size: 18px; width: 18px; height: 18px;">circle</mat-icon>
+                            Estado
+                        </label>
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
+                                <mat-option value="">Todos los estados</mat-option>
+                                <mat-option *ngFor="let status of statusOptions" [value]="status">
+                                    {{ statusMapper[status] }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                            <mat-icon class="mr-1 text-gray-400" style="font-size: 18px; width: 18px; height: 18px;">calendar_today</mat-icon>
+                            Rango de Fechas
+                        </label>
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                            <mat-label>Filtro por fecha</mat-label>
+                            <mat-date-range-input [rangePicker]="picker" [max]="today">
+                                <input matStartDate placeholder="Inicio" [(ngModel)]="start" name="start">
+                                <input matEndDate placeholder="Fin" [(ngModel)]="end" name="end">
+                            </mat-date-range-input>
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-date-range-picker #picker></mat-date-range-picker>
+                        </mat-form-field>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex flex-col justify-end">
+                        <div class="flex gap-2">
+                            <button mat-raised-button
+                                    color="primary"
+                                    class="flex-1 transition-all duration-300 shadow-md hover:shadow-lg"
+                                    (click)="applyDateFilter()">
+                                <mat-icon class="mr-1">search</mat-icon>
+                                Filtrar
+                            </button>
+                            <button mat-stroked-button
+                                    color="warn"
+                                    class="transition-all duration-300"
+                                    (click)="clearDateFilter()"
+                                    [disabled]="!start && !end"
+                                    matTooltip="Limpiar filtros">
+                                <mat-icon>clear</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Clientes -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl"  *ngIf="clients.length > 0; else noClientsTemplate">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-blue-600 text-xl">people</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Lista de Clientes</h3>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-primary-100 text-primary-800">
+                        <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px;">list</mat-icon>
+                        {{ clients.length }} clientes
+                    </span>
+                </div>
+            </div>
+
+            <!-- Vista de tabla para desktop -->
+            <div class="hidden md:block overflow-x-auto">
+                <table mat-table [dataSource]="clients" class="min-w-full">
 
                     <!-- Email Column -->
                     <ng-container matColumnDef="email">
-                        <th mat-header-cell *matHeaderCellDef class="text-left">Email</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">{{ client.email }}</td>
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">email</mat-icon>
+                                Email
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-800">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3 flex-shrink-0">
+                                    {{ client.email.charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="truncate">{{ client.email }}</span>
+                            </div>
+                        </td>
                     </ng-container>
 
                     <!-- Name Column -->
                     <ng-container matColumnDef="name">
-                        <th mat-header-cell *matHeaderCellDef class="text-left">Nombre</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">{{ client.firstName |
-                            titlecase }} {{ client.lastName | titlecase }}</td>
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">person</mat-icon>
+                                Nombre
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-800 font-medium">
+                            {{ client.firstName | titlecase }} {{ client.lastName | titlecase }}
+                        </td>
                     </ng-container>
 
                     <!-- Phone Column -->
                     <ng-container matColumnDef="phone">
-                        <th mat-header-cell *matHeaderCellDef class="text-left">Teléfono</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">{{ client.phone }}</td>
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">phone</mat-icon>
+                                Teléfono
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-600">
+                            <span class="flex items-center">
+                                <mat-icon class="mr-1 text-gray-400" style="font-size: 16px;">call</mat-icon>
+                                {{ client.phone || 'N/A' }}
+                            </span>
+                        </td>
                     </ng-container>
 
                     <!-- Status Column -->
                     <ng-container matColumnDef="status">
-                        <th mat-header-cell *matHeaderCellDef class="text-left">Status</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">
-                            <span class="px-2 py-1 rounded-full text-md font-medium" [ngClass]="{
-                                    'bg-green-100 text-green-800': client.status === 'COMPLETED',
-                                    'bg-blue-100 text-blue-800': client.status === 'INVITED',
-                                    'bg-yellow-100 text-yellow-800': client.status === 'IN_PROGRESS',
-                                    'bg-gray-100 text-gray-800': client.status === 'CREATED'
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">info</mat-icon>
+                                Estado
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200"
+                                  [ngClass]="{
+                                    'bg-green-100 text-green-800 hover:bg-green-200': client.status === 'COMPLETED',
+                                    'bg-blue-100 text-blue-800 hover:bg-blue-200': client.status === 'INVITED',
+                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': client.status === 'IN_PROGRESS',
+                                    'bg-gray-100 text-gray-800 hover:bg-gray-200': client.status === 'CREATED'
                                   }">
+                                <span class="w-2 h-2 rounded-full mr-2"
+                                      [ngClass]="{
+                                        'bg-green-500': client.status === 'COMPLETED',
+                                        'bg-blue-500': client.status === 'INVITED',
+                                        'bg-yellow-500': client.status === 'IN_PROGRESS',
+                                        'bg-gray-500': client.status === 'CREATED'
+                                      }"></span>
                                 {{ statusMapper[client.status] || client.status }}
                             </span>
                         </td>
@@ -111,59 +202,155 @@
 
                     <!-- Created At Column -->
                     <ng-container matColumnDef="created_at">
-                        <th mat-header-cell *matHeaderCellDef class="text-left">Creado</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">
-                            {{ client.createdAt | date:'medium' }}
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">schedule</mat-icon>
+                                Creado
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-600 text-sm">
+                            <div class="flex flex-col">
+                                <span>{{ client.createdAt | date:'dd/MM/yyyy' }}</span>
+                                <span class="text-xs text-gray-400">{{ client.createdAt | date:'HH:mm' }}</span>
+                            </div>
                         </td>
                     </ng-container>
 
                     <!-- Updated At Column -->
                     <ng-container matColumnDef="updated_at">
-                        <th mat-header-cell *matHeaderCellDef class="text-left">Actualizado</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100">
-                            <span *ngIf="client.status !== 'CREATED' && client.status !== 'INVITED'; else noUpdatedAt">
-                                {{ client.updatedAt ? (client.updatedAt | date:'medium') : 'N/A' }}
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">update</mat-icon>
+                                Actualizado
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-600 text-sm">
+                            <span *ngIf="client.status !== 'CREATED' && client.status !== 'INVITED' && client.updatedAt; else noUpdatedAt">
+                                <div class="flex flex-col">
+                                    <span>{{ client.updatedAt | date:'dd/MM/yyyy' }}</span>
+                                    <span class="text-xs text-gray-400">{{ client.updatedAt | date:'HH:mm' }}</span>
+                                </div>
                             </span>
                             <ng-template #noUpdatedAt>
-                                <span class="text-gray-500">N/A</span>
+                                <span class="text-gray-400 text-sm">N/A</span>
                             </ng-template>
                         </td>
                     </ng-container>
 
                     <!-- Actions Column -->
                     <ng-container matColumnDef="actions">
-                        <th mat-header-cell *matHeaderCellDef class="text-center">Acciones</th>
-                        <td mat-cell *matCellDef="let client" class="group-hover:bg-gray-100 text-center">
-                            <button mat-icon-button *ngIf="client.status === 'INVITED'" color="primary"
-                                (click)="copyProfileLink(client, $event)"
-                                [disabled]="!client.links || client.links.length === 0"
-                                matTooltip="Copiar enlace de completado de perfil">
-                                <mat-icon>content_copy</mat-icon>
-                            </button>
-                            <!-- delete -->
-                            <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)">
-                                <mat-icon>delete</mat-icon>
-                            </button>
+                        <th mat-header-cell *matHeaderCellDef class="text-center px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                            <mat-icon class="text-gray-400">settings</mat-icon>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button mat-icon-button
+                                        *ngIf="client.status === 'INVITED'"
+                                        color="primary"
+                                        (click)="copyProfileLink(client, $event)"
+                                        [disabled]="!client.links || client.links.length === 0"
+                                        matTooltip="Copiar enlace"
+                                        class="hover:bg-primary-50 transition-colors">
+                                    <mat-icon>content_copy</mat-icon>
+                                </button>
+                                <button mat-icon-button
+                                        color="warn"
+                                        (click)="confirmDeleteClient(client.id, $event)"
+                                        matTooltip="Eliminar cliente"
+                                        class="hover:bg-red-50 transition-colors">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
                         </td>
                     </ng-container>
 
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns" class="sticky top-0 z-10"></tr>
                     <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                        class="group cursor-pointer transition-colors duration-150" (click)="onClick(row)">
+                        class="hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100"
+                        (click)="onClick(row)">
                     </tr>
-                    <!-- <tr *ngIf="clients.length === 0">
-                        <td colspan="5" class="text-center py-4">No hay clientes para mostrar.</td>
-                    </tr> -->
                 </table>
             </div>
 
-            <ng-template #noClientsTemplate>
-                <div class="text-center py-4">No hay clientes para mostrar.</div>
-            </ng-template>
+            <!-- Vista de tarjetas para móviles -->
+            <div class="md:hidden divide-y divide-gray-200">
+                <div *ngFor="let client of clients"
+                     class="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                     (click)="onClick(client)">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center flex-1 min-w-0">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold mr-3 flex-shrink-0">
+                                {{ client.email.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="font-semibold text-gray-900 truncate">{{ client.firstName | titlecase }} {{ client.lastName | titlecase }}</p>
+                                <p class="text-sm text-gray-500 truncate">{{ client.email }}</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ml-2"
+                              [ngClass]="{
+                                'bg-green-100 text-green-800': client.status === 'COMPLETED',
+                                'bg-blue-100 text-blue-800': client.status === 'INVITED',
+                                'bg-yellow-100 text-yellow-800': client.status === 'IN_PROGRESS',
+                                'bg-gray-100 text-gray-800': client.status === 'CREATED'
+                              }">
+                            {{ statusMapper[client.status] }}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                        <div class="flex items-center">
+                            <mat-icon class="mr-1 text-gray-400" style="font-size: 16px; width: 16px; height: 16px;">phone</mat-icon>
+                            {{ client.phone || 'N/A' }}
+                        </div>
+                        <div class="flex items-center">
+                            <mat-icon class="mr-1 text-gray-400" style="font-size: 16px; width: 16px; height: 16px;">schedule</mat-icon>
+                            {{ client.createdAt | date:'dd/MM/yyyy' }}
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2" (click)="$event.stopPropagation()">
+                        <button mat-icon-button
+                                *ngIf="client.status === 'INVITED'"
+                                color="primary"
+                                (click)="copyProfileLink(client, $event)"
+                                [disabled]="!client.links || client.links.length === 0"
+                                matTooltip="Copiar enlace">
+                            <mat-icon>content_copy</mat-icon>
+                        </button>
+                        <button mat-icon-button
+                                color="warn"
+                                (click)="confirmDeleteClient(client.id, $event)"
+                                matTooltip="Eliminar">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            <mat-paginator [length]="totalClients" [pageSize]="pageSize" [pageIndex]="page - 1"
-                [pageSizeOptions]="[5, 10, 20]" [pageSize]="20" (page)="onPageMatChange($event)" class="mt-4">
-            </mat-paginator>
+            <!-- Paginador -->
+            <div class="border-t border-gray-200 bg-gray-50">
+                <mat-paginator
+                    [length]="totalClients"
+                    [pageSize]="pageSize"
+                    [pageIndex]="page - 1"
+                    [pageSizeOptions]="[5, 10, 20]"
+                    (page)="onPageMatChange($event)">
+                </mat-paginator>
+            </div>
         </div>
+
+        <!-- Mensaje cuando no hay clientes -->
+        <ng-template #noClientsTemplate class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden p-12 text-center">
+            <div class="flex flex-col items-center">
+                <div class="bg-gray-100 p-6 rounded-full mb-4">
+                    <mat-icon class="text-gray-400 text-6xl">people_outline</mat-icon>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay clientes para mostrar</h3>
+                <p class="text-gray-500 mb-6">Comienza invitando a tu primer cliente</p>
+                <button mat-raised-button color="primary" (click)="openInviteDialog()">
+                    <mat-icon class="mr-2">person_add</mat-icon>
+                    Invitar Cliente
+                </button>
+            </div>
+        </ng-template>
     </div>
 </div>
