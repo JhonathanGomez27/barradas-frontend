@@ -28,4 +28,8 @@ export class DocusealService {
             })
         );
     }
+
+    sendSignatureRequest(payload: any): Observable<any> {
+        return this.httpClient.post(`${this._url}/docuseal/send-submission-email`, payload);
+    }
 }

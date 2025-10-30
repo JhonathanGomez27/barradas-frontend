@@ -3,8 +3,17 @@
     <div class="flex-auto p-6 sm:p-10">
         <!-- CONTENT GOES HERE -->
         <div class="h-full w-full">
+
             @if(token){
-                <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="roles" [submitters]="submitters" [customCss]="customCss" class="h-full w-full rounded-2xl"></docuseal-builder>
+                <!-- Send button -->
+                <div class="flex justify-end mb-4">
+                    <button mat-raised-button color="primary" (click)="sendTemplateToSigners()">
+                        <mat-icon class="pr-2">send</mat-icon>
+                        Enviar solicitud de firma
+                    </button>
+                </div>
+                <!-- Docuseal builder -->
+                <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="roles" [submitters]="submitters" [customCss]="customCss" [emailMessage]="emailMessage" (onLoad)="handleLoad($event)" (onChange)="handleSave($event)" withSendButton="false" withUploadButton="false" class="h-full w-full rounded-2xl"></docuseal-builder>
             }@else {
                 <!-- No token available -->
                 <p class="text-center text-gray-500 mt-20">No hay token disponible para el documento.</p>
