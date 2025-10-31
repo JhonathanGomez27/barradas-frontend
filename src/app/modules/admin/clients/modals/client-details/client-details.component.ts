@@ -66,6 +66,15 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'INITIAL_PAYMENT': 'Pago inicial',
     };
 
+    // Status electronic signature
+    statusMapperSignature: { [key: string]: string } = {
+        'CREATED': 'Creado',
+        'PENDING': 'Pendiente',
+        'SIGNED': 'Firmado',
+        'CANCELLED' : 'Cancelado',
+        'EXPIRED' : 'Expirado'
+    }
+
     editClientForm: FormGroup;
     isLoading: boolean = false;
     isEditMode: boolean = false;
@@ -84,6 +93,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         QUOTE: { file: null, preview: null, name: 'QUOTE', label: 'Cotización', required: true },
         INITIAL_PAYMENT: { file: null, preview: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
     };
+
+    contractElectronicSignature: any = null;
 
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: any,
@@ -108,6 +119,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     ngOnInit(): void {
         this.clientDetails = this.data;
+
+        this.contractElectronicSignature = this.data.electronicSignContract || null;
         this.editClientForm.patchValue(this.clientDetails);
     }
 
