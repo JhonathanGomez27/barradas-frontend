@@ -350,7 +350,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 const payloadElectronicSignature = {
                     clientId: this.clientDetails.id,
                     documentId: docUploaded.id,
-                    document_url: `${environment.url}/documents/${docUploaded.id}/download`
+                    document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`
+                    // document_url: `${environment.url}/documents/${docUploaded.id}/download`
                 }
 
                 this.docusealCreateSignatureProcess(payloadElectronicSignature);

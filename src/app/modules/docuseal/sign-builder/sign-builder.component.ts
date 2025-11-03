@@ -24,7 +24,7 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
     token: string = '';
     roles: string[] = ['Cliente'];
     fieldTypes: string[] = [
-        'signature'
+        'signature', 'text', 'number'
     ]
 
     submitters: any[] = [];
