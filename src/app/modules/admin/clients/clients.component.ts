@@ -214,7 +214,6 @@ export class ClientsComponent implements OnInit, OnDestroy {
                 });
 
                 dialog.afterClosed().subscribe(result => {
-                    console.log(result);
                     if (result) {
                         this.loadClients();
                     }

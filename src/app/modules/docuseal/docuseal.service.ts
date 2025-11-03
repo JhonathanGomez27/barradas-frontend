@@ -20,8 +20,8 @@ export class DocusealService {
         private httpClient: HttpClient
     ) {}
 
-    createDocumentToken(clientId: string, documentId: string): Observable<any> {
-        return this.httpClient.post(`${this._url}/docuseal/create-signed-token`, { clientId, documentId });
+    createDocumentToken({clientId, documentId, document_url}: {clientId: string, documentId: string, document_url: string}): Observable<any> {
+        return this.httpClient.post(`${this._url}/docuseal/create-signed-token`, { clientId, documentId, document_url });
     }
 
     getDocumentElectronicSignature(electronicSignatureId: string): Observable<any> {

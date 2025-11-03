@@ -1,13 +1,13 @@
 <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
     <!-- Encabezado con logo de la empresa -->
     <header class="bg-white shadow-md p-4">
-        <div class="container mx-auto flex justify-between">
-            <img src="images/logo/logo.png" alt="Logo barradas" class="h-12 w-24">
-            <img src="images/logo/confia_negro.png" alt="Logo confía" class="h-12 w-24" />
+        <div class="container mx-auto flex justify-center">
+            <!-- <img src="images/logo/logo.png" alt="Logo barradas" class="h-12 w-24"> -->
+            <img src="images/logo/confia_negro.png" alt="Logo confía" class="h-30 w-60" />
         </div>
     </header>
     <!-- Main -->
-    <div class="flex-auto p-2 sm:p-4">
+    <div class="flex-auto p-2 sm:p-4 bg-white">
 
         <div class="flex-1 container mx-auto p-2 md:p-4 w-full md:w-2/3" *ngIf="!profileCompleted">
             <!-- Estado de carga -->
@@ -26,9 +26,9 @@
 
             <!-- Contenido principal cuando el token es válido -->
             <div *ngIf="!loading && tokenValid" class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div class="p-6 bg-primary-50 border-b border-primary-100">
-                    <h1 class="text-2xl font-bold text-primary-900">Completa tu perfil</h1>
-                    <p class="mt-2 text-gray-600">Por favor completa la información siguiente para finalizar tu registro
+                <div class="p-6 bg-gray-100 border-b border-primary-100">
+                    <h1 class="text-2xl font-bold text-black">Completa tu perfil</h1>
+                    <p class="mt-2 text-gray-800">Por favor completa la información siguiente para finalizar tu registro
                     </p>
                 </div>
 
@@ -38,7 +38,7 @@
                     <div *ngIf="clientInfo" class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                         <div class="bg-primary-50 p-4 border-b border-primary-100">
                             <div class="flex items-center">
-                                <mat-icon class="text-primary-600 mr-2">person</mat-icon>
+                                <mat-icon class="text-gray-300 mr-2">person</mat-icon>
                                 <h3 class="text-lg font-semibold text-gray-800">Información del Cliente</h3>
                             </div>
                         </div>
@@ -64,11 +64,11 @@
                     <!-- Sección de ubicación -->
                     <div class="mb-8">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                            <mat-icon class="align-middle mr-2 text-primary-500">location_on</mat-icon>
+                            <mat-icon class="align-middle mr-2 text-black">location_on</mat-icon>
                             Información de ubicación
                         </h2>
 
-                        <form [formGroup]="profileForm" class="space-y-4">
+                        <form [formGroup]="profileForm" class="space-y-4 ">
                             <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Dirección</mat-label>
                                 <input matInput formControlName="locationAddress"

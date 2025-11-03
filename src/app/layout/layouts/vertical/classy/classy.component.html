@@ -16,7 +16,7 @@
             <!-- Logo -->
             <div class="flex items-center justify-center group">
                 <div class="relative overflow-hidden rounded-lg bg-white/10 p-2 transition-all duration-300 group-hover:bg-white/20 group-hover:shadow-lg">
-                    <img class="w-28 transition-transform duration-300 group-hover:scale-105" src="images/logo/logo.png" alt="Logo" />
+                    <img class="w-28 transition-transform duration-300 group-hover:scale-105" src="images/logo/confia_negro.png" alt="Logo" />
                 </div>
             </div>
             <!-- Components -->
@@ -44,7 +44,7 @@
                     @if (!user.avatar) {
                         <div class="h-full w-full rounded-full border-4 border-white/30 shadow-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center transition-all duration-300 group-hover:border-white/50 group-hover:shadow-2xl group-hover:scale-105">
                             <mat-icon
-                                class="icon-size-16 text-white"
+                                class="icon-size-16 text-black"
                                 [svgIcon]="'heroicons_solid:user-circle'"
                             ></mat-icon>
                         </div>
@@ -61,12 +61,12 @@
                 <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center font-semibold leading-normal text-white text-lg tracking-wide">
                     {{ user.name }}
                 </div>
-                <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium leading-normal text-primary-200/80 bg-white/10 rounded-full px-3 py-1 backdrop-blur-sm">
+                <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium leading-normal text-black/70 bg-white/10 rounded-full px-3 py-1 backdrop-blur-sm">
                     {{ user.email }}
                 </div>
                 <!-- Role Badge -->
-                <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg">
-                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-primary-500 to-primary-600 text-black shadow-lg">
+                    <div class="w-2 h-2 bg-green-600 rounded-full mr-2 animate-pulse"></div>
                     Administrador
                 </div>
             </div>

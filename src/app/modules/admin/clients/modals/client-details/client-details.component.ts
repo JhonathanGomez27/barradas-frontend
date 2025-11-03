@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -14,6 +14,9 @@ import { HttpClient } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AlertsService } from 'app/shared/services/alerts.service';
+import { environment } from 'environment/environment';
+import { DocusealService } from 'app/modules/docuseal/docuseal.service';
 
 interface FileUpload {
   file: File | null;
@@ -65,6 +68,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'CONTRACT_SIGNED': 'Contrato firmado',
         'QUOTE': 'Cotización',
         'INITIAL_PAYMENT': 'Pago inicial',
+        'CONTRACT_ORIGINAL': 'Contrato original'
     };
 
     // Status electronic signature
@@ -105,6 +109,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         private fb: FormBuilder,
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
+        private _alertsService: AlertsService,
+        private _docusealService: DocusealService,
+        private _changeDetectorRef: ChangeDetectorRef
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -323,6 +330,56 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     copySignatureUrl(url: string): void {
         navigator.clipboard.writeText(url).then(() => {
             alert('Enlace de firma copiado al portapapeles');
+        });
+    }
+
+    createSignatureProcess(): void {
+        if(!this.documentFiles['CONTRACT_ORIGINAL']){
+            this._alertsService.showAlertMessage({ type: 'error', text: 'Por favor, sube el contrato original.', title: 'Error al subir el contrato' });
+            return;
+        }
+
+        const formData = new FormData();
+
+        formData.append('CONTRACT_ORIGINAL', this.documentFiles['CONTRACT_ORIGINAL']);
+
+        this.clientesService.updateClient(this.clientDetails.id, formData).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (response) => {
+                const docUploaded = response.uploaded[0];
+
+                const payloadElectronicSignature = {
+                    clientId: this.clientDetails.id,
+                    documentId: docUploaded.id,
+                    document_url: `${environment.url}/documents/${docUploaded.id}/download`
+                }
+
+                this.docusealCreateSignatureProcess(payloadElectronicSignature);
+            },
+            error: (error) => {
+                console.error('Error al crear el proceso de firma electrónica:', error);
+                this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el proceso de firma electrónica.', title: 'Error' });
+            }
+        });
+    }
+
+    docusealCreateSignatureProcess(payload: {clientId: string, documentId: string, document_url: string}): void {
+        this._docusealService.createDocumentToken(payload).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (response) => {
+                this._alertsService.showAlertMessage({ type: 'success', text: 'Proceso de firma electrónica creado correctamente.', title: 'Éxito' });
+
+                this.clientesService.getClient(this.clientDetails.id).pipe(takeUntil(this._unsubscribeAll)).subscribe(
+                    (updatedClient) => {
+                        this.clientDetails = updatedClient;
+                        this.contractElectronicSignature = updatedClient.electronicSignContract || null;
+
+                        this._changeDetectorRef.markForCheck();
+                    }
+                );
+            },
+            error: (error) => {
+                console.error('Error al crear el proceso de firma electrónica:', error);
+                this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el proceso de firma electrónica.', title: 'Error' });
+            }
         });
     }
 }
