@@ -63,6 +63,12 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
 
     template_info: any = null;
 
+    sendedSignatureRequest: boolean = false;
+
+    loading: boolean = true;
+
+    loadingRequest: boolean = false;
+
     constructor(
         private _docusealService: DocusealService,
         private _changeDetectorRef: ChangeDetectorRef,
@@ -102,7 +108,7 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
 
     handleLoad(event: any): void {
         this.template_info = event;
-        console.log(event);
+        this.loading = false;
     }
 
     handleSave(event: any): void {
@@ -110,6 +116,8 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
     }
 
     sendTemplateToSigners(): void {
+
+        this.loadingRequest = true;
 
         if(this.template_info == null || this.signatureData == null){
             this._alertsService.showAlertMessage({type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma. Falta información del template o de la firma.'});
@@ -131,9 +139,14 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
 
         this._docusealService.sendSignatureRequest(payload).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response:any) => {
+                this.sendedSignatureRequest = true;
                 this._alertsService.showAlertMessage({type: 'success', title: 'Solicitud enviada', text: 'La solicitud de firma ha sido enviada exitosamente.'});
+                this._changeDetectorRef.markForCheck();
             },error: (error) => {
                 this._alertsService.showAlertMessage({type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma.'});
+                this.sendedSignatureRequest = false;
+                this.loadingRequest = false;
+                this._changeDetectorRef.markForCheck();
             }
         });
     }

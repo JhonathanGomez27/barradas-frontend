@@ -13,6 +13,9 @@ export class DocusealService {
     private _signatureBuilder: BehaviorSubject<any> = new BehaviorSubject<any>(null);
     public signatureBuilder$ = this._signatureBuilder.asObservable();
 
+    private _signatureForm: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+    public signatureForm$ = this._signatureForm.asObservable();
+
     constructor(
         private httpClient: HttpClient
     ) {}
@@ -25,6 +28,14 @@ export class DocusealService {
         return this.httpClient.get(`${this._url}/docuseal/electronic-signatures/${electronicSignatureId}`).pipe(
             tap((signatureBuilder) => {
                 this._signatureBuilder.next(signatureBuilder);
+            })
+        );
+    }
+
+    getDocumentSignatureForm(electronicSignatureId: string): Observable<any> {
+        return this.httpClient.get(`${this._url}/docuseal/electronic-signatures/${electronicSignatureId}`).pipe(
+            tap((signatureForm) => {
+                this._signatureForm.next(signatureForm);
             })
         );
     }

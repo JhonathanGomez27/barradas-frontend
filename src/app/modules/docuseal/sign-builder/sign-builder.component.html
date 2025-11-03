@@ -4,7 +4,7 @@
         <!-- CONTENT GOES HERE -->
         <div class="h-full w-full">
 
-            @if(token){
+            @if(token && !sendedSignatureRequest) {
                 <!-- Send button -->
                 <div class="w-full flex justify-between mb-4">
                     <!-- client data -->
@@ -14,16 +14,41 @@
 
                     </div>
 
-                    <button mat-raised-button color="primary" (click)="sendTemplateToSigners()">
+                    <button mat-raised-button color="primary" (click)="sendTemplateToSigners()" [disabled]="loadingRequest">
                         <mat-icon class="pr-2">send</mat-icon>
                         Enviar solicitud de firma
                     </button>
                 </div>
                 <!-- Docuseal builder -->
                 <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="roles" [submitters]="submitters" [customCss]="customCss" [emailMessage]="emailMessage" (onLoad)="handleLoad($event)" (onChange)="handleSave($event)" withSendButton="false" withUploadButton="false" class="h-full w-full rounded-2xl"></docuseal-builder>
-            }@else {
-                <!-- No token available -->
-                <p class="text-center text-gray-500 mt-20">No hay token disponible para el documento.</p>
+            }
+
+            @if(token && loading){
+                <div class="flex flex-col items-center justify-center h-full">
+                    <mat-spinner diameter="50"></mat-spinner>
+                    <h2 class="text-xl font-medium text-gray-700 mt-4">Cargando el constructor de firmas...</h2>
+                </div>
+            }
+
+            @if(!token) {
+                <div class="flex flex-col items-center justify-center h-full">
+                    <mat-icon class="text-red-600 text-6xl mb-4">error_outline</mat-icon>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Token inválido o expirado</h2>
+                    <p class="text-gray-600 text-center">
+                        El token proporcionado no es válido o ha expirado. Por favor, verifica el enlace o contacta al administrador.
+                    </p>
+                </div>
+            }
+
+
+            @if(sendedSignatureRequest){
+                <div class="flex flex-col items-center justify-center h-full">
+                    <mat-icon class="text-green-600 text-6xl mb-4">check_circle</mat-icon>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Solicitud de firma enviada</h2>
+                    <p class="text-gray-600 text-center">
+                        La solicitud de firma ha sido enviada exitosamente a {{ signatureData.signerEmail }}.
+                    </p>
+                </div>
             }
         </div>
     </div>

@@ -61,6 +61,7 @@ export const appRoutes: Route[] = [
         },
         children: [
             {path: 'complete', loadChildren: () => import('app/modules/landing/complete-profile/complete-profile.routes')},
+            {path: 'docuseal-form', loadChildren: () => import('app/modules/landing/docuseal-form/docuseal-form.routes')},
             {path: 'invalid-token', loadChildren: () => import('app/modules/landing/invalid-token/invalid-token.routes')}
         ]
     },

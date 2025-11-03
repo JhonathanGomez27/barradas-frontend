@@ -2,11 +2,15 @@ import { ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot, Routes } from '
 import { SignBuilderComponent } from './sign-builder/sign-builder.component';
 import { inject } from '@angular/core';
 import { DocusealService } from './docuseal.service';
-import { SignFormComponent } from './sign-form/sign-form.component';
 
 const SigantureBuilderResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _SigantureBuilderService = inject(DocusealService);
     return _SigantureBuilderService.getDocumentElectronicSignature(route.params.token);
+}
+
+const SigantureFormResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+    const _SigantureBuilderService = inject(DocusealService);
+    return _SigantureBuilderService.getDocumentSignatureForm(route.params.token);
 }
 
 export default [
@@ -21,11 +25,11 @@ export default [
             signatureBuilder: SigantureBuilderResolver
         }
     },
-    {
-        path: 'form/:token',
-        component: SignFormComponent,
-        resolve: {
-            signatureForm: SigantureBuilderResolver
-        }
-    }
+    // {
+    //     path: 'form/:token',
+    //     component: SignFormComponent,
+    //     resolve: {
+    //         signatureForm: SigantureFormResolver
+    //     }
+    // }
 ] as Routes;

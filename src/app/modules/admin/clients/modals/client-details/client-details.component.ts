@@ -13,6 +13,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface FileUpload {
   file: File | null;
@@ -101,9 +102,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         public matDialogRef: MatDialogRef<ClientDetailsComponent>,
         private clientesService : ClientsService,
         private dialog: MatDialog,
-        private sanitizer: DomSanitizer,
         private fb: FormBuilder,
-        private http: HttpClient
+        private _activatedRoute: ActivatedRoute,
+        private _router: Router,
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -310,6 +311,19 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+    }
+
+    initiateSignatureProcess(): void {
+
+        this.closeDialog();
+        // Lógica para iniciar el proceso de firma electrónica
+        this._router.navigate(['/docuseal/builder', this.contractElectronicSignature.id]);
+    }
+
+    copySignatureUrl(url: string): void {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Enlace de firma copiado al portapapeles');
+        });
     }
 }
 
