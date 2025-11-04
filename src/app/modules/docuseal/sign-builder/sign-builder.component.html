@@ -1,26 +1,101 @@
-<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-white" cdkScrollable>
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100" cdkScrollable>
+    <!-- Header mejorado -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+        <div class="px-4 py-6 sm:px-10 sm:py-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/20 p-3 rounded-full">
+                        <mat-icon class="text-white text-2xl">edit_document</mat-icon>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Constructor de Firma</h1>
+                        <p class="text-primary-100 text-sm mt-1">Configure y envíe documentos para firma electrónica</p>
+                    </div>
+                </div>
+                <!-- Botón de volver -->
+                <button mat-icon-button
+                        (click)="goBack()"
+                        class="bg-white/10 hover:bg-white/20 transition-all duration-300"
+                        matTooltip="Volver">
+                    <mat-icon class="text-white">arrow_back</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main -->
-    <div class="flex-auto p-6 sm:p-10">
+    <div class="flex-auto p-4 sm:p-6 md:p-10">
         <!-- CONTENT GOES HERE -->
-        <div class="h-full w-full">
+        <div class="h-full w-full min-h-[600px]">
 
             @if(token && !sendedSignatureRequest) {
-                <!-- Send button -->
-                <div class="w-full flex justify-between mb-4">
-                    <!-- client data -->
-                    <div class="flex flex-col">
-                        <span class="text-lg font-semibold text-gray-700">Cliente: {{ signatureData.signerName }}</span>
-                        <span class="text-sm text-gray-500">Correo: {{ signatureData.signerEmail }}</span>
+                <!-- Sección de información del cliente y botón de envío -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <!-- Información del cliente -->
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-blue-100 p-2 rounded-lg flex-shrink-0">
+                                    <mat-icon class="text-blue-600 text-xl">person</mat-icon>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-semibold text-gray-800 text-base md:text-lg flex items-center">
+                                        <span class="mr-2">Cliente:</span>
+                                        <span class="text-primary-600">{{ signatureData.signerName }}</span>
+                                    </h3>
+                                    <div class="flex items-center mt-1 text-sm text-gray-600">
+                                        <mat-icon class="mr-1 text-gray-400" style="font-size: 16px; width: 16px; height: 16px;">email</mat-icon>
+                                        <span class="truncate">{{ signatureData.signerEmail }}</span>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- Botón de envío -->
+                            <button mat-raised-button
+                                    color="primary"
+                                    (click)="confirmSignatureRequest()"
+                                    [disabled]="loadingRequest"
+                                    class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
+                                <mat-icon class="mr-2">{{ loadingRequest ? 'hourglass_empty' : 'send' }}</mat-icon>
+                                <span>{{ loadingRequest ? 'Enviando...' : 'Enviar solicitud de firma' }}</span>
+                            </button>
+                        </div>
                     </div>
-
-                    <button mat-raised-button color="primary" (click)="sendTemplateToSigners()" [disabled]="loadingRequest">
-                        <mat-icon class="pr-2">send</mat-icon>
-                        Enviar solicitud de firma
-                    </button>
                 </div>
-                <!-- Docuseal builder -->
-                <docuseal-builder [token]="token" [fieldTypes]="fieldTypes" withSignYourselfButton="false" language="es" withDocumentsList="false" [roles]="roles" [submitters]="submitters" [customCss]="customCss" [emailMessage]="emailMessage" (onLoad)="handleLoad($event)" (onChange)="handleSave($event)" withSendButton="false" withUploadButton="false" class="h-full w-full rounded-2xl"></docuseal-builder>
+
+                <!-- DocuSeal Builder Container -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                        <div class="flex items-center">
+                            <div class="bg-primary-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                                <mat-icon class="text-primary-600 text-xl">description</mat-icon>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 text-base md:text-lg">Editor de Documento</h3>
+                                <p class="text-xs md:text-sm text-gray-600 mt-0.5">Arrastre y configure los campos de firma en el documento</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 sm:p-6 bg-gray-50">
+                        <!-- Docuseal builder -->
+                        <docuseal-builder
+                            [token]="token"
+                            [fieldTypes]="fieldTypes"
+                            withSignYourselfButton="false"
+                            language="es"
+                            withDocumentsList="false"
+                            [roles]="roles"
+                            [submitters]="submitters"
+                            [customCss]="customCss"
+                            [emailMessage]="emailMessage"
+                            (onLoad)="handleLoad($event)"
+                            (onChange)="handleSave($event)"
+                            withSendButton="false"
+                            withUploadButton="false"
+                            class="h-full w-full rounded-lg shadow-inner">
+                        </docuseal-builder>
+                    </div>
+                </div>
             }
 
             @if(token && loading){
@@ -48,6 +123,13 @@
                     <p class="text-gray-600 text-center">
                         La solicitud de firma ha sido enviada exitosamente a {{ signatureData.signerEmail }}.
                     </p>
+                    <!-- Back button -->
+                    <div class="mt-6">
+                        <button mat-raised-button color="primary" (click)="goBack()" class="transition-all duration-300 shadow-md hover:shadow-lg">
+                            <mat-icon class="mr-2">arrow_back</mat-icon>
+                            Volver
+                        </button>
+                    </div>
                 </div>
             }
         </div>

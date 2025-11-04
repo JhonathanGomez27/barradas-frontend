@@ -330,81 +330,48 @@
 
                 <div class="p-2 md:p-4">
                     @if(contractElectronicSignature){
-                        <div class="w-full">
-                            @if(contractElectronicSignature.status === 'CREATED'){
-                                <button mat-raised-button
-                                        color="primary"
-                                        (click)="initiateSignatureProcess()"
-                                        class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto mb-4">
-                                    <mat-icon class="mr-2">play_circle</mat-icon>
-                                    Iniciar Proceso de Firma
-                                </button>
-                            }
-                        </div>
-
-                        <!-- Grid de información principal -->
-                        <!-- <div class="grid grid-cols-1 gap-4 md:gap-6 mb-6"> -->
-                            <!-- Información del firmante -->
-                            <!-- <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-                                <div class="flex items-center mb-3">
-                                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                                        <mat-icon class="text-blue-600">person</mat-icon>
-                                    </div>
-                                    <h4 class="font-semibold text-gray-700">Información del Firmante</h4>
-                                </div>
-                                <div class="space-y-2">
-                                    <div class="flex items-start">
-                                        <mat-icon class="text-gray-400 text-sm mr-2 mt-0.5">badge</mat-icon>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs text-gray-500">Nombre</p>
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ contractElectronicSignature.signerName }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start">
-                                        <mat-icon class="text-gray-400 text-sm mr-2 mt-0.5">email</mat-icon>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs text-gray-500">Correo Electrónico</p>
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ contractElectronicSignature.signerEmail }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                            <!-- Fechas importantes -->
-                            <!-- <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-                                <div class="flex items-center mb-3">
-                                    <div class="bg-orange-100 p-2 rounded-lg mr-3">
-                                        <mat-icon class="text-orange-600">event</mat-icon>
-                                    </div>
-                                    <h4 class="font-semibold text-gray-700">Fechas del Proceso</h4>
-                                </div>
-                                <div class="space-y-2">
-                                    <div class="flex items-start">
-                                        <mat-icon class="text-gray-400 text-sm mr-2 mt-0.5">add_circle</mat-icon>
-                                        <div class="flex-1">
-                                            <p class="text-xs text-gray-500">Creado</p>
-                                            <p class="text-sm font-medium text-gray-900">{{ formatDate(contractElectronicSignature.createdAt) }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start">
-                                        <mat-icon class="text-gray-400 text-sm mr-2 mt-0.5">timer</mat-icon>
-                                        <div class="flex-1">
-                                            <p class="text-xs text-gray-500">Expira</p>
-                                            <p class="text-sm font-medium text-gray-900">{{ formatDate(contractElectronicSignature.expiresAt) }}</p>
-                                        </div>
-                                    </div>
-                                    @if(contractElectronicSignature.signedAt){
-                                        <div class="flex items-start">
-                                            <mat-icon class="text-green-600 text-sm mr-2 mt-0.5">check_circle</mat-icon>
-                                            <div class="flex-1">
-                                                <p class="text-xs text-gray-500">Firmado</p>
-                                                <p class="text-sm font-medium text-green-700">{{ formatDate(contractElectronicSignature.signedAt) }}</p>
+                        <!-- Call to Action: Configurar firma -->
+                        @if(contractElectronicSignature.status === 'CREATED'){
+                            <div class="bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 rounded-xl p-4 md:p-6 mb-6 border-2 border-purple-200 shadow-sm">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <!-- Información -->
+                                    <div class="flex-1">
+                                        <div class="flex items-start mb-2">
+                                            <div class="bg-purple-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                                                <mat-icon class="text-purple-600">edit_note</mat-icon>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800 text-base md:text-lg mb-1">
+                                                    Configure los Campos de Firma
+                                                </h4>
+                                                <p class="text-sm text-gray-600 leading-relaxed">
+                                                    Defina las ubicaciones donde el cliente debe firmar el contrato.
+                                                    Use el constructor visual para arrastrar y posicionar los campos de firma.
+                                                </p>
                                             </div>
                                         </div>
-                                    }
+                                        <div class="flex items-center mt-3 ml-14">
+                                            <div class="flex items-center text-xs text-gray-500 bg-white px-3 py-1.5 rounded-full border border-gray-200">
+                                                <mat-icon class="mr-1.5 text-purple-500" style="font-size: 16px; width: 16px; height: 16px;">info</mat-icon>
+                                                <span>Configure los campos antes de enviar la solicitud de firma</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botón de acción -->
+                                    <div class="flex-shrink-0">
+                                        <button mat-raised-button
+                                                color="primary"
+                                                (click)="initiateSignatureProcess()"
+                                                class="transition-all duration-300 shadow-lg hover:shadow-xl w-full md:w-auto px-6 py-3 text-base">
+                                            <mat-icon class="mr-2">draw</mat-icon>
+                                            <span class="font-semibold">Configurar Firma</span>
+                                            <mat-icon class="ml-2">arrow_forward</mat-icon>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div> -->
-                        <!-- </div> -->
+                            </div>
+                        }
 
                         <!-- Documentos -->
                         <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200 mb-4">
@@ -500,21 +467,91 @@
                         }
                     } @else {
                         <!-- No hay información de firma -->
-                        <div class="text-center py-8">
-                            <div class="bg-gray-100 rounded-full p-4 inline-flex mb-4">
-                                <mat-icon class="text-gray-400 text-5xl">draw</mat-icon>
-                            </div>
-                            <h4 class="text-lg font-semibold text-gray-700 mb-2">Sin Contrato</h4>
-                            <p class="text-sm text-gray-500 mb-4">No se tiene un contrato para este cliente</p>
-                            <div class="relative">
-                                <input id="contract_original" type="file" (change)="onFileSelected($event, 'CONTRACT_ORIGINAL')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-2 transition-all duration-200 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200" accept="image/*,.pdf" />
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 md:p-8">
+                            <!-- Icono y título -->
+                            <div class="text-center mb-6">
+                                <div class="bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full p-6 inline-flex mb-4 shadow-sm">
+                                    <mat-icon class="text-purple-600 text-5xl">edit_document</mat-icon>
+                                </div>
+                                <h4 class="text-xl font-bold text-gray-800 mb-2">Contrato Pendiente de Carga</h4>
+                                <p class="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                                    Para iniciar el proceso de firma electrónica, primero debe cargar el documento del contrato
+                                </p>
                             </div>
 
-                            <div class="mt-4">
-                                <button mat-raised-button (click)="createSignatureProcess()" [disabled]="!documentFiles['CONTRACT_ORIGINAL']" class="transition-all duration-300 shadow-md hover:shadow-lg bg-purple-100">
-                                    <mat-icon class="mr-2" svgIcon="heroicons_outline:play"></mat-icon>
-                                    Iniciar Proceso de Firma
+                            <!-- Pasos del proceso -->
+                            <div class="bg-white rounded-lg p-4 mb-6 border border-gray-200">
+                                <div class="flex items-center mb-3">
+                                    <mat-icon class="text-indigo-600 mr-2">lightbulb</mat-icon>
+                                    <h5 class="font-semibold text-gray-700">Pasos a seguir:</h5>
+                                </div>
+                                <div class="space-y-2 ml-8">
+                                    <div class="flex items-start text-sm text-gray-600">
+                                        <span class="bg-purple-100 text-purple-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold mr-2 mt-0.5 flex-shrink-0">1</span>
+                                        <span>Cargue el documento del contrato en formato PDF</span>
+                                    </div>
+                                    <div class="flex items-start text-sm text-gray-600">
+                                        <span class="bg-purple-100 text-purple-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold mr-2 mt-0.5 flex-shrink-0">2</span>
+                                        <span>Configure los campos de firma usando el constructor visual</span>
+                                    </div>
+                                    <div class="flex items-start text-sm text-gray-600">
+                                        <span class="bg-purple-100 text-purple-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold mr-2 mt-0.5 flex-shrink-0">3</span>
+                                        <span>Envíe la solicitud de firma al cliente por correo electrónico</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Área de carga de archivo -->
+                            <div class="bg-white rounded-lg p-5 border-2 border-dashed border-gray-300 hover:border-purple-400 transition-all duration-300 mb-4">
+                                <div class="flex items-center justify-center mb-3">
+                                    <mat-icon class="text-gray-400 mr-2">cloud_upload</mat-icon>
+                                    <label for="contract_original" class="text-sm font-semibold text-gray-700 cursor-pointer hover:text-purple-600 transition-colors">
+                                        Seleccionar Documento del Contrato
+                                    </label>
+                                </div>
+                                <input id="contract_original"
+                                       type="file"
+                                       (change)="onFileSelected($event, 'CONTRACT_ORIGINAL')"
+                                       class="block w-full text-sm text-gray-500
+                                              file:mr-4 file:py-2.5 file:px-5
+                                              file:rounded-lg file:border-0
+                                              file:text-sm file:font-semibold
+                                              file:bg-purple-50 file:text-purple-700
+                                              hover:file:bg-purple-100
+                                              file:cursor-pointer file:transition-all file:duration-300
+                                              cursor-pointer
+                                              border border-gray-300 rounded-lg p-2.5
+                                              transition-all duration-200
+                                              hover:border-purple-400
+                                              focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                                       accept=".pdf,application/pdf" />
+                                <p class="text-xs text-gray-500 mt-2 text-center">
+                                    <mat-icon class="text-gray-400 align-middle mr-1" style="font-size: 14px; width: 14px; height: 14px;">info</mat-icon>
+                                    Solo se aceptan archivos en formato PDF
+                                </p>
+                            </div>
+
+                            <!-- Botón de acción -->
+                            <div class="flex justify-center">
+                                <button mat-raised-button
+                                        color="primary"
+                                        (click)="createSignatureProcess()"
+                                        [disabled]="!documentFiles['CONTRACT_ORIGINAL']"
+                                        class="transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <mat-icon class="mr-2">{{ documentFiles['CONTRACT_ORIGINAL'] ? 'draw' : 'upload_file' }}</mat-icon>
+                                    <span class="font-semibold">
+                                        {{ documentFiles['CONTRACT_ORIGINAL'] ? 'Continuar a Configuración' : 'Primero Cargue el Contrato' }}
+                                    </span>
+                                    <mat-icon class="ml-2" *ngIf="documentFiles['CONTRACT_ORIGINAL']">arrow_forward</mat-icon>
                                 </button>
+                            </div>
+
+                            <!-- Mensaje de ayuda adicional -->
+                            <div class="mt-4 text-center" *ngIf="!documentFiles['CONTRACT_ORIGINAL']">
+                                <p class="text-xs text-gray-500 flex items-center justify-center">
+                                    <mat-icon class="text-yellow-500 mr-1" style="font-size: 16px; width: 16px; height: 16px;">warning</mat-icon>
+                                    Debe cargar un documento para habilitar el proceso de firma
+                                </p>
                             </div>
                         </div>
                     }

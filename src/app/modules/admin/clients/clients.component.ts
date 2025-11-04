@@ -20,6 +20,7 @@ import { environment } from 'environment/environment';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-clients',
@@ -69,7 +70,9 @@ export class ClientsComponent implements OnInit, OnDestroy {
         private _clientsService: ClientsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _dialog: MatDialog,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _activatedRoute: ActivatedRoute,
+        private _router: Router
     ) {
         this.Toast = Swal.mixin({
             toast: true,
@@ -90,6 +93,15 @@ export class ClientsComponent implements OnInit, OnDestroy {
             this.totalClients = response.total;
             this._changeDetectorRef.markForCheck();
         });
+
+
+        // Get query params to check if we need to open the signature process
+        const client = this._activatedRoute.snapshot.queryParamMap.get('clientId');
+
+        if(client){
+            this.onClick({id: client});
+        }
+
     }
 
     loadClients(): void {
@@ -216,6 +228,14 @@ export class ClientsComponent implements OnInit, OnDestroy {
                 dialog.afterClosed().subscribe(result => {
                     if (result) {
                         this.loadClients();
+                    }else {
+                        //delete client from query params if exists in route
+                        this._router.navigate([], {
+                            queryParams: {
+                                clientId: null
+                            },
+                            queryParamsHandling: 'merge'
+                        });
                     }
                 });
             },error: (error) => {

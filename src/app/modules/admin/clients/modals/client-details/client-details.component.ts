@@ -130,6 +130,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
         this.contractElectronicSignature = this.data.electronicSignContract || null;
         this.editClientForm.patchValue(this.clientDetails);
+
+
     }
 
     // Formatear fecha
@@ -324,7 +326,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
         this.closeDialog();
         // Lógica para iniciar el proceso de firma electrónica
-        this._router.navigate(['/docuseal/builder', this.contractElectronicSignature.id]);
+        //Navigate to the Docuseal builder with the contractElectronicSignature id in _blank
+        window.open(`/docuseal/builder/${this.contractElectronicSignature.id}`, '_blank');
     }
 
     copySignatureUrl(url: string): void {
@@ -350,8 +353,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 const payloadElectronicSignature = {
                     clientId: this.clientDetails.id,
                     documentId: docUploaded.id,
-                    document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`
-                    // document_url: `${environment.url}/documents/${docUploaded.id}/download`
+                    // document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`
+                    document_url: `${environment.url}/documents/${docUploaded.id}/download`
                 }
 
                 this.docusealCreateSignatureProcess(payloadElectronicSignature);
