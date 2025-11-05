@@ -186,15 +186,10 @@
                                     'bg-green-100 text-green-800 hover:bg-green-200': client.status === 'COMPLETED',
                                     'bg-blue-100 text-blue-800 hover:bg-blue-200': client.status === 'INVITED',
                                     'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': client.status === 'IN_PROGRESS',
+                                    'bg-violet-100 text-violet-800 hover:bg-violet-200': client.status === 'NO_CONTRACT_SENDED',
+                                    'bg-orange-100 text-orange-800 hover:bg-orange-200': client.status === 'CONTRACT_SENDED',
                                     'bg-gray-100 text-gray-800 hover:bg-gray-200': client.status === 'CREATED'
                                   }">
-                                <span class="w-2 h-2 rounded-full mr-2"
-                                      [ngClass]="{
-                                        'bg-green-500': client.status === 'COMPLETED',
-                                        'bg-blue-500': client.status === 'INVITED',
-                                        'bg-yellow-500': client.status === 'IN_PROGRESS',
-                                        'bg-gray-500': client.status === 'CREATED'
-                                      }"></span>
                                 {{ statusMapper[client.status] || client.status }}
                             </span>
                         </td>

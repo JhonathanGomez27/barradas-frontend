@@ -9,7 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClientsService } from '../../clients.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -51,9 +51,11 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     // Mapeo de estados
     statusMapper: { [key: string]: string } = {
         'CREATED': 'Creado',
-        'INVITED': 'Invitado',
-        'IN_PROGRESS': 'En Progreso',
-        'COMPLETED': 'Completado'
+        'INVITED': 'Invitación enviada',
+        'IN_PROGRESS': 'Pendiente de completar Documentación',
+        'COMPLETED': 'Finalizado con contrato',
+        'NO_CONTRACT_SENDED': 'Gestionado sin contrato',
+        'CONTRACT_SENDED': 'Gestionado con contrato sin firmar'
     };
 
     // Mapeo de tipos de documento
@@ -68,7 +70,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'CONTRACT_SIGNED': 'Contrato firmado',
         'QUOTE': 'Cotización',
         'INITIAL_PAYMENT': 'Pago inicial',
-        'CONTRACT_ORIGINAL': 'Contrato original'
+        'CONTRACT_ORIGINAL': 'Contrato original',
+        'OTHER': 'Otro'
     };
 
     // Status electronic signature
@@ -79,6 +82,19 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'CANCELLED' : 'Cancelado',
         'EXPIRED' : 'Expirado'
     }
+
+    weekDayCtrl: UntypedFormControl = new UntypedFormControl('');
+
+    // Días de la semana para el selector
+    weekDays = [
+        { value: 'MONDAY', label: 'L', short: 'Lun', fullName: 'Lunes' },
+        { value: 'TUESDAY', label: 'M', short: 'Mar', fullName: 'Martes' },
+        { value: 'WEDNESDAY', label: 'X', short: 'Mié', fullName: 'Miércoles' },
+        { value: 'THURSDAY', label: 'J', short: 'Jue', fullName: 'Jueves' },
+        { value: 'FRIDAY', label: 'V', short: 'Vie', fullName: 'Viernes' },
+        { value: 'SATURDAY', label: 'S', short: 'Sáb', fullName: 'Sábado' },
+        { value: 'SUNDAY', label: 'D', short: 'Dom', fullName: 'Domingo' }
+    ];
 
     editClientForm: FormGroup;
     isLoading: boolean = false;
@@ -257,6 +273,12 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         this.matDialogRef.close();
     }
 
+    // Obtener el nombre completo del día de la semana
+    getWeekDayName(value: string): string {
+        const day = this.weekDays.find(d => d.value === value);
+        return day ? day.fullName : '';
+    }
+
     toggleEditMode(): void {
         this.isEditMode = !this.isEditMode;
         if (this.isEditMode) {
@@ -342,19 +364,31 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             return;
         }
 
-        const formData = new FormData();
+        if(!this.weekDayCtrl.value){
+            this._alertsService.showAlertMessage({ type: 'error', text: 'Por favor, selecciona el día de pago semanal.', title: 'Error al seleccionar día de pago' });
+            return;
+        }
 
-        formData.append('CONTRACT_ORIGINAL', this.documentFiles['CONTRACT_ORIGINAL']);
+        this.clientesService.createCredit({ clientId: this.clientDetails.id, repaymentDay: this.weekDayCtrl.value }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (response:any) => {
+                this.uploadFileToClient(response.id);
+            },error: (error) => {
+                this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el crédito para el cliente.', title: 'Error' });
+            }
+        });
+    }
 
-        this.clientesService.updateClient(this.clientDetails.id, formData).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+    uploadFileToClient(creditId?: string): void {
+        this.clientesService.uploadFileToClient(this.clientDetails.id, this.documentFiles['CONTRACT_ORIGINAL'], 'CONTRACT_ORIGINAL', creditId).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response) => {
-                const docUploaded = response.uploaded[0];
+                const docUploaded = response;
 
                 const payloadElectronicSignature = {
                     clientId: this.clientDetails.id,
                     documentId: docUploaded.id,
-                    // document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`
-                    document_url: `${environment.url}/documents/${docUploaded.id}/download`
+                    document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`,
+                    // document_url: `${environment.url}/documents/${docUploaded.id}/download`,
+                    creditId: creditId
                 }
 
                 this.docusealCreateSignatureProcess(payloadElectronicSignature);
@@ -366,7 +400,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         });
     }
 
-    docusealCreateSignatureProcess(payload: {clientId: string, documentId: string, document_url: string}): void {
+    docusealCreateSignatureProcess(payload: {clientId: string, documentId: string, document_url: string, creditId?: string}): void {
         this._docusealService.createDocumentToken(payload).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response) => {
                 this._alertsService.showAlertMessage({ type: 'success', text: 'Proceso de firma electrónica creado correctamente.', title: 'Éxito' });

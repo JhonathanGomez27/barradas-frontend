@@ -35,11 +35,11 @@ export class ClientsService {
         );
     }
 
-    uploadFileToClient(client_id: string, file: File, document_type: string): Observable<any> {
+    uploadFileToClient(client_id: string, file: File, document_type: string, creditId?: string): Observable<any> {
         const formData = new FormData();
         formData.append('file', file);
 
-        return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}`, formData);
+        return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}&creditId=${creditId}`, formData);
     }
 
     /**
@@ -93,5 +93,9 @@ export class ClientsService {
 
     getTokenSign(clientId: string, documentId: string): Observable<any> {
         return this.httpClient.post(`${this._url}/users/${clientId}/documents/${documentId}/sign`, {});
+    }
+
+    createCredit(data: {clientId: string, repaymentDay: string}): Observable<any> {
+        return this.httpClient.post(`${this._url}/credits`, data);
     }
 }

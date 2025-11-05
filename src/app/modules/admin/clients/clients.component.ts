@@ -52,9 +52,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
     statusOptions: string[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'COMPLETED'];
     statusMapper: { [key: string]: string } = {
         'CREATED': 'Creado',
-        'INVITED': 'Invitado',
-        'IN_PROGRESS': 'En Progreso',
-        'COMPLETED': 'Completado'
+        'INVITED': 'Invitación enviada',
+        'IN_PROGRESS': 'Pendiente de completar Documentación',
+        'COMPLETED': 'Finalizado con contrato',
+        'NO_CONTRACT_SENDED': 'Gestionado sin contrato',
+        'CONTRACT_SENDED': 'Gestionado con contrato sin firmar'
     };
     displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'created_at', 'updated_at', 'actions'];
     Toast: any;
