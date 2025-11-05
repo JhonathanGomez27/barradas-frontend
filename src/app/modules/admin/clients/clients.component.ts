@@ -76,6 +76,17 @@ export class ClientsComponent implements OnInit, OnDestroy {
         { value: 'CANCELLED', viewValue: 'Cancelado' }
     ];
 
+    // Días de la semana para el selector
+    weekDaysMapper: { [key: string]: string } = {
+        'SUNDAY': 'Domingo',
+        'MONDAY': 'Lunes',
+        'TUESDAY': 'Martes',
+        'WEDNESDAY': 'Miércoles',
+        'THURSDAY': 'Jueves',
+        'FRIDAY': 'Viernes',
+        'SATURDAY': 'Sábado'
+    }
+
     statusCreditFilter: string = '';
 
     Toast: any;

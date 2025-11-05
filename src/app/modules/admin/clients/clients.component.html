@@ -236,17 +236,23 @@
                             </div>
                         </th>
                         <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-600 text-sm">
-                            <span *ngIf="client.credits.length > 0; else noCredit">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200"
+                            <div *ngIf="client.credits.length > 0; else noCredit" class="flex flex-col gap-1">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 w-fit"
                                 [ngClass]="{
                                     'bg-green-100 text-green-800 hover:bg-green-200': client.credits[0].status === 'CLOSED',
                                     'bg-blue-100 text-blue-800 hover:bg-blue-200': client.credits[0].status === 'PENDING',
                                     'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': client.credits[0].status === 'ACTIVE',
                                     'bg-red-100 text-red-800 hover:bg-red-200': client.credits[0].status === 'DEFAULTED',
-                                    'bg-orange-100 text-orange-800 hover:bg-orange-200': client.credits[0].status === 'CANCELLED',
-                                }"
-                                >{{ statusCreditsMapper[client.credits[0].status] || client.credits[0].status }}</span>
-                            </span>
+                                    'bg-orange-100 text-orange-800 hover:bg-orange-200': client.credits[0].status === 'CANCELLED'
+                                }">
+                                    {{ statusCreditsMapper[client.credits[0].status] || client.credits[0].status }}
+                                </span>
+                                <!-- Dia de pago -->
+                                <span class="flex items-center text-xs text-gray-500">
+                                    <mat-icon class="mr-1 text-gray-400" style="font-size: 14px; width: 14px; height: 14px;">event</mat-icon>
+                                    {{ weekDaysMapper[client.credits[0].repaymentDay] || client.credits[0].repaymentDay }}
+                                </span>
+                            </div>
                             <ng-template #noCredit>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200">Pendiente de credito</span>
                             </ng-template>
