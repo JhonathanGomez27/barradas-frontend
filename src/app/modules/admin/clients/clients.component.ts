@@ -59,6 +59,25 @@ export class ClientsComponent implements OnInit, OnDestroy {
         'CONTRACT_SENDED': 'Gestionado con contrato sin firmar'
     };
     displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'created_at', 'updated_at', 'actions'];
+
+    statusCreditsMapper: { [key: string]: string } = {
+        'PENDING': 'Pendiente',
+        'ACTIVE': 'Activo',
+        'CLOSED': 'Pagado',
+        'DEFAULTED': 'En Mora',
+        'CANCELLED': 'Cancelado'
+    };
+
+    statusCreditOptions: { value: string; viewValue: string }[] = [
+        { value: 'PENDING', viewValue: 'Pendiente' },
+        { value: 'ACTIVE', viewValue: 'Activo' },
+        { value: 'CLOSED', viewValue: 'Pagado' },
+        { value: 'DEFAULTED', viewValue: 'En Mora' },
+        { value: 'CANCELLED', viewValue: 'Cancelado' }
+    ];
+
+    statusCreditFilter: string = '';
+
     Toast: any;
 
     urlComplete: string = environment.hostComplete;
@@ -116,6 +135,10 @@ export class ClientsComponent implements OnInit, OnDestroy {
         }
         if (this.statusFilter) {
             params.status = this.statusFilter;
+        }
+
+        if (this.statusCreditFilter) {
+            params.creditStatus = this.statusCreditFilter;
         }
 
         // Añadir filtros de fecha si están establecidos

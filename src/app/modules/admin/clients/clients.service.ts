@@ -98,4 +98,8 @@ export class ClientsService {
     createCredit(data: {clientId: string, repaymentDay: string}): Observable<any> {
         return this.httpClient.post(`${this._url}/credits`, data);
     }
+
+    updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {
+        return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
+    }
 }

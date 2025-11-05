@@ -80,6 +80,22 @@
                         </mat-form-field>
                     </div>
 
+                    <!-- Filtro de Estado de Crédito -->
+                    <div class="flex flex-col">
+                        <label class="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                            <mat-icon class="mr-1 text-gray-400" style="font-size: 18px; width: 18px; height: 18px;">credit_card</mat-icon>
+                            Estado de Crédito
+                        </label>
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-select [(ngModel)]="statusCreditFilter" (selectionChange)="onFilterChange()">
+                                <mat-option value="">Todos los estados</mat-option>
+                                <mat-option *ngFor="let status of statusCreditOptions" [value]="status.value">
+                                    {{ status.viewValue }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
                     <!-- Botones de Acción -->
                     <div class="flex flex-col justify-end">
                         <div class="flex gap-2">
@@ -216,18 +232,23 @@
                         <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
                             <div class="flex items-center">
                                 <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">update</mat-icon>
-                                Actualizado
+                                Credito
                             </div>
                         </th>
                         <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-600 text-sm">
-                            <span *ngIf="client.status !== 'CREATED' && client.status !== 'INVITED' && client.updatedAt; else noUpdatedAt">
-                                <div class="flex flex-col">
-                                    <span>{{ client.updatedAt | date:'dd/MM/yyyy' }}</span>
-                                    <span class="text-xs text-gray-400">{{ client.updatedAt | date:'HH:mm' }}</span>
-                                </div>
+                            <span *ngIf="client.credits.length > 0; else noCredit">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200"
+                                [ngClass]="{
+                                    'bg-green-100 text-green-800 hover:bg-green-200': client.credits[0].status === 'CLOSED',
+                                    'bg-blue-100 text-blue-800 hover:bg-blue-200': client.credits[0].status === 'PENDING',
+                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': client.credits[0].status === 'ACTIVE',
+                                    'bg-red-100 text-red-800 hover:bg-red-200': client.credits[0].status === 'DEFAULTED',
+                                    'bg-orange-100 text-orange-800 hover:bg-orange-200': client.credits[0].status === 'CANCELLED',
+                                }"
+                                >{{ statusCreditsMapper[client.credits[0].status] || client.credits[0].status }}</span>
                             </span>
-                            <ng-template #noUpdatedAt>
-                                <span class="text-gray-400 text-sm">N/A</span>
+                            <ng-template #noCredit>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200">Pendiente de credito</span>
                             </ng-template>
                         </td>
                     </ng-container>

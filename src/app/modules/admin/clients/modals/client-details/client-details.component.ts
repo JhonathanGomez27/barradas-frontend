@@ -17,6 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertsService } from 'app/shared/services/alerts.service';
 import { environment } from 'environment/environment';
 import { DocusealService } from 'app/modules/docuseal/docuseal.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 
 interface FileUpload {
   file: File | null;
@@ -83,6 +84,15 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'EXPIRED' : 'Expirado'
     }
 
+    // Status credit mapper
+    statusMapperCredit: { [key: string]: string } = {
+        'PENDING': 'Pendiente',
+        'ACTIVE': 'Activo',
+        'CLOSED': 'Pagado',
+        'DEFAULTED': 'En Mora',
+        'CANCELLED': 'Cancelado'
+    }
+
     weekDayCtrl: UntypedFormControl = new UntypedFormControl('');
 
     // Días de la semana para el selector
@@ -117,6 +127,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     contractElectronicSignature: any = null;
 
+    creditActive: any = null;
+
+    showElectronicSignatureDetails: boolean = false;
+
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: any,
         public matDialogRef: MatDialogRef<ClientDetailsComponent>,
@@ -127,7 +141,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         private _router: Router,
         private _alertsService: AlertsService,
         private _docusealService: DocusealService,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _fuseConfirmationService: FuseConfirmationService
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -147,7 +162,11 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         this.contractElectronicSignature = this.data.electronicSignContract || null;
         this.editClientForm.patchValue(this.clientDetails);
 
+        this.creditActive = this.data.credits.length > 0 ? this.data.credits[0] : null;
 
+        if(this.clientDetails.status === 'NO_CONTRACT_SENDED' || this.clientDetails.status === 'CONTRACT_SENDED' || this.clientDetails.status === 'COMPLETED'){
+            this.showElectronicSignatureDetails = true;
+        }
     }
 
     // Formatear fecha
@@ -277,6 +296,72 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     getWeekDayName(value: string): string {
         const day = this.weekDays.find(d => d.value === value);
         return day ? day.fullName : '';
+    }    // Obtener icono según el estado del crédito
+    getCreditStatusIcon(status: string): string {
+        switch (status) {
+            case 'ACTIVE': return 'check_circle';
+            case 'PENDING': return 'schedule';
+            case 'CLOSED': return 'paid';
+            case 'DEFAULTED': return 'warning';
+            case 'CANCELLED': return 'cancel';
+            default: return 'help_outline';
+        }
+    }
+
+    // Actualizar estado del crédito
+    updateCreditStatus(newStatus: 'CLOSED' | 'CANCELLED'): void {
+        if (!this.creditActive) {
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'No hay un crédito activo para actualizar.',
+                title: 'Error'
+            });
+            return;
+        }
+
+        const statusText = newStatus === 'CLOSED' ? 'Pagado' : 'Cancelado';
+
+        const dialog = this._fuseConfirmationService.open({
+            title: 'Confirmar actualización de estado',
+            message: `¿Estás seguro de que deseas marcar el crédito como "${statusText}"?`,
+            icon: {
+                show: true,
+                name: 'heroicons_outline:exclamation-triangle',
+                color: 'info'
+            },
+            actions: {
+                confirm: { show: true, label: 'Sí', color: 'primary' },
+                cancel: { show: true, label: 'No' }
+            }
+        });
+
+        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+            if (result === 'confirmed') {
+                this.clientesService.updateCreditStatus(this.creditActive.id, newStatus)
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe({
+                    next: (response) => {
+                        this._alertsService.showAlertMessage({
+                            type: 'success',
+                            text: `Crédito actualizado a ${statusText} correctamente.`,
+                            title: 'Éxito'
+                        });
+
+                        // Actualizar los datos del crédito
+                        this.creditActive = response;
+                        this._changeDetectorRef.markForCheck();
+                    },
+                    error: (error) => {
+                        console.error('Error al actualizar el estado del crédito:', error);
+                        this._alertsService.showAlertMessage({
+                            type: 'error',
+                            text: 'Error al actualizar el estado del crédito.',
+                            title: 'Error'
+                        });
+                    }
+                });
+            }
+        })
     }
 
     toggleEditMode(): void {
