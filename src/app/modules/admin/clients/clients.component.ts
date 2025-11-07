@@ -49,6 +49,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
     pageSize: number = 10;
     nameFilter: string = '';
     statusFilter: string = '';
+    searchFilter: string = ''; // Campo de búsqueda general
     statusOptions: string[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'COMPLETED'];
     statusMapper: { [key: string]: string } = {
         'CREATED': 'Creado',
@@ -152,6 +153,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
             params.creditStatus = this.statusCreditFilter;
         }
 
+        // Añadir campo de búsqueda general
+        if (this.searchFilter) {
+            params.search = this.searchFilter;
+        }
+
         // Añadir filtros de fecha si están establecidos
         if( this.start && this.end) {
             if (this.start) params.createdAtStart = this.toUtcStartISO(this.start);
@@ -181,6 +187,22 @@ export class ClientsComponent implements OnInit, OnDestroy {
     // Método para limpiar el filtro de fechas
     clearDateFilter(): void {
         this.start = this.end = null;
+        this.page = 1;
+        this.searchFilter = '';
+        this.statusCreditFilter = '';
+        this.statusFilter = '';
+        this.loadClients();
+    }
+
+    // Método para aplicar el filtro de búsqueda
+    applySearchFilter(): void {
+        this.page = 1;
+        this.loadClients();
+    }
+
+    // Método para limpiar el filtro de búsqueda
+    clearSearchFilter(): void {
+        this.searchFilter = '';
         this.page = 1;
         this.loadClients();
     }
