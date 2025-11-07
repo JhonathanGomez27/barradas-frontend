@@ -22,7 +22,14 @@
                 </div>
             </div>
             <!-- Actions -->
-            <div class="mt-4 sm:mt-0 sm:ml-4">
+            <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button mat-stroked-button
+                        class="bg-white/10 text-white border-white/30 hover:bg-white/20 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+                        (click)="loadClients()"
+                        matTooltip="Actualizar lista">
+                    <mat-icon class="mr-2 text-white">refresh</mat-icon>
+                    <span class="hidden sm:inline">Refrescar</span>
+                </button>
                 <button mat-raised-button
                         class="bg-white text-primary-700 hover:bg-primary-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
                         (click)="openInviteDialog()">

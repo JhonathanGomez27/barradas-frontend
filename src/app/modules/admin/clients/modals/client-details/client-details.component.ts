@@ -490,20 +490,23 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             next: (response) => {
                 this._alertsService.showAlertMessage({ type: 'success', text: 'Proceso de firma electrónica creado correctamente.', title: 'Éxito' });
 
-                this.clientesService.getClient(this.clientDetails.id).pipe(takeUntil(this._unsubscribeAll)).subscribe(
-                    (updatedClient) => {
-                        this.clientDetails = updatedClient;
-                        this.contractElectronicSignature = updatedClient.electronicSignContract || null;
-
-                        this._changeDetectorRef.markForCheck();
-                    }
-                );
+                this.updateClientData();
             },
             error: (error) => {
                 console.error('Error al crear el proceso de firma electrónica:', error);
                 this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el proceso de firma electrónica.', title: 'Error' });
             }
         });
+    }
+
+    updateClientData(): void {
+        this.clientesService.getClient(this.clientDetails.id).pipe(takeUntil(this._unsubscribeAll)).subscribe(
+            (updatedClient) => {
+                this.clientDetails = updatedClient;
+                this.contractElectronicSignature = updatedClient.electronicSignContract || null
+                this._changeDetectorRef.markForCheck();
+            }
+        );
     }
 }
 

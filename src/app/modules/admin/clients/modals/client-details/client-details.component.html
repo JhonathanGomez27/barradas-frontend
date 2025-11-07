@@ -9,9 +9,21 @@
                 <div class="text-xs md:text-sm opacity-90 truncate" *ngIf="clientDetails">{{ clientDetails.firstName }} {{ clientDetails.lastName }}</div>
             </div>
         </div>
-        <button mat-icon-button (click)="closeDialog()" [tabIndex]="-1" class="hover:bg-white/20 transition-colors duration-200 flex-shrink-0 ml-2">
-            <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-        </button>
+        <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+            <button mat-icon-button
+                    (click)="updateClientData()"
+                    matTooltip="Actualizar información del cliente"
+                    [tabIndex]="-1"
+                    class="hover:bg-white/20 transition-colors duration-200">
+                <mat-icon class="text-white">refresh</mat-icon>
+            </button>
+            <button mat-icon-button
+                    (click)="closeDialog()"
+                    [tabIndex]="-1"
+                    class="hover:bg-white/20 transition-colors duration-200">
+                <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
     </div>
 </div>
 <mat-dialog-content class="flex flex-col flex-auto p-0 min-w-0 overflow-x-hidden">
