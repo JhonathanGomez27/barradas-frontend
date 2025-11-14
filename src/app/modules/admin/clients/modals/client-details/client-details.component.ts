@@ -456,6 +456,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
         this.clientesService.createCredit({ clientId: this.clientDetails.id, repaymentDay: this.weekDayCtrl.value }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response:any) => {
+                this.creditActive = response;
                 this.uploadFileToClient(response.id);
             },error: (error) => {
                 this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el crédito para el cliente.', title: 'Error' });
@@ -471,8 +472,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 const payloadElectronicSignature = {
                     clientId: this.clientDetails.id,
                     documentId: docUploaded.id,
-                    // document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`,
-                    document_url: `${environment.url}/documents/${docUploaded.id}/download`,
+                    document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`,
+                    // document_url: `${environment.url}/documents/${docUploaded.id}/download`,
                     creditId: creditId
                 }
 
@@ -508,6 +509,47 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             }
         );
     }
+
+
+    deleteElctronicSignatureProcess(): void {
+        if(!this.contractElectronicSignature){
+            this._alertsService.showAlertMessage({ type: 'error', text: 'No hay un proceso de firma electrónica para eliminar.', title: 'Error' });
+            return;
+        }
+
+        const dialog = this._fuseConfirmationService.open({
+            title: 'Confirmar eliminación del proceso de firma electrónica',
+            message: `¿Estás seguro de que deseas eliminar el proceso de firma electrónica? Esta acción no se puede deshacer.`,
+            icon: {
+                show: true,
+                name: 'heroicons_outline:exclamation-triangle',
+                color: 'warn'
+            },
+            actions: {
+                confirm: { show: true, label: 'Sí, eliminar', color: 'warn' },
+                cancel: { show: true, label: 'Cancelar' }
+            }
+        });
+
+        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+            if (result === 'confirmed') {
+                this._docusealService.deleteElectronicSignature(this.contractElectronicSignature.id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+                    next: (response) => {
+                        this._alertsService.showAlertMessage({ type: 'success', text: 'Proceso de firma electrónica eliminado correctamente.', title: 'Éxito' });
+                        this.creditActive = null;
+                        this.contractElectronicSignature = null;
+                        this.updateClientData();
+                    },
+                    error: (error) => {
+                        console.error('Error al eliminar el proceso de firma electrónica:', error);
+                        this._alertsService.showAlertMessage({ type: 'error', text: 'Error al eliminar el proceso de firma electrónica.', title: 'Error' });
+                    }
+                });
+            }
+        });
+
+    }
+
 }
 
 // Componente de diálogo para previsualizar archivos

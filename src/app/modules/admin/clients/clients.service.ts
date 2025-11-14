@@ -102,4 +102,6 @@ export class ClientsService {
     updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {
         return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
     }
+
+
 }

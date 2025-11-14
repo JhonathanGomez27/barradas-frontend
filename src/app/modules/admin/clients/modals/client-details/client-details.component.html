@@ -422,22 +422,33 @@
                                 <h3 class="font-semibold text-gray-800 text-base md:text-lg">Firma Electrónica del Contrato</h3>
                             </div>
                             @if(contractElectronicSignature){
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium transition-all duration-300"
-                                    [ngClass]="{
-                                        'bg-green-100 text-green-800': contractElectronicSignature.status === 'SIGNED',
-                                        'bg-blue-100 text-blue-800': contractElectronicSignature.status === 'PENDING',
-                                        'bg-yellow-100 text-yellow-800': contractElectronicSignature.status === 'CREATED',
-                                        'bg-red-100 text-red-800': contractElectronicSignature.status === 'EXPIRED',
-                                        'bg-gray-100 text-gray-800': contractElectronicSignature.status === 'CANCELLED'
-                                    }">
-                                    <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px;">
-                                        {{ contractElectronicSignature.status === 'SIGNED' ? 'check_circle' :
-                                        contractElectronicSignature.status === 'PENDING' ? 'schedule' :
-                                        contractElectronicSignature.status === 'CREATED' ? 'pending' :
-                                        contractElectronicSignature.status === 'EXPIRED' ? 'error' : 'cancel' }}
-                                    </mat-icon>
-                                    {{ statusMapperSignature[contractElectronicSignature.status] || contractElectronicSignature.status }}
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium transition-all duration-300"
+                                        [ngClass]="{
+                                            'bg-green-100 text-green-800': contractElectronicSignature.status === 'SIGNED',
+                                            'bg-blue-100 text-blue-800': contractElectronicSignature.status === 'PENDING',
+                                            'bg-yellow-100 text-yellow-800': contractElectronicSignature.status === 'CREATED',
+                                            'bg-red-100 text-red-800': contractElectronicSignature.status === 'EXPIRED',
+                                            'bg-gray-100 text-gray-800': contractElectronicSignature.status === 'CANCELLED'
+                                        }">
+                                        <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px;">
+                                            {{ contractElectronicSignature.status === 'SIGNED' ? 'check_circle' :
+                                            contractElectronicSignature.status === 'PENDING' ? 'schedule' :
+                                            contractElectronicSignature.status === 'CREATED' ? 'pending' :
+                                            contractElectronicSignature.status === 'EXPIRED' ? 'error' : 'cancel' }}
+                                        </mat-icon>
+                                        {{ statusMapperSignature[contractElectronicSignature.status] || contractElectronicSignature.status }}
+                                    </span>
+
+                                    <button mat-stroked-button
+                                            color="warn"
+                                            (click)="deleteElctronicSignatureProcess()"
+                                            matTooltip="Eliminar firma electrónica"
+                                            class="flex items-center gap-1 text-xs md:text-sm font-semibold">
+                                        <mat-icon class="text-sm">delete</mat-icon>
+                                        <span class="hidden sm:inline">Eliminar Firma</span>
+                                    </button>
+                                </div>
                             }
                         </div>
                     </div>
