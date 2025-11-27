@@ -1,0 +1,70 @@
+<div mat-dialog-title class="flex bg-primary">
+    <div class="flex items-center justify-between w-full text-on-primary mt-3">
+        <div class="text-lg font-medium flex items-center">
+            <mat-icon class="text-white">{{ isEditing ? 'edit' : 'add_business' }}</mat-icon>
+            <h2 class="text-xl font-semibold">{{ isEditing ? 'Editar Tienda' : 'Nueva Tienda' }}</h2>
+        </div>
+        <button mat-icon-button (click)="onCancel()" [tabIndex]="-1">
+            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+</div>
+<mat-dialog-content class="flex flex-col flex-auto p-0 min-w-0 overflow-x-hidden">
+    <!-- Form -->
+    <form [formGroup]="storeForm" class="p-6">
+        <div class="space-y-4">
+            <!-- Name Field -->
+            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                <mat-label>Nombre de la Tienda</mat-label>
+                <input matInput formControlName="name" placeholder="Ej. Tienda Centro">
+                <mat-icon matPrefix class="text-gray-400">store</mat-icon>
+                <mat-error *ngIf="storeForm.get('name')?.hasError('required')">
+                    El nombre es requerido
+                </mat-error>
+                <mat-error *ngIf="storeForm.get('name')?.hasError('minlength')">
+                    Debe tener al menos 3 caracteres
+                </mat-error>
+            </mat-form-field>
+
+            <!-- City Field -->
+            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                <mat-label>Ciudad</mat-label>
+                <mat-select formControlName="cityId" placeholder="Selecciona una ciudad">
+                    <mat-option *ngFor="let city of data.cities" [value]="city.id">
+                        {{ city.name }}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matPrefix class="text-gray-400">location_city</mat-icon>
+                <mat-error *ngIf="storeForm.get('cityId')?.hasError('required')">
+                    La ciudad es requerida
+                </mat-error>
+            </mat-form-field>
+
+            <!-- Address Field -->
+            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                <mat-label>Dirección</mat-label>
+                <textarea matInput formControlName="address" rows="1" placeholder="Ej. Av. Juárez #123, Col. Centro"></textarea>
+                <mat-icon matPrefix class="text-gray-400">location_on</mat-icon>
+                <mat-error *ngIf="storeForm.get('address')?.hasError('required')">
+                    La dirección es requerida
+                </mat-error>
+                <mat-error *ngIf="storeForm.get('address')?.hasError('minlength')">
+                    Debe tener al menos 5 caracteres
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="justify-end py-3 px-4 bg-gray-50 border-t border-gray-200">
+    <!-- Actions -->
+    <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
+        Cancelar
+    </button>
+    <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="storeForm.invalid || isSubmitting" class="min-w-[120px]">
+        <mat-spinner *ngIf="isSubmitting" diameter="20" class="mr-2"></mat-spinner>
+        <span *ngIf="!isSubmitting">
+            {{ isEditing ? 'Actualizar' : 'Crear Tienda' }}
+        </span>
+    </button>
+</mat-dialog-actions>

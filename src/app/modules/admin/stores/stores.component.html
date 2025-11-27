@@ -1,0 +1,225 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-gray-50" cdkScrollable>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-6 sm:px-10 sm:py-8">
+            <div class="min-w-0 flex-1">
+                <!-- Breadcrumbs -->
+                <div class="mb-2">
+                    <div class="flex items-center font-medium text-primary-100">
+                        <mat-icon class="mr-2 text-white">store</mat-icon>
+                        <span class="text-white">Gestión de Tiendas</span>
+                    </div>
+                </div>
+                <!-- Title -->
+                <div class="flex items-center">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                        Tiendas
+                    </h2>
+                    <span class="ml-4 px-3 py-1 bg-white/20 rounded-full text-sm font-medium text-white">
+                        {{ totalItems }} total
+                    </span>
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button mat-stroked-button
+                        class="bg-white/10 text-white border-white/30 hover:bg-white/20 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+                        (click)="loadStores()"
+                        matTooltip="Actualizar lista">
+                    <mat-icon class="mr-2 text-white">refresh</mat-icon>
+                    <span class="hidden sm:inline">Refrescar</span>
+                </button>
+                <button mat-raised-button
+                        class="bg-white text-primary-700 hover:bg-primary-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+                        (click)="openStoreDialog()">
+                    <mat-icon class="mr-2">add</mat-icon>
+                    <span>Nueva Tienda</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6 md:p-10">
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+            <mat-spinner diameter="50"></mat-spinner>
+        </div>
+
+        <!-- Stores Table -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl" *ngIf="!isLoading">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-blue-600 text-xl">store</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Lista de Tiendas</h3>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-primary-100 text-primary-800">
+                        <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px;">list</mat-icon>
+                        {{ stores.length }} tiendas
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-6">
+                <!-- Search Bar -->
+                <div class="mb-6">
+                    <mat-form-field appearance="outline" class="w-full md:w-96" subscriptSizing="dynamic">
+                        <mat-label>Buscar tienda</mat-label>
+                        <input matInput
+                               [value]="searchTerm"
+                               (input)="onSearchChange($any($event.target).value)"
+                               placeholder="Buscar por nombre o ciudad...">
+                        <mat-icon matPrefix class="text-gray-400">search</mat-icon>
+                        <button matSuffix mat-icon-button *ngIf="searchTerm" (click)="clearSearch()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </mat-form-field>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="stores.length === 0" class="text-center py-12">
+                    <div class="flex flex-col items-center">
+                        <div class="bg-gray-100 p-6 rounded-full mb-4">
+                            <mat-icon class="text-gray-400 text-6xl">{{ searchTerm ? 'search_off' : 'store' }}</mat-icon>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">
+                            {{ searchTerm ? 'No se encontraron tiendas' : 'No hay tiendas registradas' }}
+                        </h3>
+                        <p class="text-gray-500 mb-6">
+                            {{ searchTerm ? 'Intenta con otro término de búsqueda' : 'Comienza creando tu primera tienda' }}
+                        </p>
+                        <button *ngIf="!searchTerm" mat-raised-button color="primary" (click)="toggleForm()">
+                            <mat-icon class="mr-2">add</mat-icon>
+                            Nueva Tienda
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vista de tabla para desktop -->
+                <div *ngIf="stores.length > 0" class="hidden md:block overflow-x-auto">
+                    <table mat-table [dataSource]="stores" class="min-w-full">
+
+                        <!-- Name Column -->
+                        <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                <div class="flex items-center">
+                                    <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">store</mat-icon>
+                                    Nombre
+                                </div>
+                            </th>
+                            <td mat-cell *matCellDef="let store" class="px-4 py-4 text-gray-800">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3 flex-shrink-0">
+                                        {{ store.name.charAt(0).toUpperCase() }}
+                                    </div>
+                                    <span class="font-medium">{{ store.name }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- Address Column -->
+                        <ng-container matColumnDef="address">
+                            <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                <div class="flex items-center">
+                                    <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">location_on</mat-icon>
+                                    Dirección
+                                </div>
+                            </th>
+                            <td mat-cell *matCellDef="let store" class="px-4 py-4 text-gray-600">
+                                <div class="flex items-start gap-2">
+                                    <mat-icon class="text-gray-400 text-sm mt-0.5" style="font-size: 16px;">place</mat-icon>
+                                    <span class="text-sm">{{ store.address }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- City Column -->
+                        <ng-container matColumnDef="city">
+                            <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                <div class="flex items-center">
+                                    <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">location_city</mat-icon>
+                                    Ciudad
+                                </div>
+                            </th>
+                            <td mat-cell *matCellDef="let store" class="px-4 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                    <mat-icon class="mr-1" style="font-size: 14px; width: 14px; height: 14px;">location_city</mat-icon>
+                                    {{ getCityName(store.cityId) }}
+                                </span>
+                            </td>
+                        </ng-container>
+
+                        <!-- Actions Column -->
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef class="text-center px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                <mat-icon class="text-gray-400">settings</mat-icon>
+                            </th>
+                            <td mat-cell *matCellDef="let store" class="px-4 py-4 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button mat-icon-button
+                                            color="primary"
+                                            (click)="editStore(store)"
+                                            matTooltip="Editar tienda"
+                                            class="hover:bg-primary-50 transition-colors">
+                                        <mat-icon>edit</mat-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="sticky top-0 z-10"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                            class="hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100">
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Vista de tarjetas para móviles -->
+                <div *ngIf="stores.length > 0" class="md:hidden divide-y divide-gray-200">
+                    <div *ngFor="let store of stores"
+                         class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center flex-1 min-w-0">
+                                <div class="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold mr-3 flex-shrink-0">
+                                    {{ store.name.charAt(0).toUpperCase() }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-gray-900 truncate">{{ store.name }}</p>
+                                    <p class="text-sm text-gray-500 truncate">{{ store.address }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                <mat-icon class="mr-1" style="font-size: 14px; width: 14px; height: 14px;">location_city</mat-icon>
+                                {{ getCityName(store.cityId) }}
+                            </span>
+                            <button mat-icon-button
+                                    color="primary"
+                                    (click)="editStore(store)"
+                                    matTooltip="Editar">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paginador -->
+                <div *ngIf="stores.length > 0" class="border-t border-gray-200 bg-gray-50 mt-4">
+                    <mat-paginator
+                        [length]="totalItems"
+                        [pageSize]="pageSize"
+                        [pageIndex]="currentPage - 1"
+                        [pageSizeOptions]="pageSizeOptions"
+                        (page)="onPageChange($event)">
+                    </mat-paginator>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

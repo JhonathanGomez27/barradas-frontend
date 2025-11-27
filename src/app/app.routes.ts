@@ -10,14 +10,14 @@ import { LayoutComponent } from 'app/layout/layout.component';
 export const appRoutes: Route[] = [
 
     // Redirect empty path to '/clients'
-    {path: '', pathMatch : 'full', redirectTo: 'clients'},
+    { path: '', pathMatch: 'full', redirectTo: 'clients' },
 
     // Redirect signed-in user to the '/clients'
     //
     // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
     // path. Below is another redirection for that path to redirect the user to the desired
     // location. This is a small convenience to keep all main routes together here on this file.
-    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'clients'},
+    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'clients' },
 
     // Auth routes for guests
     {
@@ -32,7 +32,7 @@ export const appRoutes: Route[] = [
             // {path: 'confirmation-required', loadChildren: () => import('app/modules/auth/confirmation-required/confirmation-required.routes')},
             // {path: 'forgot-password', loadChildren: () => import('app/modules/auth/forgot-password/forgot-password.routes')},
             // {path: 'reset-password', loadChildren: () => import('app/modules/auth/reset-password/reset-password.routes')},
-            {path: 'sign-in', loadChildren: () => import('app/modules/auth/sign-in/sign-in.routes')},
+            { path: 'sign-in', loadChildren: () => import('app/modules/auth/sign-in/sign-in.routes') },
             // {path: 'sign-up', loadChildren: () => import('app/modules/auth/sign-up/sign-up.routes')}
         ]
     },
@@ -47,7 +47,7 @@ export const appRoutes: Route[] = [
             layout: 'empty'
         },
         children: [
-            {path: 'sign-out', loadChildren: () => import('app/modules/auth/sign-out/sign-out.routes')},
+            { path: 'sign-out', loadChildren: () => import('app/modules/auth/sign-out/sign-out.routes') },
             // {path: 'unlock-session', loadChildren: () => import('app/modules/auth/unlock-session/unlock-session.routes')}
         ]
     },
@@ -60,9 +60,10 @@ export const appRoutes: Route[] = [
             layout: 'empty'
         },
         children: [
-            {path: 'complete', loadChildren: () => import('app/modules/landing/complete-profile/complete-profile.routes')},
-            {path: 'docuseal-form', loadChildren: () => import('app/modules/landing/docuseal-form/docuseal-form.routes')},
-            {path: 'invalid-token', loadChildren: () => import('app/modules/landing/invalid-token/invalid-token.routes')}
+            { path: 'complete', loadChildren: () => import('app/modules/landing/complete-profile/complete-profile.routes') },
+            { path: 'docuseal-form', loadChildren: () => import('app/modules/landing/docuseal-form/docuseal-form.routes') },
+            { path: 'invalid-token', loadChildren: () => import('app/modules/landing/invalid-token/invalid-token.routes') },
+            { path: 'web-rtc', loadChildren: () => import('app/modules/landing/web-rtc/web-rtc.routes') },
         ]
     },
 
@@ -77,8 +78,9 @@ export const appRoutes: Route[] = [
         },
         children: [
             // {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'clients', loadChildren: () => import('app/modules/admin/clients/clients.routes')},
-            {path: 'docuseal', loadChildren: () => import('app/modules/docuseal/docuseal.routes')},
+            { path: 'clients', loadChildren: () => import('app/modules/admin/clients/clients.routes') },
+            { path: 'docuseal', loadChildren: () => import('app/modules/docuseal/docuseal.routes') },
+            { path: 'stores', loadChildren: () => import('app/modules/admin/stores/stores.routes') }
         ]
     }
 ];

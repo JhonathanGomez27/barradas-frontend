@@ -1,0 +1,202 @@
+<!-- Main Container -->
+<div class="relative h-screen w-full overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-90">
+        <div class="text-center">
+            <div
+                class="mb-4 inline-block h-16 w-16 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent">
+            </div>
+            <p class="text-lg text-white">Iniciando llamada...</p>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading"
+        class="absolute inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-90 p-4">
+        <mat-card class="max-w-md bg-gray-800 text-white">
+            <mat-card-content class="text-center">
+                <mat-icon class="mb-4 text-6xl text-red-500">error_outline</mat-icon>
+                <h2 class="mb-4 text-2xl font-bold">Error</h2>
+                <p class="mb-6 text-gray-300">{{ errorMessage }}</p>
+                <button mat-raised-button color="primary" (click)="endCall()">
+                    Volver al inicio
+                </button>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <!-- Join Prompt -->
+    <div *ngIf="isJoinReady && !hasJoined && !isLoading && !errorMessage"
+        class="absolute inset-0 z-40 flex items-center justify-center bg-gray-900/80 backdrop-blur">
+        <mat-card class="max-w-lg w-full mx-4 bg-gray-800 text-white shadow-2xl">
+            <mat-card-content class="space-y-6 text-center">
+                <div class="flex flex-col items-center gap-3">
+                    <mat-icon class="text-5xl text-primary-300">video_call</mat-icon>
+                    <h2 class="text-2xl font-semibold">Listo para unirte a la sala</h2>
+                    <p class="text-gray-300">Pulsa el botón para iniciar tu cámara y micrófono antes de entrar a la reunión.</p>
+                    <div class="rounded-full bg-white/10 px-4 py-2 text-sm text-white">
+                        ID de sala: <span class="font-semibold">{{ roomId || manualRoomId }}</span>
+                    </div>
+                </div>
+                <button mat-raised-button color="primary" class="w-full sm:w-auto" (click)="joinCall()">
+                    Unirme a la reunión
+                    <mat-icon class="ml-2">arrow_forward</mat-icon>
+                </button>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <!-- Video Chat Interface -->
+    <div *ngIf="!isLoading && !errorMessage" class="relative h-full w-full">
+
+        <!-- Control Center -->
+        <div class="absolute top-20 left-0 right-0 z-20 px-4 md:px-8">
+            <div class="mx-auto max-w-4xl rounded-2xl bg-black/50 p-4 text-white shadow-2xl backdrop-blur">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm uppercase tracking-wide text-indigo-200">Sala actual</p>
+                            <p class="text-lg font-semibold" *ngIf="roomId || manualRoomId; else noRoom">
+                                {{ roomId || manualRoomId }}
+                            </p>
+                            <ng-template #noRoom>
+                                <p class="text-lg font-semibold text-gray-300">Sin sala seleccionada</p>
+                            </ng-template>
+                        </div>
+                        <span class="rounded-full bg-white/10 px-4 py-1 text-xs font-medium tracking-wide text-white">
+                            Estado: {{ statusMessage }}
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                        <button mat-raised-button color="primary" class="w-full md:w-auto"
+                            (click)="createMeeting()" [disabled]="isCreatingRoom">
+                            <mat-icon class="mr-2">add</mat-icon>
+                            {{ isCreatingRoom ? 'Creando sala...' : 'Crear sala' }}
+                        </button>
+
+                        <mat-form-field appearance="fill" class="flex-1 bg-white/5 rounded-lg">
+                            <mat-label>ID de sala</mat-label>
+                            <input matInput [(ngModel)]="manualRoomId" placeholder="Ej. test-room" />
+                        </mat-form-field>
+
+                        <button mat-stroked-button color="accent" class="w-full md:w-auto"
+                            (click)="prepareJoinFromInput()" [disabled]="!manualRoomId">
+                            <mat-icon class="mr-2">meeting_room</mat-icon>
+                            Usar ID
+                        </button>
+                        <button mat-stroked-button color="primary" class="w-full md:w-auto"
+                            (click)="joinCall()" [disabled]="hasJoined || !isJoinReady">
+                            <mat-icon class="mr-2">play_arrow</mat-icon>
+                            Unirme ahora
+                        </button>
+                    </div>
+
+                    <div *ngIf="meetingLink" class="flex flex-col gap-2 rounded-xl bg-white/5 p-3 text-sm sm:flex-row sm:items-center">
+                        <div class="flex-1 truncate text-xs sm:text-sm">{{ meetingLink }}</div>
+                        <div class="flex gap-2">
+                            <button mat-stroked-button color="primary" (click)="copyMeetingLink()">
+                                <mat-icon class="mr-2">content_copy</mat-icon>
+                                Copiar enlace
+                            </button>
+                            <button mat-icon-button [matTooltip]="'Abrir enlace'" (click)="openMeetingLink()">
+                                <mat-icon>open_in_new</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remote Video (Full Screen) -->
+        <div class="absolute inset-0 bg-gray-900">
+            <video #remoteVideo autoplay playsinline class="h-full w-full object-cover"></video>
+
+            <!-- Placeholder when no remote stream -->
+            <div *ngIf="connectionState !== 'connected-peer'"
+                class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                <ng-container *ngIf="roomId || manualRoomId; else selectRoomMessage">
+                    <div class="text-center">
+                        <mat-icon class="mb-4 text-8xl text-gray-600">person</mat-icon>
+                        <p class="text-xl text-gray-400">Esperando al otro usuario...</p>
+                    </div>
+                </ng-container>
+                <ng-template #selectRoomMessage>
+                    <div class="text-center text-gray-300">
+                        <mat-icon class="mb-4 text-8xl text-gray-600">meeting_room</mat-icon>
+                        <p class="text-xl">Selecciona o crea una sala para comenzar.</p>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+
+        <!-- Local Video (Picture-in-Picture) -->
+        <div
+            class="absolute right-4 top-4 z-10 overflow-hidden rounded-2xl shadow-2xl ring-2 ring-white ring-opacity-20 md:right-6 md:top-6">
+            <video #localVideo autoplay muted playsinline [class.scale-x-[-1]]="true"
+                class="h-32 w-24 object-cover sm:h-40 sm:w-32 md:h-48 md:w-36 lg:h-56 lg:w-44"></video>
+
+            <!-- Camera Off Overlay -->
+            <div *ngIf="!isVideoEnabled" class="absolute inset-0 flex items-center justify-center bg-gray-900">
+                <mat-icon class="text-4xl text-gray-400">videocam_off</mat-icon>
+            </div>
+        </div>
+
+        <!-- Top Bar - Room Info & Status -->
+        <div class="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-4 md:p-6">
+            <div class="flex items-center justify-between">
+                <!-- Room ID -->
+                <div class="flex items-center space-x-2 rounded-full bg-black/40 px-4 py-2 backdrop-blur-md">
+                    <mat-icon class="text-white">meeting_room</mat-icon>
+                    <span class="text-sm font-medium text-white md:text-base">
+                        Sala: {{ roomId || manualRoomId || 'Sin sala' }}
+                    </span>
+                </div>
+
+                <!-- Connection Status -->
+                <mat-chip-set>
+                    <mat-chip [highlighted]="true" [color]="getConnectionStatusColor()">
+                        <mat-icon matChipAvatar>
+                            {{ connectionState === 'connected-peer' ? 'check_circle' : 'sync' }}
+                        </mat-icon>
+                        {{ getConnectionStatusText() }}
+                    </mat-chip>
+                </mat-chip-set>
+            </div>
+        </div>
+
+        <!-- Bottom Control Panel -->
+        <div class="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/60 to-transparent p-6 md:p-8">
+            <div class="mx-auto flex max-w-md items-center justify-center space-x-4 md:space-x-6">
+
+                <!-- Microphone Toggle -->
+                <button mat-fab [color]="isAudioEnabled ? 'primary' : 'warn'" (click)="toggleAudio()"
+                    class="shadow-xl transition-all hover:scale-110" [class.opacity-50]="!isAudioEnabled">
+                    <mat-icon>{{ isAudioEnabled ? 'mic' : 'mic_off' }}</mat-icon>
+                </button>
+
+                <!-- End Call Button -->
+                <button mat-fab extended color="warn" (click)="endCall()"
+                    class="shadow-xl transition-all hover:scale-110">
+                    <mat-icon>call_end</mat-icon>
+                    <span class="ml-2 hidden sm:inline">Finalizar</span>
+                </button>
+
+                <!-- Camera Toggle -->
+                <button mat-fab [color]="isVideoEnabled ? 'primary' : 'warn'" (click)="toggleVideo()"
+                    class="shadow-xl transition-all hover:scale-110" [class.opacity-50]="!isVideoEnabled">
+                    <mat-icon>{{ isVideoEnabled ? 'videocam' : 'videocam_off' }}</mat-icon>
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="absolute bottom-28 left-4 z-20 rounded-full bg-black/60 px-4 py-2 text-xs font-medium text-white shadow-lg">
+            {{ statusMessage }}
+        </div>
+
+    </div>
+
+</div>
