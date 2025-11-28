@@ -5,6 +5,7 @@ import { ClientsService } from './clients.service';
 import { HttpParams } from '@angular/common/http';
 import { environment } from 'environment/environment';
 import { ClientDetailsComponent } from './modals/client-details/client-details.component';
+import { StoresService } from '../stores/stores.service';
 
 const limit: number = environment.pagination;
 
@@ -18,16 +19,25 @@ const ClientsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: R
     return _ClientsService.getClients(params);
 }
 
+const StoresAllResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+    const _StoresAllService = inject(StoresService);
+    return _StoresAllService.getAllStoresNoPagination();
+}
+
 export default [
     {
         path: '',
         component: ClientsComponent,
         resolve: {
-            clients: ClientsResolver
+            clients: ClientsResolver,
+            stores: StoresAllResolver
         }
     },
     {
         path: ':id',
-        component: ClientDetailsComponent
+        component: ClientDetailsComponent,
+        resolve: {
+            stores: StoresAllResolver
+        }
     }
 ] as Routes;

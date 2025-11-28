@@ -50,6 +50,9 @@ export class StoresService {
 
     private readonly url: string = environment.url;
 
+    private _allStores: BehaviorSubject<Store[]> = new BehaviorSubject<Store[]>([]);
+    public readonly allStores$ = this._allStores.asObservable();
+
     private _stores: BehaviorSubject<Store[]> = new BehaviorSubject<Store[]>([]);
     public readonly stores$ = this._stores.asObservable();
 
@@ -99,6 +102,14 @@ export class StoresService {
                     page: params.page,
                     limit: params.limit
                 });
+            })
+        );
+    }
+
+    getAllStoresNoPagination(): Observable<Store[]> {
+        return this.httpClient.get<Store[]>(`${this.url}/stores/all`).pipe(
+            tap((stores) => {
+                this._allStores.next(stores);
             })
         );
     }

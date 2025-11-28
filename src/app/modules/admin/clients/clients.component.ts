@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { ClientsService } from './clients.service';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -20,6 +21,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Store, StoresService } from '../stores/stores.service';
 
 @Component({
   selector: 'app-clients',
@@ -27,6 +29,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatFormFieldModule,
@@ -38,6 +41,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     MatTooltipModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    NgxMatSelectSearchModule,
   ],
   templateUrl: './clients.component.html'
 })
@@ -99,13 +103,19 @@ export class ClientsComponent implements OnInit, OnDestroy {
     start?: Date | null;
     end?: Date | null;
 
+    stores: Store[] = [];
+    storeFilter: string = '';
+    storeFilterCtrl: FormControl = new FormControl('');
+    filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
+
     constructor(
         private _clientsService: ClientsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _dialog: MatDialog,
         private _fuseConfirmationService: FuseConfirmationService,
         private _activatedRoute: ActivatedRoute,
-        private _router: Router
+        private _router: Router,
+        private _storesService: StoresService
     ) {
         this.Toast = Swal.mixin({
             toast: true,
@@ -121,12 +131,24 @@ export class ClientsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+
         this._clientsService.clients$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
             this.clients = response.data;
             this.totalClients = response.total;
             this._changeDetectorRef.markForCheck();
         });
 
+        this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
+            this.stores = response;
+            this.filteredStores.next(this.stores.slice());
+            this._changeDetectorRef.markForCheck();
+        });
+
+        // Listen for search field value changes
+        this.storeFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
+            this.filterStores();
+            this._changeDetectorRef.markForCheck();
+        });
 
         // Get query params to check if we need to open the signature process
         const client = this._activatedRoute.snapshot.queryParamMap.get('clientId');
@@ -151,6 +173,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
         if (this.statusCreditFilter) {
             params.creditStatus = this.statusCreditFilter;
+        }
+
+        // Añadir filtro de tienda
+        if (this.storeFilter) {
+            params.storeId = this.storeFilter;
         }
 
         // Añadir campo de búsqueda general
@@ -191,6 +218,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
         this.searchFilter = '';
         this.statusCreditFilter = '';
         this.statusFilter = '';
+        this.storeFilter = '';
         this.loadClients();
     }
 
@@ -276,7 +304,26 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
     obtenerDetallesCliente(client_id: string): void {
         // Navegar a la ruta de detalles del cliente
-        this._router.navigate(['/clients', client_id]);
+        this._router.navigate(['/admin/clients', client_id]);
+    }
+
+    // Método para filtrar tiendas en el select con búsqueda
+    private filterStores(): void {
+        if (!this.stores) {
+            return;
+        }
+        // Get the search keyword
+        let search = this.storeFilterCtrl.value;
+        if (!search) {
+            this.filteredStores.next(this.stores.slice());
+            return;
+        } else {
+            search = search.toLowerCase();
+        }
+        // Filter the stores
+        this.filteredStores.next(
+            this.stores.filter(store => store.name.toLowerCase().indexOf(search) > -1)
+        );
     }
 
     private toUtcStartISO(d: Date) {

@@ -119,6 +119,29 @@
                         </mat-form-field>
                     </div>
 
+                    <!-- Filtro de Tienda -->
+                    <div class="flex flex-col">
+                        <label class="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                            <mat-icon class="mr-1 text-gray-400" style="font-size: 18px; width: 18px; height: 18px;">store</mat-icon>
+                            Tienda
+                        </label>
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-select [(ngModel)]="storeFilter" (selectionChange)="onFilterChange()" placeholder="Seleccionar tienda">
+                                <mat-option>
+                                    <ngx-mat-select-search
+                                        [formControl]="storeFilterCtrl"
+                                        placeholderLabel="Buscar tienda..."
+                                        noEntriesFoundLabel="No se encontraron tiendas">
+                                    </ngx-mat-select-search>
+                                </mat-option>
+                                <mat-option value="">Todas las tiendas</mat-option>
+                                <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+                                    {{ store.name }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
                     <!-- Botones de Acción -->
                     <div class="flex flex-col justify-end">
                         <div class="flex gap-2">
