@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -18,6 +18,8 @@ import { AlertsService } from 'app/shared/services/alerts.service';
 import { environment } from 'environment/environment';
 import { DocusealService } from 'app/modules/docuseal/docuseal.service';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CdkScrollable } from '@angular/cdk/scrolling';
 
 interface FileUpload {
   file: File | null;
@@ -32,7 +34,6 @@ interface FileUpload {
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
@@ -40,7 +41,9 @@ interface FileUpload {
     MatTooltipModule,
     ReactiveFormsModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatProgressSpinnerModule,
+    CdkScrollable
   ],
   templateUrl: './client-details.component.html'
 })
@@ -132,8 +135,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     showElectronicSignatureDetails: boolean = false;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) public data: any,
-        public matDialogRef: MatDialogRef<ClientDetailsComponent>,
         private clientesService : ClientsService,
         private dialog: MatDialog,
         private fb: FormBuilder,
@@ -157,16 +158,46 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     }
 
     ngOnInit(): void {
-        this.clientDetails = this.data;
+        // Obtener el ID del cliente desde los parámetros de la ruta
+        const clientId = this._activatedRoute.snapshot.params['id'];
 
-        this.contractElectronicSignature = this.data.electronicSignContract || null;
-        this.editClientForm.patchValue(this.clientDetails);
-
-        this.creditActive = this.data.credits.length > 0 ? this.data.credits[0] : null;
-
-        if(this.clientDetails.status === 'NO_CONTRACT_SENDED' || this.clientDetails.status === 'CONTRACT_SENDED' || this.clientDetails.status === 'COMPLETED'){
-            this.showElectronicSignatureDetails = true;
+        if (clientId) {
+            this.loadClientDetails(clientId);
+        } else {
+            this._router.navigate(['/clients']);
         }
+    }
+
+    loadClientDetails(clientId: string): void {
+        this.isLoading = true;
+        this.clientesService.getClient(clientId)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response: any) => {
+                    this.clientDetails = response;
+                    this.contractElectronicSignature = response.electronicSignContract || null;
+                    this.editClientForm.patchValue(this.clientDetails);
+                    this.creditActive = response.credits.length > 0 ? response.credits[0] : null;
+
+                    if(this.clientDetails.status === 'NO_CONTRACT_SENDED' ||
+                       this.clientDetails.status === 'CONTRACT_SENDED' ||
+                       this.clientDetails.status === 'COMPLETED'){
+                        this.showElectronicSignatureDetails = true;
+                    }
+                    this.isLoading = false;
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: (error) => {
+                    console.error('Error al cargar detalles del cliente:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al cargar los detalles del cliente',
+                        title: 'Error'
+                    });
+                    this.isLoading = false;
+                    this._router.navigate(['/clients']);
+                }
+            });
     }
 
     // Formatear fecha
@@ -285,11 +316,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             case 'INITIAL_PAYMENT': return 'payment';
             default: return 'insert_drive_file';
         }
-    }
-
-    // Cerrar el diálogo
-    closeDialog(): void {
-        this.matDialogRef.close();
     }
 
     // Obtener el nombre completo del día de la semana
@@ -415,11 +441,21 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         this.clientesService.updateClient(this.clientDetails.id, formData).subscribe({
             next: () => {
                 this.isLoading = false;
-                this.matDialogRef.close(true);
+                this._alertsService.showAlertMessage({
+                    type: 'success',
+                    text: 'Cliente actualizado correctamente',
+                    title: 'Éxito'
+                });
+                this.loadClientDetails(this.clientDetails.id);
+                this.isEditMode = false;
             },
             error: () => {
                 this.isLoading = false;
-                alert('Error al actualizar el cliente.');
+                this._alertsService.showAlertMessage({
+                    type: 'error',
+                    text: 'Error al actualizar el cliente',
+                    title: 'Error'
+                });
             }
         });
     }
@@ -430,8 +466,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     }
 
     initiateSignatureProcess(): void {
-
-        this.closeDialog();
         // Lógica para iniciar el proceso de firma electrónica
         //Navigate to the Docuseal builder with the contractElectronicSignature id in _blank
         window.open(`/docuseal/builder/${this.contractElectronicSignature.id}`, '_blank');
@@ -548,6 +582,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             }
         });
 
+    }
+
+    goBack(): void {
+        this._router.navigate(['/clients']);
     }
 
 }

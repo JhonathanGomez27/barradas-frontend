@@ -162,6 +162,13 @@
                             <td mat-cell *matCellDef="let store" class="px-4 py-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button mat-icon-button
+                                            color="accent"
+                                            (click)="viewStoreDetails(store)"
+                                            matTooltip="Ver detalles"
+                                            class="hover:bg-accent-50 transition-colors">
+                                        <mat-icon>visibility</mat-icon>
+                                    </button>
+                                    <button mat-icon-button
                                             color="primary"
                                             (click)="editStore(store)"
                                             matTooltip="Editar tienda"
@@ -199,12 +206,20 @@
                                 <mat-icon class="mr-1" style="font-size: 14px; width: 14px; height: 14px;">location_city</mat-icon>
                                 {{ getCityName(store.cityId) }}
                             </span>
-                            <button mat-icon-button
-                                    color="primary"
-                                    (click)="editStore(store)"
-                                    matTooltip="Editar">
-                                <mat-icon>edit</mat-icon>
-                            </button>
+                            <div class="flex gap-1">
+                                <button mat-icon-button
+                                        color="accent"
+                                        (click)="viewStoreDetails(store)"
+                                        matTooltip="Ver detalles">
+                                    <mat-icon>visibility</mat-icon>
+                                </button>
+                                <button mat-icon-button
+                                        color="primary"
+                                        (click)="editStore(store)"
+                                        matTooltip="Editar">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

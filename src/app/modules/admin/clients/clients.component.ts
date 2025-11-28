@@ -15,7 +15,6 @@ import { InviteComponent } from './modals/invite/invite.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import Swal from 'sweetalert2'
-import { ClientDetailsComponent } from './modals/client-details/client-details.component';
 import { environment } from 'environment/environment';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -24,6 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-clients',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -275,34 +275,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
     }
 
     obtenerDetallesCliente(client_id: string): void {
-        this._clientsService.getClient(client_id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
-            next: (response:any) => {
-
-                const dialog = this._dialog.open(ClientDetailsComponent, {
-                    data: response,
-                    // width: '600px's
-                });
-
-                dialog.afterClosed().subscribe(result => {
-                    if (result) {
-                        this.loadClients();
-                    }else {
-                        //delete client from query params if exists in route
-                        this._router.navigate([], {
-                            queryParams: {
-                                clientId: null
-                            },
-                            queryParamsHandling: 'merge'
-                        });
-                    }
-                });
-            },error: (error) => {
-                this.Toast.fire({
-                    icon: 'error',
-                    title: 'Error al obtener detalles del cliente'
-                });
-            }
-        });
+        // Navegar a la ruta de detalles del cliente
+        this._router.navigate(['/clients', client_id]);
     }
 
     private toUtcStartISO(d: Date) {

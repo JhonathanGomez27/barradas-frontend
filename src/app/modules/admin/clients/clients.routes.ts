@@ -4,6 +4,7 @@ import { inject } from '@angular/core';
 import { ClientsService } from './clients.service';
 import { HttpParams } from '@angular/common/http';
 import { environment } from 'environment/environment';
+import { ClientDetailsComponent } from './modals/client-details/client-details.component';
 
 const limit: number = environment.pagination;
 
@@ -25,4 +26,8 @@ export default [
             clients: ClientsResolver
         }
     },
+    {
+        path: ':id',
+        component: ClientDetailsComponent
+    }
 ] as Routes;

@@ -17,9 +17,11 @@ import { StoresService, Store, City } from './stores.service';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from 'environment/environment';
 import { StoreFormDialogComponent } from './store-form-dialog/store-form-dialog.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-stores',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -63,7 +65,8 @@ export class StoresComponent implements OnInit, OnDestroy {
     private storesService: StoresService,
     private snackBar: MatSnackBar,
     private _changeDetectorRef: ChangeDetectorRef,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -185,6 +188,10 @@ export class StoresComponent implements OnInit, OnDestroy {
 
   editStore(store: Store): void {
     this.openStoreDialog(store);
+  }
+
+  viewStoreDetails(store: Store): void {
+    this.router.navigate(['/stores', store.id]);
   }
 
   getCityName(cityId: string): string {

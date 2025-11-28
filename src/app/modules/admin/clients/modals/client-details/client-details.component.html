@@ -1,34 +1,42 @@
-<div mat-dialog-title class="flex bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
-    <div class="flex items-center justify-between w-full text-white py-3 px-4 md:py-4 md:px-6">
-        <div class="flex items-center min-w-0">
-            <div class="bg-white/20 p-2 rounded-full mr-2 md:mr-3 flex-shrink-0">
-                <mat-icon class="text-white text-xl">person</mat-icon>
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-gray-50" cdkScrollable>
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+        <div class="flex items-center justify-between text-white py-3 px-4 md:py-4 md:px-6">
+            <div class="flex items-center min-w-0 flex-1">
+                <button mat-icon-button
+                        (click)="goBack()"
+                        matTooltip="Volver a clientes"
+                        class="hover:bg-white/20 transition-colors duration-200 mr-2">
+                    <mat-icon class="text-white">arrow_back</mat-icon>
+                </button>
+                <div class="bg-white/20 p-2 rounded-full mr-2 md:mr-3 flex-shrink-0">
+                    <mat-icon class="text-white text-xl">person</mat-icon>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-base md:text-xl font-semibold truncate">Detalles del cliente</div>
+                    <div class="text-xs md:text-sm opacity-90 truncate" *ngIf="clientDetails">{{ clientDetails.firstName }} {{ clientDetails.lastName }}</div>
+                </div>
             </div>
-            <div class="min-w-0 flex-1">
-                <div class="text-base md:text-xl font-semibold truncate">Detalles del cliente</div>
-                <div class="text-xs md:text-sm opacity-90 truncate" *ngIf="clientDetails">{{ clientDetails.firstName }} {{ clientDetails.lastName }}</div>
+            <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+                <button mat-icon-button
+                        (click)="updateClientData()"
+                        matTooltip="Actualizar información del cliente"
+                        [tabIndex]="-1"
+                        class="hover:bg-white/20 transition-colors duration-200">
+                    <mat-icon class="text-white">refresh</mat-icon>
+                </button>
             </div>
-        </div>
-        <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-            <button mat-icon-button
-                    (click)="updateClientData()"
-                    matTooltip="Actualizar información del cliente"
-                    [tabIndex]="-1"
-                    class="hover:bg-white/20 transition-colors duration-200">
-                <mat-icon class="text-white">refresh</mat-icon>
-            </button>
-            <button mat-icon-button
-                    (click)="closeDialog()"
-                    [tabIndex]="-1"
-                    class="hover:bg-white/20 transition-colors duration-200">
-                <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-            </button>
         </div>
     </div>
-</div>
-<mat-dialog-content class="flex flex-col flex-auto p-0 min-w-0 overflow-x-hidden">
-    <!-- Contenido del diálogo -->
-    <div class="p-4 md:p-6" *ngIf="clientDetails" [formGroup]="editClientForm">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+        <mat-spinner diameter="50"></mat-spinner>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-auto p-4 sm:p-6 md:p-10" *ngIf="!isLoading && clientDetails" [formGroup]="editClientForm">
+        <!-- Contenido del cliente -->
         <!-- Botón para alternar entre vista y edición -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
             <div class="flex items-center flex-wrap gap-2">
@@ -779,7 +787,4 @@
 
 
     </div>
-</mat-dialog-content>
-<mat-dialog-actions class="justify-end py-3 px-4 bg-gray-50 border-t border-gray-200">
-    <button mat-stroked-button class="bg-card w-full sm:w-auto" (click)="closeDialog()" [tabIndex]="-1">Cerrar</button>
-</mat-dialog-actions>
+</div>
