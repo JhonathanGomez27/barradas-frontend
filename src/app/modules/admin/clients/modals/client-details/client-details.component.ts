@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
-import { Subject, takeUntil } from 'rxjs';
+import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClientsService } from '../../clients.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { FormBuilder, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -17,9 +17,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertsService } from 'app/shared/services/alerts.service';
 import { environment } from 'environment/environment';
 import { DocusealService } from 'app/modules/docuseal/docuseal.service';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { MatSelectModule } from '@angular/material/select';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CdkScrollable } from '@angular/cdk/scrolling';
+import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
 
 interface FileUpload {
   file: File | null;
@@ -43,7 +46,9 @@ interface FileUpload {
     MatFormFieldModule,
     MatInputModule,
     MatProgressSpinnerModule,
-    CdkScrollable
+    CdkScrollable,
+    NgxMatSelectSearchModule,
+    MatSelectModule
   ],
   templateUrl: './client-details.component.html'
 })
@@ -134,6 +139,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     showElectronicSignatureDetails: boolean = false;
 
+    stores: Store[] = [];
+    storeFilterCtrl: FormControl = new FormControl('');
+    filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
+
     constructor(
         private clientesService : ClientsService,
         private dialog: MatDialog,
@@ -143,7 +152,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         private _alertsService: AlertsService,
         private _docusealService: DocusealService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _storesService: StoresService
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -153,7 +163,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             extra: [''],
             locationAddress: [''],
             locationLat: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
-            locationLng: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)]
+            locationLng: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
+            storeId: ['']
         });
     }
 
@@ -166,6 +177,18 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         } else {
             this._router.navigate(['/clients']);
         }
+
+        this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
+            this.stores = response;
+            this.filteredStores.next(this.stores.slice());
+            this._changeDetectorRef.markForCheck();
+        });
+
+        // Listen for search field value changes
+        this.storeFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
+            this.filterStores();
+            this._changeDetectorRef.markForCheck();
+        });
     }
 
     loadClientDetails(clientId: string): void {
@@ -176,7 +199,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 next: (response: any) => {
                     this.clientDetails = response;
                     this.contractElectronicSignature = response.electronicSignContract || null;
-                    this.editClientForm.patchValue(this.clientDetails);
+                    this.editClientForm.patchValue({
+                        ...this.clientDetails,
+                        storeId: this.clientDetails.store?.id || ''
+                    });
                     this.creditActive = response.credits.length > 0 ? response.credits[0] : null;
 
                     if(this.clientDetails.status === 'NO_CONTRACT_SENDED' ||
@@ -399,7 +425,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 firstName: this.clientDetails.firstName,
                 lastName: this.clientDetails.lastName,
                 phone: this.clientDetails.phone,
-                locationAddress: this.clientDetails.locationAddress
+                locationAddress: this.clientDetails.locationAddress,
+                storeId: this.clientDetails.store?.id || ''
             });
         } else {
             // Cuando salimos del modo edición, limpiamos los archivos seleccionados
@@ -586,6 +613,25 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     goBack(): void {
         this._router.navigate(['/clients']);
+    }
+
+    // Método para filtrar tiendas en el select con búsqueda
+    private filterStores(): void {
+        if (!this.stores) {
+            return;
+        }
+        // Get the search keyword
+        let search = this.storeFilterCtrl.value;
+        if (!search) {
+            this.filteredStores.next(this.stores.slice());
+            return;
+        } else {
+            search = search.toLowerCase();
+        }
+        // Filter the stores
+        this.filteredStores.next(
+            this.stores.filter(store => store.name.toLowerCase().indexOf(search) > -1)
+        );
     }
 
 }

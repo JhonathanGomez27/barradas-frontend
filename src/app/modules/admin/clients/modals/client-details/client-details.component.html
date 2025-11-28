@@ -150,6 +150,42 @@
                 </div>
                 <div class="flex flex-col group">
                     <div class="flex items-center mb-2">
+                        <mat-icon class="text-gray-400 mr-2 text-sm">store</mat-icon>
+                        <label for="storeId" class="text-sm font-medium text-gray-600">Tienda</label>
+                    </div>
+                    <mat-form-field appearance="outline" *ngIf="isEditMode; else storeView" class="w-full">
+                        <mat-label>Tienda</mat-label>
+                        <mat-select formControlName="storeId" placeholder="Seleccionar tienda">
+                            <mat-option>
+                                <ngx-mat-select-search
+                                    [formControl]="storeFilterCtrl"
+                                    placeholderLabel="Buscar tienda..."
+                                    noEntriesFoundLabel="No se encontraron tiendas">
+                                </ngx-mat-select-search>
+                            </mat-option>
+                            <mat-option value="">
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-2 text-gray-400 scale-75" svgIcon="mat_outline:storefront"></mat-icon>
+                                    Sin tienda asignada
+                                </span>
+                            </mat-option>
+                            <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-2 text-primary-500 scale-75" svgIcon="mat_outline:storefront"></mat-icon>
+                                    {{ store.name }}
+                                </span>
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
+                    </mat-form-field>
+                    <ng-template #storeView>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                            <span class="font-medium text-gray-800">{{ clientDetails.store?.name || 'Sin tienda asignada' }}</span>
+                        </div>
+                    </ng-template>
+                </div>
+                <div class="flex flex-col group">
+                    <div class="flex items-center mb-2">
                         <mat-icon class="text-gray-400 mr-2 text-sm">location_on</mat-icon>
                         <label for="locationAddress" class="text-sm font-medium text-gray-600">Dirección</label>
                     </div>

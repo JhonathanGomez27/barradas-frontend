@@ -100,7 +100,7 @@
                                         'text-violet-500': status === 'NO_CONTRACT_SENDED',
                                         'text-orange-500': status === 'CONTRACT_SENDED',
                                         'text-gray-500': status === 'CREATED'
-                                    }">circle</mat-icon>
+                                    }" svgIcon="mat_outline:circle"></mat-icon>
                                     {{ statusMapper[status] }}
                                 </span>
                             </mat-option>
@@ -120,13 +120,13 @@
                             </mat-option>
                             <mat-option *ngFor="let status of statusCreditOptions" [value]="status.value">
                                 <span class="flex items-center">
-                                    <mat-icon class="mr-2 scale-75" [ngClass]="{
+                                    <mat-icon svgIcon="mat_outline:credit_card" class="mr-2 scale-75" [ngClass]="{
                                         'text-green-500': status.value === 'CLOSED',
                                         'text-blue-500': status.value === 'ACTIVE',
                                         'text-yellow-500': status.value === 'PENDING',
                                         'text-red-500': status.value === 'DEFAULTED',
                                         'text-gray-500': status.value === 'CANCELLED'
-                                    }">credit_card</mat-icon>
+                                    }"></mat-icon>
                                     {{ status.viewValue }}
                                 </span>
                             </mat-option>
@@ -153,7 +153,7 @@
                             </mat-option>
                             <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
                                 <span class="flex items-center">
-                                    <mat-icon class="mr-2 text-primary-500 scale-75">store</mat-icon>
+                                    <mat-icon svgIcon="mat_outline:store" class="mr-2 text-primary-500 scale-75"></mat-icon>
                                     {{ store.name }}
                                 </span>
                             </mat-option>

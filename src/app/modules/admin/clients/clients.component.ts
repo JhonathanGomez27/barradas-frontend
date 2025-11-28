@@ -304,7 +304,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
     obtenerDetallesCliente(client_id: string): void {
         // Navegar a la ruta de detalles del cliente
-        this._router.navigate(['/admin/clients', client_id]);
+        this._router.navigate(['/clients', client_id]);
     }
 
     // Método para filtrar tiendas en el select con búsqueda
