@@ -70,8 +70,6 @@ export class StoresComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadStores();
-
     this.storesService.stores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
         this.stores = response;
         this._changeDetectorRef.markForCheck();

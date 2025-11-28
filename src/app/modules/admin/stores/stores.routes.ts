@@ -4,6 +4,7 @@ import { StoresService } from './stores.service';
 import { inject } from '@angular/core';
 import { environment } from 'environment/environment';
 import { StoreDetailsComponent } from './store-details/store-details.component';
+import { AgentsService } from './agents.service';
 
 const StoresResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _storesService = inject(StoresService);
@@ -21,6 +22,17 @@ const CitiesResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: Ro
     return _citiesService.getCities();
 }
 
+const AgentsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+    const _AgentsService = inject(AgentsService);
+    const storeId = route.paramMap.get('id');
+    const params = {
+        page: 1,
+        limit: environment.pagination,
+        storeId: storeId
+    }
+    return _AgentsService.getAgents(params);
+}
+
 export default [
     {
         path: '',
@@ -34,7 +46,8 @@ export default [
         path: ':id',
         component: StoreDetailsComponent,
         resolve: {
-            cities: CitiesResolver
+            agents: AgentsResolver,
+            store: StoreResolver,
         }
     }
 ] as Routes;

@@ -74,5 +74,163 @@
             </div>
         </div>
 
+        <!-- Tabs para Agentes y Usuarios -->
+        <div class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <mat-tab-group class="custom-tabs" animationDuration="300ms">
+                <!-- Tab Agentes -->
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <div class="flex items-center">
+                            <mat-icon class="mr-2">people</mat-icon>
+                            <span>Agentes</span>
+                            <span class="ml-2 px-2 py-0.5 bg-primary-100 text-primary-800 rounded-full text-xs font-medium">
+                                {{ totalAgents }}
+                            </span>
+                        </div>
+                    </ng-template>
+
+                    <div class="p-4 md:p-6">
+                        <!-- Header con búsqueda y botón crear -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                            <mat-form-field appearance="outline" class="w-full sm:w-96" subscriptSizing="dynamic">
+                                <mat-label>Buscar agentes</mat-label>
+                                <input matInput 
+                                       [(ngModel)]="searchTerm"
+                                       (ngModelChange)="onSearchChange($event)"
+                                       placeholder="Nombre, email...">
+                                <mat-icon matPrefix class="text-gray-400">search</mat-icon>
+                                <button mat-icon-button matSuffix *ngIf="searchTerm" (click)="clearSearch()">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-form-field>
+
+                            <button mat-raised-button color="primary" 
+                                    (click)="openAgentDialog()"
+                                    class="w-full sm:w-auto">
+                                <mat-icon class="mr-2">add</mat-icon>
+                                Nuevo Agente
+                            </button>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div *ngIf="isLoadingAgents" class="flex items-center justify-center py-12">
+                            <mat-spinner diameter="40"></mat-spinner>
+                        </div>
+
+                        <!-- Tabla de Agentes -->
+                        <div *ngIf="!isLoadingAgents && agents.length > 0" class="overflow-x-auto">
+                            <table mat-table [dataSource]="agents" class="w-full">
+                                <!-- Nombre Column -->
+                                <ng-container matColumnDef="name">
+                                    <th mat-header-cell *matHeaderCellDef class="px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                        Nombre
+                                    </th>
+                                    <td mat-cell *matCellDef="let agent" class="px-4 py-4">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gradient-to-br from-accent-400 to-accent-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                                {{ agent.firstName.charAt(0) }}{{ agent.lastName.charAt(0) }}
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900">{{ agent.firstName }} {{ agent.lastName }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Email Column -->
+                                <ng-container matColumnDef="email">
+                                    <th mat-header-cell *matHeaderCellDef class="px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                        Email
+                                    </th>
+                                    <td mat-cell *matCellDef="let agent" class="px-4 py-4">
+                                        <span class="text-gray-600">{{ agent.email }}</span>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Phone Column -->
+                                <ng-container matColumnDef="phone">
+                                    <th mat-header-cell *matHeaderCellDef class="px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                        Teléfono
+                                    </th>
+                                    <td mat-cell *matCellDef="let agent" class="px-4 py-4">
+                                        <span class="text-gray-600">{{ agent.phone }}</span>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Actions Column -->
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef class="text-center px-4 py-3 font-semibold text-gray-700 bg-gray-50">
+                                        Acciones
+                                    </th>
+                                    <td mat-cell *matCellDef="let agent" class="px-4 py-4 text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button mat-icon-button
+                                                    color="primary"
+                                                    (click)="openAgentDialog(agent)"
+                                                    matTooltip="Editar agente">
+                                                <mat-icon>edit</mat-icon>
+                                            </button>
+                                            <button mat-icon-button
+                                                    color="warn"
+                                                    (click)="deleteAgent(agent)"
+                                                    matTooltip="Eliminar agente">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                                    class="hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100">
+                                </tr>
+                            </table>
+
+                            <!-- Paginador -->
+                            <div class="border-t border-gray-200 bg-gray-50 mt-4">
+                                <mat-paginator
+                                    [length]="totalAgents"
+                                    [pageSize]="pageSize"
+                                    [pageIndex]="currentPage - 1"
+                                    [pageSizeOptions]="pageSizeOptions"
+                                    (page)="onPageChange($event)">
+                                </mat-paginator>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div *ngIf="!isLoadingAgents && agents.length === 0" class="text-center py-12">
+                            <mat-icon class="text-6xl text-gray-300 mb-4">people_outline</mat-icon>
+                            <p class="text-gray-500 text-lg mb-2">No hay agentes registrados</p>
+                            <p class="text-gray-400 text-sm mb-4">Crea el primer agente para esta tienda</p>
+                            <button mat-raised-button color="primary" (click)="openAgentDialog()">
+                                <mat-icon class="mr-2">add</mat-icon>
+                                Crear Agente
+                            </button>
+                        </div>
+                    </div>
+                </mat-tab>
+
+                <!-- Tab Usuarios (Por implementar) -->
+                <mat-tab>
+                    <ng-template mat-tab-label>
+                        <div class="flex items-center">
+                            <mat-icon class="mr-2">group</mat-icon>
+                            <span>Usuarios</span>
+                            <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                0
+                            </span>
+                        </div>
+                    </ng-template>
+
+                    <div class="p-4 md:p-6 text-center py-12">
+                        <mat-icon class="text-6xl text-gray-300 mb-4">construction</mat-icon>
+                        <p class="text-gray-500 text-lg">Próximamente</p>
+                        <p class="text-gray-400 text-sm">La gestión de usuarios estará disponible pronto</p>
+                    </div>
+                </mat-tab>
+            </mat-tab-group>
+        </div>
+
     </div>
 </div>
