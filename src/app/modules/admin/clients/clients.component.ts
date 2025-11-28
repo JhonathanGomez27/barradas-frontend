@@ -54,7 +54,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
     nameFilter: string = '';
     statusFilter: string = '';
     searchFilter: string = ''; // Campo de búsqueda general
-    statusOptions: string[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'COMPLETED'];
+    statusOptions: string[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'NO_CONTRACT_SENDED', 'CONTRACT_SENDED', 'COMPLETED'];
     statusMapper: { [key: string]: string } = {
         'CREATED': 'Creado',
         'INVITED': 'Invitación enviada',
