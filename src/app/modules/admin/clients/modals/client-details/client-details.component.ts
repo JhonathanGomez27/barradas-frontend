@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClientsService } from '../../clients.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -24,6 +24,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
 import { Credit } from '../../clients.interface';
+import { trigger, transition, style, animate } from '@angular/animations';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 interface FileUpload {
   file: File | null;
@@ -49,12 +51,24 @@ interface FileUpload {
     MatProgressSpinnerModule,
     CdkScrollable,
     NgxMatSelectSearchModule,
-    MatSelectModule
+    MatSelectModule,
+    MatButtonToggleModule
   ],
-  templateUrl: './client-details.component.html'
+  templateUrl: './client-details.component.html',
+  animations: [
+    trigger('slideDown', [
+      transition(':enter', [
+        style({ height: '0', opacity: '0', overflow: 'hidden' }),
+        animate('300ms ease-out', style({ height: '*', opacity: '1' }))
+      ]),
+      transition(':leave', [
+        style({ height: '*', opacity: '1', overflow: 'hidden' }),
+        animate('300ms ease-in', style({ height: '0', opacity: '0' }))
+      ])
+    ])
+  ]
 })
 export class ClientDetailsComponent implements OnInit, OnDestroy{
-
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     clientDetails: any = null;
 
@@ -81,6 +95,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'QUOTE': 'Cotización',
         'INITIAL_PAYMENT': 'Pago inicial',
         'CONTRACT_ORIGINAL': 'Contrato original',
+        'AUDIT_LOG': 'Registro de auditoría de firma',
         'OTHER': 'Otro'
     };
 
@@ -137,10 +152,26 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     contractElectronicSignature: any = null;
 
     credits: Credit[] = [];
-
-    creditActive: any = null;
+    selectedCredit: Credit | null = null;
+    creditActive: Credit | null = null;
+    expandedCreditId: string | null = null;
 
     showElectronicSignatureDetails: boolean = false;
+
+    // Términos de crédito disponibles
+    creditTerms: any = {
+        weeklyTerms: [],
+        dailyTerms: []
+    };
+    availableTerms: number[] = [];
+
+    // Formulario para crear nuevo crédito
+    newCreditForm: FormGroup;
+    showCreateCreditForm: boolean = false;
+    newCreditQuoteFile: File | null = null;
+
+    // Archivos de contrato por crédito (creditId -> File)
+    contractFilesByCreditId: { [creditId: string]: File } = {};
 
     stores: Store[] = [];
     storeFilterCtrl: FormControl = new FormControl('');
@@ -169,6 +200,15 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             locationLng: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
             storeId: ['']
         });
+
+        this.newCreditForm = this.fb.group({
+            totalAmount: [null, [Validators.required, Validators.min(1)]],
+            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            initialPaymentRate: [{ value: null, disabled: true }],
+            paymentType: ['WEEKLY', [Validators.required]],
+            selectedTerm: [null, [Validators.required, Validators.min(1)]],
+            repaymentDay: ['MONDAY', [Validators.required]],
+        });
     }
 
     ngOnInit(): void {
@@ -181,8 +221,19 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             this._router.navigate(['/clients']);
         }
 
+        // Los créditos ya vienen del resolver
         this.clientesService.credits$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
-            this.credits = response.data;
+            this.credits = response.data || [];
+
+            // Seleccionar el primer crédito activo o pendiente automáticamente
+            if (this.credits.length > 0 && !this.selectedCredit) {
+                this.creditActive = this.credits.find(
+                    credit => credit.status === 'ACTIVE' || credit.status === 'PENDING'
+                ) || this.credits[0];
+
+                this.selectedCredit = this.creditActive;
+            }
+
             this._changeDetectorRef.markForCheck();
         });
 
@@ -197,6 +248,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             this.filterStores();
             this._changeDetectorRef.markForCheck();
         });
+
+        // Obtener términos de crédito
+        this.getCreditTerms();
+        this.setupNewCreditFormListeners();
     }
 
     loadClientDetails(clientId: string): void {
@@ -206,18 +261,14 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             .subscribe({
                 next: (response: any) => {
                     this.clientDetails = response;
-                    this.contractElectronicSignature = response.electronicSignContract || null;
+
+                    // Los créditos ya no vienen en la respuesta del cliente
+                    // Se obtienen del resolver a través de credits$
                     this.editClientForm.patchValue({
                         ...this.clientDetails,
                         storeId: this.clientDetails.store?.id || ''
                     });
-                    // this.creditActive = response.credits.length > 0 ? response.credits[0] : null;
 
-                    if(this.clientDetails.status === 'NO_CONTRACT_SENDED' ||
-                       this.clientDetails.status === 'CONTRACT_SENDED' ||
-                       this.clientDetails.status === 'COMPLETED'){
-                        this.showElectronicSignatureDetails = true;
-                    }
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 },
@@ -230,6 +281,386 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                     });
                     this.isLoading = false;
                     this._router.navigate(['/clients']);
+                }
+            });
+    }
+
+    onCreditSelect(credit: Credit): void {
+        // Toggle del crédito expandido
+        if (this.expandedCreditId === credit.id) {
+            this.expandedCreditId = null;
+            this.selectedCredit = null;
+            // Limpiar el archivo de contrato del crédito que se está colapsando
+            delete this.contractFilesByCreditId[credit.id];
+        } else {
+            this.expandedCreditId = credit.id;
+            this.selectedCredit = credit;
+            this.creditActive = credit;
+        }
+        this._changeDetectorRef.markForCheck();
+    }
+
+    isCreditExpanded(creditId: string): boolean {
+        return this.expandedCreditId === creditId;
+    }
+
+    getCreditSignature(credit: Credit): any {
+        return credit.signatures && credit.signatures.length > 0
+            ? credit.signatures[0]
+            : null;
+    }
+
+    hasContractDocuments(credit: Credit): boolean {
+        // Verificar si el crédito tiene documentos en su array de documents
+        if (!credit.documents || credit.documents.length === 0) {
+            return false;
+        }
+
+        return credit.documents.some(
+            (doc: any) => doc.docType === 'CONTRACT_ORIGINAL' || doc.docType === 'QUOTE'
+        );
+    }
+
+    getCreditDocuments(credit: Credit): any[] {
+        return credit.documents || [];
+    }
+
+    hasCreditSignatures(credit: Credit): boolean {
+        return credit.signatures && credit.signatures.length > 0;
+    }
+
+    getCreditSignatures(credit: Credit): any[] {
+        return credit.signatures || [];
+    }
+
+    createSignatureProcessForCredit(credit: Credit): void {
+        if(!this.contractFilesByCreditId[credit.id]){
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'Por favor, sube el contrato original para este crédito.',
+                title: 'Error al subir el contrato'
+            });
+            return;
+        }
+
+        this.selectedCredit = credit;
+        this.creditActive = credit;
+        this.uploadFileToClient(credit.id);
+    }
+
+    updateCreditStatusForCredit(credit: Credit, newStatus: 'CLOSED' | 'CANCELLED'): void {
+        const dialog = this._fuseConfirmationService.open({
+            title: 'Confirmar actualización de estado',
+            message: `¿Estás seguro de que deseas cambiar el estado del crédito a ${this.statusMapperCredit[newStatus]}?`,
+            icon: {
+                show: true,
+                name: 'heroicons_outline:exclamation-triangle',
+                color: 'info'
+            },
+            actions: {
+                confirm: { show: true, label: 'Sí', color: 'primary' },
+                cancel: { show: true, label: 'No' }
+            }
+        });
+
+        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+            if (result === 'confirmed') {
+                this.clientesService.updateCreditStatus(credit.id, newStatus)
+                    .pipe(takeUntil(this._unsubscribeAll))
+                    .subscribe({
+                        next: (response) => {
+                            this._alertsService.showAlertMessage({
+                                type: 'success',
+                                text: 'Estado del crédito actualizado correctamente',
+                                title: 'Éxito'
+                            });
+                            this.reloadClientCredits();
+                        },
+                        error: (error) => {
+                            console.error('Error al actualizar el estado del crédito:', error);
+                            this._alertsService.showAlertMessage({
+                                type: 'error',
+                                text: 'Error al actualizar el estado del crédito',
+                                title: 'Error'
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
+    deleteElectronicSignatureProcessForCredit(credit: Credit): void {
+        const signature = this.getCreditSignature(credit);
+        if (!signature) return;
+
+        const dialog = this._fuseConfirmationService.open({
+            title: '¿Estás seguro?',
+            message: 'Esta acción eliminará el proceso de firma electrónica. No podrás revertir esta acción.',
+            icon: {
+                show: true,
+                name: 'heroicons_outline:exclamation-triangle',
+                color: 'warn'
+            },
+            actions: {
+                confirm: { show: true, label: 'Sí, eliminar', color: 'warn' },
+                cancel: { show: true, label: 'Cancelar' }
+            }
+        });
+
+        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+            if (result === 'confirmed') {
+                this._docusealService.deleteElectronicSignature(signature.id)
+                    .pipe(takeUntil(this._unsubscribeAll))
+                    .subscribe({
+                        next: (response) => {
+                            this._alertsService.showAlertMessage({
+                                type: 'success',
+                                text: 'Proceso de firma electrónica eliminado correctamente',
+                                title: 'Éxito'
+                            });
+                            this.reloadClientCredits();
+                        },
+                        error: (error) => {
+                            console.error('Error al eliminar el proceso de firma electrónica:', error);
+                            this._alertsService.showAlertMessage({
+                                type: 'error',
+                                text: 'Error al eliminar el proceso de firma electrónica',
+                                title: 'Error'
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
+    initiateSignatureProcessForCredit(credit: Credit): void {
+        const signature = this.getCreditSignature(credit);
+        if (!signature) return;
+
+        // Navegar al constructor de Docuseal con el ID de la firma
+        window.open(`/docuseal/builder/${signature.id}`, '_blank');
+    }
+
+    copySignatureUrlForCredit(url: string): void {
+        navigator.clipboard.writeText(url).then(() => {
+            this._alertsService.showAlertMessage({
+                type: 'success',
+                text: 'URL copiada al portapapeles',
+                title: 'Éxito'
+            });
+        }).catch((error) => {
+            console.error('Error al copiar al portapapeles:', error);
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'Error al copiar la URL',
+                title: 'Error'
+            });
+        });
+    }
+
+    onFileSelectedForCredit(event: any, docType: string, credit: Credit): void {
+        const file = event.target.files[0];
+        if (file) {
+            if (docType === 'CONTRACT_ORIGINAL') {
+                this.contractFilesByCreditId[credit.id] = file;
+            } else {
+                this.documentFiles[docType] = file;
+            }
+            this.selectedCredit = credit;
+        }
+    }
+
+    getContractFileForCredit(creditId: string): File | null {
+        return this.contractFilesByCreditId[creditId] || null;
+    }
+
+    getContractFileNameForCredit(creditId: string): string {
+        const file = this.contractFilesByCreditId[creditId];
+        return file ? file.name : '';
+    }
+
+    formatCurrency(value: string | number): string {
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN'
+        }).format(numValue);
+    }
+
+    getPaymentTypeLabel(paymentType: string): string {
+        return paymentType === 'WEEKLY' ? 'Semanal' : 'Diario';
+    }
+
+    getTermLabel(term: number, paymentType: string): string {
+        return `${term} ${paymentType === 'WEEKLY' ? 'semanas' : 'días'}`;
+    }
+
+    getCreditTerms(): void {
+        this.clientesService.getCreditTerms()
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (terms) => {
+                    this.creditTerms = terms;
+                    this.updateAvailableTerms('WEEKLY');
+                },
+                error: (error) => {
+                    console.error('Error al obtener los términos de crédito:', error);
+                }
+            });
+    }
+
+    setupNewCreditFormListeners(): void {
+        // Calcular el porcentaje del pago inicial y validar
+        this.newCreditForm.get('initialPayment')?.valueChanges.subscribe(() => {
+            this.calculateNewCreditInitialPaymentRate();
+            this.validateNewCreditInitialPayment();
+        });
+
+        this.newCreditForm.get('totalAmount')?.valueChanges.subscribe(() => {
+            this.calculateNewCreditInitialPaymentRate();
+            this.validateNewCreditInitialPayment();
+        });
+
+        // Actualizar términos disponibles cuando cambia el tipo de pago
+        this.newCreditForm.get('paymentType')?.valueChanges.subscribe((paymentType) => {
+            this.updateAvailableTerms(paymentType);
+            this.newCreditForm.patchValue({ selectedTerm: null });
+        });
+    }
+
+    calculateNewCreditInitialPaymentRate(): void {
+        const totalAmount = this.newCreditForm.get('totalAmount')?.value || 0;
+        const initialPayment = this.newCreditForm.get('initialPayment')?.value || 0;
+
+        if (totalAmount > 0) {
+            const rate = (initialPayment / totalAmount) * 100;
+            this.newCreditForm.get('initialPaymentRate')?.setValue(rate.toFixed(2), { emitEvent: false });
+        } else {
+            this.newCreditForm.get('initialPaymentRate')?.setValue(0, { emitEvent: false });
+        }
+    }
+
+    validateNewCreditInitialPayment(): void {
+        const totalAmount = this.newCreditForm.get('totalAmount')?.value || 0;
+        const initialPayment = this.newCreditForm.get('initialPayment')?.value || 0;
+        const initialPaymentControl = this.newCreditForm.get('initialPayment');
+
+        if (initialPayment > totalAmount) {
+            initialPaymentControl?.setErrors({ exceedsTotal: true });
+        } else {
+            const errors = initialPaymentControl?.errors;
+            if (errors && errors['exceedsTotal']) {
+                delete errors['exceedsTotal'];
+                initialPaymentControl?.setErrors(Object.keys(errors).length > 0 ? errors : null);
+            }
+        }
+    }
+
+    updateAvailableTerms(paymentType: string): void {
+        if (paymentType === 'WEEKLY') {
+            this.availableTerms = this.creditTerms.weeklyTerms || [];
+        } else if (paymentType === 'DAILY') {
+            this.availableTerms = this.creditTerms.dailyTerms || [];
+        } else {
+            this.availableTerms = [];
+        }
+    }
+
+    toggleCreateCreditForm(): void {
+        this.showCreateCreditForm = !this.showCreateCreditForm;
+        if (!this.showCreateCreditForm) {
+            this.newCreditForm.reset({
+                paymentType: 'WEEKLY',
+                repaymentDay: 'MONDAY'
+            });
+            this.newCreditQuoteFile = null;
+        }
+    }
+
+    onQuoteFileSelectedForNewCredit(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.newCreditQuoteFile = file;
+        }
+    }
+
+    createNewCredit(): void {
+        if (!this.newCreditForm.valid) {
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'Por favor completa todos los campos requeridos.',
+                title: 'Error'
+            });
+            return;
+        }
+
+        if (!this.newCreditQuoteFile) {
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'Por favor sube el archivo de cotización (QUOTE).',
+                title: 'Error'
+            });
+            return;
+        }
+
+        const formValue = this.newCreditForm.getRawValue();
+        const creditData = {
+            clientId: this.clientDetails.id,
+            initalPayment: formValue.initialPayment,
+            initialPaymentRate: parseFloat(formValue.initialPaymentRate),
+            totalAmount: formValue.totalAmount,
+            paymentType: formValue.paymentType,
+            selectedTerm: formValue.selectedTerm,
+            repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
+            status: 'PENDING'
+        };
+
+        this.clientesService.createCredit(creditData)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Subir el archivo QUOTE asociado al crédito recién creado
+                    this.uploadQuoteForCredit(response.id);
+                },
+                error: (error) => {
+                    console.error('Error al crear el crédito:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al crear el crédito.',
+                        title: 'Error'
+                    });
+                }
+            });
+    }
+
+    uploadQuoteForCredit(creditId: string): void {
+        if (!this.newCreditQuoteFile) return;
+
+        this.clientesService.uploadFileToClient(
+            this.clientDetails.id,
+            this.newCreditQuoteFile,
+            'QUOTE',
+            creditId
+        ).pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    this._alertsService.showAlertMessage({
+                        type: 'success',
+                        text: 'Crédito creado exitosamente con su cotización.',
+                        title: 'Éxito'
+                    });
+                    this.reloadClientCredits();
+                    this.toggleCreateCreditForm();
+                },
+                error: (error) => {
+                    console.error('Error al subir la cotización:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'El crédito fue creado pero hubo un error al subir la cotización.',
+                        title: 'Error'
+                    });
+                    this.reloadClientCredits();
+                    this.toggleCreateCreditForm();
                 }
             });
     }
@@ -534,7 +965,24 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     }
 
     uploadFileToClient(creditId?: string): void {
-        this.clientesService.uploadFileToClient(this.clientDetails.id, this.documentFiles['CONTRACT_ORIGINAL'], 'CONTRACT_ORIGINAL', creditId).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+        // Obtener el archivo del crédito específico
+        const contractFile = creditId ? this.contractFilesByCreditId[creditId] : this.documentFiles['CONTRACT_ORIGINAL'];
+
+        if (!contractFile) {
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'No se encontró el archivo de contrato.',
+                title: 'Error'
+            });
+            return;
+        }
+
+        this.clientesService.uploadFileToClient(
+            this.clientDetails.id,
+            contractFile,
+            'CONTRACT_ORIGINAL',
+            creditId
+        ).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response) => {
                 const docUploaded = response;
 
@@ -547,10 +995,19 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 }
 
                 this.docusealCreateSignatureProcess(payloadElectronicSignature);
+
+                // Limpiar el archivo después de subirlo exitosamente
+                if (creditId) {
+                    delete this.contractFilesByCreditId[creditId];
+                }
             },
             error: (error) => {
                 console.error('Error al crear el proceso de firma electrónica:', error);
-                this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el proceso de firma electrónica.', title: 'Error' });
+                this._alertsService.showAlertMessage({
+                    type: 'error',
+                    text: 'Error al subir el contrato.',
+                    title: 'Error'
+                });
             }
         });
     }
@@ -558,70 +1015,31 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     docusealCreateSignatureProcess(payload: {clientId: string, documentId: string, document_url: string, creditId?: string}): void {
         this._docusealService.createDocumentToken(payload).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response) => {
-                this._alertsService.showAlertMessage({ type: 'success', text: 'Proceso de firma electrónica creado correctamente.', title: 'Éxito' });
+                this._alertsService.showAlertMessage({
+                    type: 'success',
+                    text: 'Proceso de firma electrónica creado correctamente.',
+                    title: 'Éxito'
+                });
 
-                this.updateClientData();
+                // Recargar los créditos del cliente
+                this.reloadClientCredits();
             },
             error: (error) => {
                 console.error('Error al crear el proceso de firma electrónica:', error);
-                this._alertsService.showAlertMessage({ type: 'error', text: 'Error al crear el proceso de firma electrónica.', title: 'Error' });
-            }
-        });
-    }
-
-    updateClientData(): void {
-        this.clientesService.getClient(this.clientDetails.id).pipe(takeUntil(this._unsubscribeAll)).subscribe(
-            (updatedClient) => {
-                this.clientDetails = updatedClient;
-                this.contractElectronicSignature = updatedClient.electronicSignContract || null
-                this._changeDetectorRef.markForCheck();
-            }
-        );
-    }
-
-
-    deleteElctronicSignatureProcess(): void {
-        if(!this.contractElectronicSignature){
-            this._alertsService.showAlertMessage({ type: 'error', text: 'No hay un proceso de firma electrónica para eliminar.', title: 'Error' });
-            return;
-        }
-
-        const dialog = this._fuseConfirmationService.open({
-            title: 'Confirmar eliminación del proceso de firma electrónica',
-            message: `¿Estás seguro de que deseas eliminar el proceso de firma electrónica? Esta acción no se puede deshacer.`,
-            icon: {
-                show: true,
-                name: 'heroicons_outline:exclamation-triangle',
-                color: 'warn'
-            },
-            actions: {
-                confirm: { show: true, label: 'Sí, eliminar', color: 'warn' },
-                cancel: { show: true, label: 'Cancelar' }
-            }
-        });
-
-        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
-            if (result === 'confirmed') {
-                this._docusealService.deleteElectronicSignature(this.contractElectronicSignature.id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
-                    next: (response) => {
-                        this._alertsService.showAlertMessage({ type: 'success', text: 'Proceso de firma electrónica eliminado correctamente.', title: 'Éxito' });
-                        this.creditActive = null;
-                        this.contractElectronicSignature = null;
-                        this.updateClientData();
-                    },
-                    error: (error) => {
-                        console.error('Error al eliminar el proceso de firma electrónica:', error);
-                        this._alertsService.showAlertMessage({ type: 'error', text: 'Error al eliminar el proceso de firma electrónica.', title: 'Error' });
-                    }
+                this._alertsService.showAlertMessage({
+                    type: 'error',
+                    text: 'Error al crear el proceso de firma electrónica.',
+                    title: 'Error'
                 });
             }
         });
-
     }
 
-    goBack(): void {
-        this._router.navigate(['/clients']);
+    reloadClientCredits(): void {
+        // Recargar los créditos del cliente desde el servicio
+        this.clientesService.getClientCredits(this.clientDetails.id, new HttpParams().set('limit', environment.pagination).set('page', '1')).subscribe();
     }
+
 
     // Método para filtrar tiendas en el select con búsqueda
     private filterStores(): void {
@@ -640,6 +1058,16 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         this.filteredStores.next(
             this.stores.filter(store => store.name.toLowerCase().indexOf(search) > -1)
         );
+    }
+
+    back(): void {
+        this._router.navigate(['/clients']);
+    }
+
+    updateClientData(): void {
+        // Lógica para actualizar los datos del cliente
+        this.loadClientDetails(this.clientDetails.id);
+        this.reloadClientCredits();
     }
 
 }

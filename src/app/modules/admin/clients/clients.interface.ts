@@ -25,7 +25,33 @@ export interface Credit {
     paymentType: 'WEEKLY' | 'DAILY';
     selectedTerm: number;
     repaymentDay: string | null;
-    status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE';
+    status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE' | 'CLOSED' | 'DEFAULTED';
+    createdAt: string;
+    updatedAt: string;
+    documents?: CreditDocument[];
+    signatures?: CreditSignature[];
+}
+
+export interface CreditDocument {
+    id: string;
+    clientId: string;
+    docType: string;
+    title: string;
+    provider: string;
+    key: string;
+    originalName: string;
+    storageUrl: string;
+    mimeType: string;
+    sizeBytes: string;
+    uploadedAt: string;
+    creditId: string;
+}
+
+export interface CreditSignature {
+    id: string;
+    creditId: string;
+    status: string;
+    signedAt?: string;
     createdAt: string;
     updatedAt: string;
 }
