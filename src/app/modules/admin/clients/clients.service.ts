@@ -39,8 +39,11 @@ export class ClientsService {
         const formData = new FormData();
         formData.append('file', file);
 
-        return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}&creditId=${creditId}`, formData);
+        const queryParams = creditId ? `&creditId=${creditId}` : '';
+
+        return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}${queryParams}`, formData);
     }
+
 
     /**
      * Obtener archivo para visualizar
@@ -95,12 +98,16 @@ export class ClientsService {
         return this.httpClient.post(`${this._url}/users/${clientId}/documents/${documentId}/sign`, {});
     }
 
-    createCredit(data: {clientId: string, repaymentDay: string}): Observable<any> {
+    createCredit(data: {clientId: string, repaymentDay: string, initialPayment?: number, initialPaymentRate?: number, termWeeks?: number, termDays?: number, status?: string}): Observable<any> {
         return this.httpClient.post(`${this._url}/credits`, data);
     }
 
     updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {
         return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
+    }
+
+    getCreditTerms(): Observable<any> {
+        return this.httpClient.get(`${this._url}/credits/payment-terms`);
     }
 
 

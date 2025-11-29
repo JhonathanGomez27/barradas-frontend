@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
     FormBuilder,
     FormGroup,
@@ -11,10 +11,20 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Subject, takeUntil } from 'rxjs';
+import { MatSelectModule } from '@angular/material/select';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
 import { ClientsService } from '../../clients.service';
 import Swal from 'sweetalert2';
 import {ClipboardModule} from '@angular/cdk/clipboard';
+
+interface FileUpload {
+  file: File | null;
+  name: string;
+  label: string;
+  required: boolean;
+}
 
 @Component({
     selector: 'app-invite',
@@ -26,17 +36,47 @@ import {ClipboardModule} from '@angular/cdk/clipboard';
         MatButtonModule,
         MatDialogModule,
         MatIconModule,
+        MatSelectModule,
+        MatRadioModule,
+        MatButtonToggleModule,
         ClipboardModule
     ],
     templateUrl: './invite.component.html',
 })
-export class InviteComponent {
+export class InviteComponent implements OnInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     inviteForm: FormGroup;
     contractFile: File | null = null;
+    isLoading: boolean = false;
 
-    Toast: any
+    // Archivos para subir
+    documentFiles: { [key: string]: File | null } = {};
+    fileUploads: { [key: string]: FileUpload } = {
+        INE_FRONT: { file: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
+        INE_BACK: { file: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
+        QUOTE: { file: null, name: 'QUOTE', label: 'Cotización', required: true }
+    };
+
+    // Días de la semana para el selector
+    weekDays = [
+        { value: 'MONDAY', label: 'L', short: 'Lun', fullName: 'Lunes' },
+        { value: 'TUESDAY', label: 'M', short: 'Mar', fullName: 'Martes' },
+        { value: 'WEDNESDAY', label: 'X', short: 'Mié', fullName: 'Miércoles' },
+        { value: 'THURSDAY', label: 'J', short: 'Jue', fullName: 'Jueves' },
+        { value: 'FRIDAY', label: 'V', short: 'Vie', fullName: 'Viernes' },
+        { value: 'SATURDAY', label: 'S', short: 'Sáb', fullName: 'Sábado' },
+        { value: 'SUNDAY', label: 'D', short: 'Dom', fullName: 'Domingo' }
+    ];
+
+    Toast: any;
+    creditTerms: any = {
+        weeklyTerms: [],
+        dailyTerms: []
+    };
+
+    // Términos disponibles según el tipo de pago
+    availableTerms: number[] = [];
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -44,10 +84,20 @@ export class InviteComponent {
         private _clientsService: ClientsService,
     ) {
         this.inviteForm = this._formBuilder.group({
+            // Información personal
             name: ['', [Validators.required]],
             last_name: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
             phone: ['', [Validators.required]],
+            locationAddress: ['', [Validators.required]],
+
+            // Información del crédito
+            totalAmount: [null, [Validators.required, Validators.min(1)]],
+            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            initialPaymentRate: [{ value: null, disabled: true }],
+            paymentType: ['WEEKLY', [Validators.required]],
+            selectedTerm: [null, [Validators.required, Validators.min(1)]],
+            repaymentDay: ['MONDAY', [Validators.required]],
         });
 
         this.Toast = Swal.mixin({
@@ -63,11 +113,81 @@ export class InviteComponent {
         });
     }
 
+    ngOnInit(): void {
+        this.getCreditTerms();
+        this.setupFormListeners();
+    }
+
+    setupFormListeners(): void {
+        // Calcular el porcentaje del pago inicial y validar
+        this.inviteForm.get('initialPayment')?.valueChanges.subscribe(() => {
+            this.calculateInitialPaymentRate();
+            this.validateInitialPayment();
+        });
+
+        this.inviteForm.get('totalAmount')?.valueChanges.subscribe(() => {
+            this.calculateInitialPaymentRate();
+            this.validateInitialPayment();
+        });
+
+        // Actualizar términos disponibles cuando cambia el tipo de pago
+        this.inviteForm.get('paymentType')?.valueChanges.subscribe((paymentType) => {
+            this.updateAvailableTerms(paymentType);
+            // Resetear el término seleccionado
+            this.inviteForm.patchValue({ selectedTerm: 0 });
+        });
+    }
+
+    calculateInitialPaymentRate(): void {
+        const totalAmount = this.inviteForm.get('totalAmount')?.value || 0;
+        const initialPayment = this.inviteForm.get('initialPayment')?.value || 0;
+
+        if (totalAmount > 0) {
+            const rate = (initialPayment / totalAmount) * 100;
+            this.inviteForm.get('initialPaymentRate')?.setValue(rate.toFixed(2), { emitEvent: false });
+        } else {
+            this.inviteForm.get('initialPaymentRate')?.setValue(0, { emitEvent: false });
+        }
+    }
+
+    validateInitialPayment(): void {
+        const totalAmount = this.inviteForm.get('totalAmount')?.value || 0;
+        const initialPayment = this.inviteForm.get('initialPayment')?.value || 0;
+        const initialPaymentControl = this.inviteForm.get('initialPayment');
+
+        if (initialPayment > totalAmount) {
+            initialPaymentControl?.setErrors({ exceedsTotal: true });
+        } else {
+            // Limpiar el error personalizado si existe, pero mantener otros errores
+            const errors = initialPaymentControl?.errors;
+            if (errors && errors['exceedsTotal']) {
+                delete errors['exceedsTotal'];
+                initialPaymentControl?.setErrors(Object.keys(errors).length > 0 ? errors : null);
+            }
+        }
+    }
+
+    updateAvailableTerms(paymentType: string): void {
+        if (paymentType === 'WEEKLY') {
+            this.availableTerms = this.creditTerms.weeklyTerms || [];
+        } else if (paymentType === 'DAILY') {
+            this.availableTerms = this.creditTerms.dailyTerms || [];
+        } else {
+            this.availableTerms = [];
+        }
+    }
+
+    formatCurrency(value: number): string {
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN'
+        }).format(value);
+    }
+
     onFileChange(event: any): void {
         const file = event.target.files[0];
         this.contractFile = file || null;
 
-        // Para actualizar la vista después de seleccionar un archivo
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
@@ -77,8 +197,31 @@ export class InviteComponent {
         }
     }
 
-    onSubmit(): void {
+    onDocumentFileSelected(event: any, docType: string): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.documentFiles[docType] = file;
+            this.fileUploads[docType].file = file;
+        }
+    }
 
+    removeDocumentFile(docType: string): void {
+        this.documentFiles[docType] = null;
+        this.fileUploads[docType].file = null;
+    }
+
+    getFileName(docType: string): string {
+        return this.fileUploads[docType]?.file?.name || '';
+    }
+
+    getFileSize(docType: string): string {
+        const file = this.fileUploads[docType]?.file;
+        if (!file) return '';
+        const sizeInKB = (file.size / 1024).toFixed(1);
+        return `${sizeInKB} KB`;
+    }
+
+    onSubmit(): void {
         if(!this.inviteForm.valid) {
             this.Toast.fire({
                 icon: 'error',
@@ -87,75 +230,139 @@ export class InviteComponent {
             return;
         }
 
+        // Validar archivos requeridos
+        const missingFiles = Object.keys(this.fileUploads).filter(
+            key => this.fileUploads[key].required && !this.fileUploads[key].file
+        );
 
+        if (missingFiles.length > 0) {
+            const fileLabels = missingFiles.map(key => this.fileUploads[key].label).join(', ');
+            this.Toast.fire({
+                icon: 'error',
+                title: 'Archivos requeridos',
+                text: `Por favor sube los siguientes archivos: ${fileLabels}`
+            });
+            return;
+        }
 
         if (this.inviteForm.valid) {
-
             this.inviteForm.disable();
+            this.isLoading = true;
+
+            const formValue = this.inviteForm.getRawValue();
             const clientData = {
-                ...this.inviteForm.value,
+                name: formValue.name,
+                last_name: formValue.last_name,
+                email: formValue.email,
+                phone: formValue.phone,
+                locationAddress: formValue.locationAddress
             };
 
-            this._clientsService
-                .inviteClient(clientData)
-                .pipe(takeUntil(this._unsubscribeAll))
-                .subscribe({
-                    next: (response: any) => {
-                        console.log('Cliente invitado exitosamente:', response);
+            const creditData = {
+                initialPayment: formValue.initialPayment,
+                initialPaymentRate: parseFloat(formValue.initialPaymentRate),
+                totalAmount: formValue.totalAmount,
+                paymentType: formValue.paymentType,
+                selectedTerm: formValue.selectedTerm,
+                repaymentDay: formValue.repaymentDay,
+                status: 'PENDING'
+            }
 
-                        // Copiar enlace de invitación al portapapeles si existe
-                        if (response.link) {
-                            this.copyToClipboard(response.link);
-                        }
-
-                        this.uploadFileToClient(response.clientId);
-                    },
-                    error: (error) => {
-                        console.error('Error al invitar al cliente:', error);
-                        this.Toast.fire({
-                            icon: 'error',
-                            title: 'Error al invitar al cliente.'
-                        });
-                        this.inviteForm.enable();
-                    },
-                });
+            this._clientsService.inviteClient(clientData).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+                next: (response: any) => {
+                    console.log('Cliente invitado exitosamente:', response);
+                    if (response.link) {
+                        this.copyToClipboard(response.link);
+                    }
+                    this.createCreditForClient(response.clientId, creditData);
+                },
+                error: (error) => {
+                    console.error('Error al invitar al cliente:', error);
+                    this.Toast.fire({
+                        icon: 'error',
+                        title: 'Error al invitar al cliente.'
+                    });
+                    this.inviteForm.enable();
+                    this.isLoading = false;
+                },
+            });
         }
     }
 
-    uploadFileToClient(client_id: string): void {
-        if (this.contractFile) {
-            this._clientsService
-                .uploadFileToClient(
-                    client_id,
-                    this.contractFile,
-                    'CONTRACT_ORIGINAL'
-                )
+    createCreditForClient(clientId: string, creditData: any) {
+        this._clientsService.createCredit({clientId: clientId, ...creditData}).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (response:any) => {
+                console.log('Crédito creado exitosamente:', response);
+
+                this.uploadDocumentsToClient(clientId, response.id);
+            },error: (error) => {
+
+            }
+        });
+    }
+
+    uploadDocumentsToClient(client_id: string, creditId: string | null = null): void {
+        const uploadObservables: Observable<unknown>[] = [];
+
+        Object.keys(this.fileUploads).forEach(docType => {
+            const fileUpload = this.fileUploads[docType];
+            if (fileUpload.file) {
+                if(docType === 'QUOTE' && creditId){
+                    uploadObservables.push(
+                        this._clientsService.uploadFileToClient(
+                            client_id,
+                            fileUpload.file,
+                            docType,
+                            creditId
+                        )
+                    );
+                }else{
+                    uploadObservables.push(
+                        this._clientsService.uploadFileToClient(
+                            client_id,
+                            fileUpload.file,
+                            docType
+                        )
+                    );
+                }
+
+            }
+        });
+
+        if (uploadObservables.length > 0) {
+            const handleUploadSuccess = (responses: unknown[]) => {
+                console.log('Archivos subidos exitosamente:', responses);
+                this.isLoading = false;
+                this.Toast.fire({
+                    icon: 'success',
+                    title: 'Cliente invitado exitosamente',
+                    text: 'Se han subido todos los documentos correctamente.'
+                });
+                this.dialogRef.close({
+                    success: true,
+                    clientId: client_id
+                });
+            };
+
+            const handleUploadError = (error: unknown) => {
+                console.error('Error al subir los archivos:', error);
+                this.isLoading = false;
+                this.Toast.fire({
+                    icon: 'error',
+                    title: 'Error al subir los archivos',
+                    text: 'El cliente fue creado pero hubo un error al subir los documentos.'
+                });
+                this.inviteForm.enable();
+            };
+
+            forkJoin(uploadObservables)
                 .pipe(takeUntil(this._unsubscribeAll))
                 .subscribe({
-                    next: (response: any) => {
-                        console.log(
-                            'Archivo de contrato subido exitosamente:',
-                            response
-                        );
-                        this.dialogRef.close({
-                            success: true,
-                            clientId: client_id
-                        });
-                    },
-                    error: (error) => {
-                        console.error(
-                            'Error al subir el archivo de contrato:',
-                            error
-                        );
-                        this.Toast.fire({
-                            icon: 'error',
-                            title: 'Error al subir el archivo de contrato.'
-                        });
-                        this.inviteForm.enable();
-                    },
+                    next: handleUploadSuccess,
+                    error: handleUploadError
                 });
         } else {
-            // Si no hay archivo de contrato, solo cerramos el diálogo
+            this.isLoading = false;
             this.dialogRef.close({
                 success: true,
                 clientId: client_id
@@ -163,20 +370,36 @@ export class InviteComponent {
         }
     }
 
+    getCreditTerms(): void {
+        this._clientsService.getCreditTerms()
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (terms) => {
+                    this.creditTerms = terms;
+                    console.log('Términos de crédito obtenidos:', terms);
+                    // Inicializar términos disponibles con WEEKLY por defecto
+                    this.updateAvailableTerms('WEEKLY');
+                },
+                error: (error) => {
+                    console.error('Error al obtener los términos de crédito:', error);
+                }
+            });
+    }
+
     onCancel(): void {
         this.dialogRef.close();
     }
 
-    /**
-     * Copia el texto proporcionado al portapapeles y muestra una notificación
-     * @param text Texto a copiar al portapapeles
-     */
     copyToClipboard(text: string): void {
-        // Usar la API del navegador para copiar al portapapeles
         navigator.clipboard.writeText(text).then(
             () => {
+                this.Toast.fire({
+                    icon: 'success',
+                    title: 'Enlace copiado al portapapeles'
+                });
             },
             (err) => {
+                console.error('Error al copiar al portapapeles:', err);
             }
         );
     }
