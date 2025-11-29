@@ -246,7 +246,7 @@ export class InviteComponent implements OnInit {
         }
 
         if (this.inviteForm.valid) {
-            this.inviteForm.disable();
+            this.inviteForm.disable({emitEvent: false});
             this.isLoading = true;
 
             const formValue = this.inviteForm.getRawValue();
@@ -264,7 +264,7 @@ export class InviteComponent implements OnInit {
                 totalAmount: formValue.totalAmount,
                 paymentType: formValue.paymentType,
                 selectedTerm: formValue.selectedTerm,
-                repaymentDay: formValue.repaymentDay,
+                repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
                 status: 'PENDING'
             }
 

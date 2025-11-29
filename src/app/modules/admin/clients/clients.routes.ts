@@ -24,6 +24,11 @@ const StoresAllResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state:
     return _StoresAllService.getAllStoresNoPagination();
 }
 
+const CreditsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+    const _CreditsService = inject(ClientsService);
+    return _CreditsService.getClientCredits(route.params.id, new HttpParams().set('limit', environment.pagination).set('page', '1'));
+}
+
 export default [
     {
         path: '',
@@ -37,7 +42,8 @@ export default [
         path: ':id',
         component: ClientDetailsComponent,
         resolve: {
-            stores: StoresAllResolver
+            stores: StoresAllResolver,
+            credits: CreditsResolver
         }
     }
 ] as Routes;

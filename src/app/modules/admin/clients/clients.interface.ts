@@ -1,0 +1,57 @@
+export interface Client {
+    id: string;
+    name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    locationAddress?: string;
+    storeId?: string;
+    store?: {
+        id: string;
+        name: string;
+        address?: string;
+        cityId?: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Credit {
+    id: string;
+    clientId: string;
+    initalPayment: number | null;
+    initialPaymentRate: string;
+    totalAmount: string;
+    paymentType: 'WEEKLY' | 'DAILY';
+    selectedTerm: number;
+    repaymentDay: string | null;
+    status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE';
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreateCreditDto {
+    clientId: string;
+    initalPayment?: number;
+    initialPaymentRate: number;
+    totalAmount: number;
+    paymentType: 'WEEKLY' | 'DAILY';
+    selectedTerm: number;
+    repaymentDay?: string;
+    status?: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE';
+}
+
+export interface UpdateCreditDto {
+    initalPayment?: number;
+    initialPaymentRate?: number;
+    totalAmount?: number;
+    paymentType?: 'WEEKLY' | 'DAILY';
+    selectedTerm?: number;
+    repaymentDay?: string;
+    status?: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE';
+}
+
+export interface CreditTerms {
+    weeklyTerms: number[];
+    dailyTerms: number[];
+}

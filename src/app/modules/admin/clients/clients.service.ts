@@ -12,8 +12,11 @@ export class ClientsService {
 
     private _clients: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
     private _client: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+    private _credits: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
+
     public clients$ = this._clients.asObservable();
     public client$ = this._client.asObservable();
+    public credits$ = this._credits.asObservable();
 
     constructor(
         private httpClient: HttpClient
@@ -100,6 +103,14 @@ export class ClientsService {
 
     createCredit(data: {clientId: string, repaymentDay: string, initialPayment?: number, initialPaymentRate?: number, termWeeks?: number, termDays?: number, status?: string}): Observable<any> {
         return this.httpClient.post(`${this._url}/credits`, data);
+    }
+
+    getClientCredits(clientId: string, params: HttpParams): Observable<any[]> {
+        return this.httpClient.get<any[]>(`${this._url}/credits/list/${clientId}`, { params }).pipe(
+            tap((credits) => {
+                this._credits.next(credits);
+            })
+        );
     }
 
     updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {

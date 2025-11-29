@@ -23,6 +23,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
+import { Credit } from '../../clients.interface';
 
 interface FileUpload {
   file: File | null;
@@ -135,6 +136,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     contractElectronicSignature: any = null;
 
+    credits: Credit[] = [];
+
     creditActive: any = null;
 
     showElectronicSignatureDetails: boolean = false;
@@ -178,6 +181,11 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             this._router.navigate(['/clients']);
         }
 
+        this.clientesService.credits$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
+            this.credits = response.data;
+            this._changeDetectorRef.markForCheck();
+        });
+
         this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
             this.stores = response;
             this.filteredStores.next(this.stores.slice());
@@ -203,7 +211,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                         ...this.clientDetails,
                         storeId: this.clientDetails.store?.id || ''
                     });
-                    this.creditActive = response.credits.length > 0 ? response.credits[0] : null;
+                    // this.creditActive = response.credits.length > 0 ? response.credits[0] : null;
 
                     if(this.clientDetails.status === 'NO_CONTRACT_SENDED' ||
                        this.clientDetails.status === 'CONTRACT_SENDED' ||
