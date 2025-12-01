@@ -4,13 +4,13 @@ import { DocusealService } from 'app/modules/docuseal/docuseal.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-docuseal-form',
-  imports: [
-    DocusealFormComponent
-  ],
-  standalone: true,
-  templateUrl: './docuseal-form.component.html',
-  styleUrl: './docuseal-form.component.scss'
+    selector: 'app-docuseal-form',
+    imports: [
+        DocusealFormComponent
+    ],
+    standalone: true,
+    templateUrl: './docuseal-form.component.html',
+    styleUrl: './docuseal-form.component.scss'
 })
 export class DocusealFormSignComponent implements OnInit, OnDestroy {
 
@@ -23,7 +23,7 @@ export class DocusealFormSignComponent implements OnInit, OnDestroy {
         .form-container {
             background-color: #ffffff;
             border-radius: 0.25rem;
-            border: 1px solid #30509b;
+            border: 1px solid #5A7F78;
         }
 
         .type-text-button,
@@ -32,7 +32,7 @@ export class DocusealFormSignComponent implements OnInit, OnDestroy {
         .set-current-date-button,
         .decline-button,
         .reupload-button {
-            background-color: #30509b;
+            background-color: #5A7F78;
             border: 0;
             border-radius: 0.25rem;
             color: #ffffff;
@@ -44,11 +44,11 @@ export class DocusealFormSignComponent implements OnInit, OnDestroy {
         .set-current-date-button:hover,
         .decline-button:hover,
         .reupload-button:hover {
-            background-color: #30509b;
+            background-color: #5A7F78;
         }
 
         .submit-form-button {
-            background-color: #30509b;
+            background-color: #5A7F78;
             color: #ffffff;
         }
 
@@ -58,7 +58,7 @@ export class DocusealFormSignComponent implements OnInit, OnDestroy {
         }
 
         .expand-form-button {
-            background-color: #30509b;
+            background-color: #5A7F78;
             color: #ffffff;
         }
 

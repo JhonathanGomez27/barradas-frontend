@@ -24,26 +24,26 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Store, StoresService } from '../stores/stores.service';
 
 @Component({
-  selector: 'app-clients',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatDialogModule,
-    MatTooltipModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    NgxMatSelectSearchModule,
-  ],
-  templateUrl: './clients.component.html'
+    selector: 'app-clients',
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatTableModule,
+        MatPaginatorModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatIconModule,
+        MatDialogModule,
+        MatTooltipModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        NgxMatSelectSearchModule,
+    ],
+    templateUrl: './clients.component.html'
 })
 export class ClientsComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -153,8 +153,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
         // Get query params to check if we need to open the signature process
         const client = this._activatedRoute.snapshot.queryParamMap.get('clientId');
 
-        if(client){
-            this.onClick({id: client});
+        if (client) {
+            this.onClick({ id: client });
         }
 
     }
@@ -186,9 +186,9 @@ export class ClientsComponent implements OnInit, OnDestroy {
         }
 
         // Añadir filtros de fecha si están establecidos
-        if( this.start && this.end) {
+        if (this.start && this.end) {
             if (this.start) params.createdAtStart = this.toUtcStartISO(this.start);
-            if (this.end)   params.createdAtEnd   = this.toUtcEndISO(this.end);
+            if (this.end) params.createdAtEnd = this.toUtcEndISO(this.end);
         }
 
         this._clientsService.getClients(params).pipe(takeUntil(this._unsubscribeAll)).subscribe();
@@ -237,7 +237,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
 
     openInviteDialog(): void {
         const dialogRef = this._dialog.open(InviteComponent, {
-            disableClose: true
+            disableClose: true,
+            data: {
+                storeId: null,
+                rol: 'admin'
+            }
         });
 
         dialogRef.afterClosed().subscribe(result => {
@@ -327,12 +331,12 @@ export class ClientsComponent implements OnInit, OnDestroy {
     }
 
     private toUtcStartISO(d: Date) {
-      const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
-      return dt.toISOString(); // 2025-01-01T00:00:00.000Z
+        const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
+        return dt.toISOString(); // 2025-01-01T00:00:00.000Z
     }
     private toUtcEndISO(d: Date) {
-      const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
-      return dt.toISOString(); // 2025-08-17T23:59:59.999Z
+        const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
+        return dt.toISOString(); // 2025-08-17T23:59:59.999Z
     }
 
     confirmDeleteClient(id: string, event: Event): void {

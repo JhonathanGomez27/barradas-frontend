@@ -9,15 +9,16 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { UserService } from 'app/core/user/user.service';
 
 @Component({
-  selector: 'app-sign-builder',
-  imports: [
-    DocusealBuilderComponent,
-    MatButtonModule, MatIconModule, MatTooltipModule
-  ],
-  templateUrl: './sign-builder.component.html',
-  styleUrl: './sign-builder.component.scss'
+    selector: 'app-sign-builder',
+    imports: [
+        DocusealBuilderComponent,
+        MatButtonModule, MatIconModule, MatTooltipModule
+    ],
+    templateUrl: './sign-builder.component.html',
+    styleUrl: './sign-builder.component.scss'
 })
 export class SignBuilderComponent implements OnInit, OnDestroy {
 
@@ -191,6 +192,8 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
 
     loadingRequest: boolean = false;
 
+    userRol: string = '';
+
     constructor(
         private _docusealService: DocusealService,
         private _changeDetectorRef: ChangeDetectorRef,
@@ -198,7 +201,8 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
         private _confirmationService: FuseConfirmationService,
         private _location: Location,
         private _activatedRoute: ActivatedRoute,
-        private _router: Router
+        private _router: Router,
+        private _usersService: UserService
     ) { }
 
     ngOnInit(): void {
@@ -218,6 +222,10 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
                 subject: 'Firma de Contrato - ' + this.signatureData.signerName,
                 body: 'Link de firma {{submitter.link}}'
             };
+
+            this._usersService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
+                this.userRol = response.role;
+            });
 
             this._changeDetectorRef.markForCheck();
         });
@@ -245,15 +253,15 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
 
         this.loadingRequest = true;
 
-        if(this.template_info == null || this.signatureData == null){
-            this._alertsService.showAlertMessage({type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma. Falta información del template o de la firma.'});
+        if (this.template_info == null || this.signatureData == null) {
+            this._alertsService.showAlertMessage({ type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma. Falta información del template o de la firma.' });
             return;
         }
 
-        const hasSignatureField  = this.template_info.fields.some((field: any) => field.type === 'signature');
+        const hasSignatureField = this.template_info.fields.some((field: any) => field.type === 'signature');
 
-        if(!hasSignatureField){
-            this._alertsService.showAlertMessage({type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma. El documento no contiene un campo de firma.'});
+        if (!hasSignatureField) {
+            this._alertsService.showAlertMessage({ type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma. El documento no contiene un campo de firma.' });
             return;
         }
 
@@ -264,12 +272,12 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
         }
 
         this._docusealService.sendSignatureRequest(payload).pipe(takeUntil(this._unsubscribeAll)).subscribe({
-            next: (response:any) => {
+            next: (response: any) => {
                 this.sendedSignatureRequest = true;
-                this._alertsService.showAlertMessage({type: 'success', title: 'Solicitud enviada', text: 'La solicitud de firma ha sido enviada exitosamente.'});
+                this._alertsService.showAlertMessage({ type: 'success', title: 'Solicitud enviada', text: 'La solicitud de firma ha sido enviada exitosamente.' });
                 this._changeDetectorRef.markForCheck();
-            },error: (error) => {
-                this._alertsService.showAlertMessage({type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma.'});
+            }, error: (error) => {
+                this._alertsService.showAlertMessage({ type: 'error', title: 'Error', text: 'No se pudo enviar la solicitud de firma.' });
                 this.sendedSignatureRequest = false;
                 this.loadingRequest = false;
                 this._changeDetectorRef.markForCheck();
@@ -307,6 +315,9 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
     }
 
     goBack(): void {
-        this._router.navigate(['/clients'], { queryParams: { clientId: this.signatureData.clientId } });
+
+        const route = this.userRol === 'admin' ? '/clients' : '/clients-store';
+
+        this._router.navigate([route], { queryParams: { clientId: this.signatureData.clientId } });
     }
 }

@@ -10,44 +10,54 @@ export const defaultNavigation: FuseNavigationItem[] = [
     //     link : '/example'
     // },
     {
-        id   : 'clients',
+        id: 'clients',
         title: 'Clientes',
-        type : 'basic',
-        icon : 'heroicons_outline:user-group',
-        link : '/clients'
+        type: 'basic',
+        icon: 'heroicons_outline:user-group',
+        link: '/clients',
+        roles: ['admin']
     },
     {
-        id   : 'stores',
+        id: 'stores',
         title: 'Tiendas',
-        type : 'basic',
-        icon : 'heroicons_outline:building-office',
-        link : '/stores'
+        type: 'basic',
+        icon: 'heroicons_outline:building-office',
+        link: '/stores',
+        roles: ['admin']
+    },
+    {
+        id: 'clients-store',
+        title: 'Clientes',
+        type: 'basic',
+        icon: 'heroicons_outline:user-group',
+        link: '/clients-store',
+        roles: ['agent']
     }
 ];
 export const compactNavigation: FuseNavigationItem[] = [
     {
-        id   : 'example',
+        id: 'example',
         title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
+        type: 'basic',
+        icon: 'heroicons_outline:chart-pie',
+        link: '/example'
     }
 ];
 export const futuristicNavigation: FuseNavigationItem[] = [
     {
-        id   : 'example',
+        id: 'example',
         title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
+        type: 'basic',
+        icon: 'heroicons_outline:chart-pie',
+        link: '/example'
     }
 ];
 export const horizontalNavigation: FuseNavigationItem[] = [
     {
-        id   : 'example',
+        id: 'example',
         title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
+        type: 'basic',
+        icon: 'heroicons_outline:chart-pie',
+        link: '/example'
     }
 ];

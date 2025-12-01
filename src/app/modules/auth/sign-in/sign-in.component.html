@@ -1,49 +1,54 @@
-<div class="flex min-w-0 flex-auto flex-col items-center sm:justify-center">
-    <div class="w-full px-4 py-8 sm:bg-card sm:w-auto sm:rounded-2xl sm:p-12 sm:shadow">
-        <div class="mx-auto w-full max-w-80 sm:mx-0 sm:w-80">
-            <!-- Logo -->
-            <div class="w-full flex flex-row justify-center items-center">
-                <!-- <div class="w-30">
-                    <img src="images/logo/logo.png" />
-                </div> -->
+<div class="flex min-w-0 flex-auto flex-col items-center sm:justify-center bg-barradas-50 min-h-screen">
+    <div class="w-full max-w-md px-6 py-8 sm:bg-white sm:rounded-2xl sm:p-10 sm:shadow-xl sm:border sm:border-barradas-300 relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
 
-                <div class="w-40">
-                    <img src="images/logo/confia_negro.png" />
+        <!-- Barra decorativa superior -->
+        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-barradas-500 to-barradas-300"></div>
+
+        <div class="mx-auto w-full">
+            <!-- Logo -->
+            <div class="w-full flex flex-row justify-center items-center mb-8">
+                <div class="w-52 transition-transform duration-300 hover:scale-105">
+                    <img src="images/logo/confia_negro.png" alt="Logo Confia" class="w-full h-auto drop-shadow-sm" />
                 </div>
             </div>
 
-            <!-- Title -->
-            <div class="mt-2 text-4xl font-extrabold leading-tight tracking-tight">
-                Iniciar sesión
+            <!-- Title & Subtitle -->
+            <div class="text-center mb-8">
+                <div class="text-3xl font-extrabold leading-tight tracking-tight text-barradas-900">
+                    Bienvenido
+                </div>
+                <div class="mt-2 text-base text-barradas-700 font-medium">
+                    Ingresa tus credenciales para continuar
+                </div>
             </div>
 
             <!-- Alert -->
             @if (showAlert) {
-            <fuse-alert class="mt-8" [appearance]="'outline'" [showIcon]="false" [type]="alert.type"
+            <fuse-alert class="mb-6" [appearance]="'outline'" [showIcon]="false" [type]="alert.type"
                 [@shake]="alert.type === 'error'">
                 {{ alert.message }}
             </fuse-alert>
             }
 
             <!-- Sign in form -->
-            <form class="mt-8" [formGroup]="signInForm" #signInNgForm="ngForm">
+            <form class="mt-4 space-y-4" [formGroup]="signInForm" #signInNgForm="ngForm">
                 <!-- Email field -->
-                <mat-form-field class="w-full">
-                    <mat-label>Correo electronico</mat-label>
-                    <input id="email" matInput [formControlName]="'email'" />
+                <mat-form-field class="w-full" subscriptSizing="dynamic" appearance="outline">
+                    <mat-label>Correo electrónico</mat-label>
+                    <mat-icon matPrefix class="text-barradas-500 icon-size-5 mr-2" [svgIcon]="'heroicons_outline:envelope'"></mat-icon>
+                    <input id="email" matInput [formControlName]="'email'" placeholder="usuario@ejemplo.com" />
                     @if (signInForm.get('email').hasError('required')) {
-                    <mat-error> Correo electronico es requerido </mat-error>
+                    <mat-error> El correo es requerido </mat-error>
                     }
                     @if (signInForm.get('email').hasError('email')) {
-                    <mat-error>
-                        Por favor ingrese un correo electronico valido
-                    </mat-error>
+                    <mat-error> Ingresa un correo válido </mat-error>
                     }
                 </mat-form-field>
 
                 <!-- Password field -->
-                <mat-form-field class="w-full">
+                <mat-form-field class="w-full" subscriptSizing="dynamic" appearance="outline">
                     <mat-label>Contraseña</mat-label>
+                    <mat-icon matPrefix class="text-barradas-500 icon-size-5 mr-2" [svgIcon]="'heroicons_outline:lock-closed'"></mat-icon>
                     <input id="password" matInput type="password" [formControlName]="'password'" #passwordField />
                     <button mat-icon-button type="button" (click)="
                             passwordField.type === 'password'
@@ -51,36 +56,35 @@
                                 : (passwordField.type = 'password')
                         " matSuffix>
                         @if (passwordField.type === 'password') {
-                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:eye'"></mat-icon>
+                        <mat-icon class="icon-size-5 text-barradas-500" [svgIcon]="'heroicons_solid:eye'"></mat-icon>
                         }
                         @if (passwordField.type === 'text') {
-                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
+                        <mat-icon class="icon-size-5 text-barradas-500" [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
                         }
                     </button>
                     <mat-error> La contraseña es requerida </mat-error>
                 </mat-form-field>
 
-                <!-- Actions -->
-                <!-- <div class="mt-1.5 inline-flex w-full items-center justify-between">
-                    <mat-checkbox class="-ml-2" [color]="'primary'" [formControlName]="'rememberMe'">
-                        Remember me
-                    </mat-checkbox>
-                    <a class="text-md font-medium text-primary-500 hover:underline"
-                        [routerLink]="['/forgot-password']">Forgot password?
-                    </a>
-                </div> -->
-
                 <!-- Submit button -->
-                <button class="fuse-mat-button-large mt-6 w-full" mat-flat-button [color]="'primary'"
-                    [disabled]="signInForm.disabled" (click)="signIn()">
+                <button class="fuse-mat-button-large mt-6 w-full rounded-xl bg-barradas-500 text-white hover:bg-barradas-700 transition-all duration-300 shadow-md hover:shadow-lg py-3"
+                    mat-flat-button
+                    [disabled]="signInForm.disabled"
+                    (click)="signIn()">
                     @if (!signInForm.disabled) {
-                    <span> Iniciar sesión </span>
+                    <span class="font-bold text-lg tracking-wide"> Iniciar sesión </span>
                     }
                     @if (signInForm.disabled) {
                     <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                     }
                 </button>
             </form>
+
+            <!-- Footer simple -->
+            <!-- <div class="mt-10 text-center">
+                <p class="text-xs text-barradas-700 opacity-60 font-medium">
+                    © Smart Data Contact. Todos los derechos reservados.
+                </p>
+            </div> -->
         </div>
     </div>
 </div>

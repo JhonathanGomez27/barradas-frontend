@@ -1,12 +1,13 @@
-import { ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { ClientsComponent } from './clients.component';
+import { environment } from 'environment/environment';
+import { HttpParams } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { ClientsService } from './clients.service';
-import { HttpParams } from '@angular/common/http';
-import { environment } from 'environment/environment';
-import { ClientDetailsComponent } from './modals/client-details/client-details.component';
-import { StoresService } from '../stores/stores.service';
-import { hasRoleGuard } from 'app/core/auth/guards/has-permission.guard';
+import { ResolveFn } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { StoresService } from 'app/modules/admin/stores/stores.service';
+import { ClientDetailsComponent } from './client-details/client-details.component';
 
 const limit: number = environment.pagination;
 
@@ -34,10 +35,6 @@ export default [
     {
         path: '',
         component: ClientsComponent,
-        canActivate: [hasRoleGuard],
-        data: {
-            expectedRole: ['admin']
-        },
         resolve: {
             clients: ClientsResolver,
             stores: StoresAllResolver
@@ -46,10 +43,6 @@ export default [
     {
         path: ':id',
         component: ClientDetailsComponent,
-        canActivate: [hasRoleGuard],
-        data: {
-            expectedRole: ['admin', 'agent']
-        },
         resolve: {
             stores: StoresAllResolver,
             credits: CreditsResolver

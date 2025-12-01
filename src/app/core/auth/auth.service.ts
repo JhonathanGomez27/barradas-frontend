@@ -4,6 +4,7 @@ import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 import { environment } from 'environment/environment';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     private _authenticated: boolean = false;
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
+    private _router = inject(Router);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -86,7 +88,8 @@ export class AuthService {
                     id: '1',
                     email: rol === 'admin' ? response.admin.email : response.agent.email,
                     name: rol === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
-                    rol: rol
+                    rol: rol,
+                    storeId: rol === 'admin' ? null : response.agent.storeId
                 };
 
                 // Return a new observable with the response
@@ -126,13 +129,33 @@ export class AuthService {
                     this._authenticated = true;
 
                     // Store the user on the user service
-                    // Store the user on the user service
                     this._userService.user = {
                         id: '1',
                         email: response.role === 'admin' ? response.admin.email : response.agent.email,
                         name: response.role === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
-                        rol: response.role
+                        rol: response.role,
+                        storeId: response.role === 'admin' ? null : response.agent.storeId
                     };
+
+                    console.log(location.pathname);
+
+                    if (response.role === 'admin') {
+                        const redirectURL = '/signed-in-redirect';
+
+                        if (location.pathname === '/sign-in' || location.pathname === '/') {
+                            // Navigate to the redirect url
+                            this._router.navigateByUrl(redirectURL);
+                        }
+                    }
+
+                    if (response.role === 'agent') {
+                        const redirectURL = '/clients-store';
+
+                        if (location.pathname === '/sign-in' || location.pathname === '/') {
+                            // Navigate to the redirect url
+                            this._router.navigateByUrl(redirectURL);
+                        }
+                    }
 
                     // Return true
                     return of(true);
@@ -146,9 +169,11 @@ export class AuthService {
     signOut(): Observable<any> {
         // Remove the access token from the local storage
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
 
         // Set the authenticated flag to false
         this._authenticated = false;
+        this._userService.user = null;
 
         // Return the observable
         return of(true);

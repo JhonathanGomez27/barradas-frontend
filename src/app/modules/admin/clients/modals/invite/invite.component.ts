@@ -1,29 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import {
     FormBuilder,
+    FormControl,
     FormGroup,
     ReactiveFormsModule,
     Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
+import { forkJoin, Observable, ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { ClientsService } from '../../clients.service';
 import Swal from 'sweetalert2';
-import {ClipboardModule} from '@angular/cdk/clipboard';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
 
 interface FileUpload {
-  file: File | null;
-  name: string;
-  label: string;
-  required: boolean;
+    file: File | null;
+    name: string;
+    label: string;
+    required: boolean;
 }
 
 @Component({
@@ -78,10 +80,21 @@ export class InviteComponent implements OnInit {
     // Términos disponibles según el tipo de pago
     availableTerms: number[] = [];
 
+    stores: Store[] = [];
+    storeFilterCtrl: FormControl = new FormControl('');
+    filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
+
+    storeId: string = '';
+    rol: string = '';
+    selectedStore: Store | null = null;
+
     constructor(
         private _formBuilder: FormBuilder,
         public dialogRef: MatDialogRef<InviteComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: { storeId: string, rol: string },
         private _clientsService: ClientsService,
+        private _storesService: StoresService,
+        private _changeDetectorRef: ChangeDetectorRef,
     ) {
         this.inviteForm = this._formBuilder.group({
             // Información personal
@@ -90,7 +103,7 @@ export class InviteComponent implements OnInit {
             email: ['', [Validators.required, Validators.email]],
             phone: ['', [Validators.required]],
             locationAddress: ['', [Validators.required]],
-
+            storeId: [null, [Validators.required]],
             // Información del crédito
             totalAmount: [null, [Validators.required, Validators.min(1)]],
             initialPayment: [null, [Validators.required, Validators.min(0)]],
@@ -111,9 +124,33 @@ export class InviteComponent implements OnInit {
                 toast.addEventListener('mouseleave', Swal.resumeTimer);
             },
         });
+
+        this.storeId = this.data.storeId;
+        this.rol = this.data.rol;
     }
 
     ngOnInit(): void {
+
+        this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
+            this.stores = response;
+            this.selectedStore = this.stores.find(store => store.id === this.storeId);
+
+            if (this.storeId) {
+                this.inviteForm.patchValue({
+                    storeId: this.storeId
+                });
+            }
+
+            this.filteredStores.next(this.stores.slice());
+            this._changeDetectorRef.markForCheck();
+        });
+
+        // Listen for search field value changes
+        this.storeFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
+            this.filterStores();
+            this._changeDetectorRef.markForCheck();
+        });
+
         this.getCreditTerms();
         this.setupFormListeners();
     }
@@ -222,7 +259,7 @@ export class InviteComponent implements OnInit {
     }
 
     onSubmit(): void {
-        if(!this.inviteForm.valid) {
+        if (!this.inviteForm.valid) {
             this.Toast.fire({
                 icon: 'error',
                 title: 'Por favor completa todos los campos requeridos.'
@@ -246,7 +283,7 @@ export class InviteComponent implements OnInit {
         }
 
         if (this.inviteForm.valid) {
-            this.inviteForm.disable({emitEvent: false});
+            this.inviteForm.disable({ emitEvent: false });
             this.isLoading = true;
 
             const formValue = this.inviteForm.getRawValue();
@@ -255,7 +292,8 @@ export class InviteComponent implements OnInit {
                 last_name: formValue.last_name,
                 email: formValue.email,
                 phone: formValue.phone,
-                locationAddress: formValue.locationAddress
+                locationAddress: formValue.locationAddress,
+                storeId: formValue.storeId
             };
 
             const creditData = {
@@ -282,7 +320,7 @@ export class InviteComponent implements OnInit {
                         icon: 'error',
                         title: 'Error al invitar al cliente.'
                     });
-                    this.inviteForm.enable();
+                    this.inviteForm.enable({ emitEvent: false });
                     this.isLoading = false;
                 },
             });
@@ -290,12 +328,12 @@ export class InviteComponent implements OnInit {
     }
 
     createCreditForClient(clientId: string, creditData: any) {
-        this._clientsService.createCredit({clientId: clientId, ...creditData}).pipe(takeUntil(this._unsubscribeAll)).subscribe({
-            next: (response:any) => {
+        this._clientsService.createCredit({ clientId: clientId, ...creditData }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (response: any) => {
                 console.log('Crédito creado exitosamente:', response);
 
                 this.uploadDocumentsToClient(clientId, response.id);
-            },error: (error) => {
+            }, error: (error) => {
 
             }
         });
@@ -307,7 +345,7 @@ export class InviteComponent implements OnInit {
         Object.keys(this.fileUploads).forEach(docType => {
             const fileUpload = this.fileUploads[docType];
             if (fileUpload.file) {
-                if(docType === 'QUOTE' && creditId){
+                if (docType === 'QUOTE' && creditId) {
                     uploadObservables.push(
                         this._clientsService.uploadFileToClient(
                             client_id,
@@ -316,7 +354,7 @@ export class InviteComponent implements OnInit {
                             creditId
                         )
                     );
-                }else{
+                } else {
                     uploadObservables.push(
                         this._clientsService.uploadFileToClient(
                             client_id,
@@ -401,6 +439,25 @@ export class InviteComponent implements OnInit {
             (err) => {
                 console.error('Error al copiar al portapapeles:', err);
             }
+        );
+    }
+
+    // Método para filtrar tiendas en el select con búsqueda
+    private filterStores(): void {
+        if (!this.stores) {
+            return;
+        }
+        // Get the search keyword
+        let search = this.storeFilterCtrl.value;
+        if (!search) {
+            this.filteredStores.next(this.stores.slice());
+            return;
+        } else {
+            search = search.toLowerCase();
+        }
+        // Filter the stores
+        this.filteredStores.next(
+            this.stores.filter(store => store.name.toLowerCase().indexOf(search) > -1)
         );
     }
 }

@@ -3,6 +3,7 @@ import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
+import { hasRoleGuard } from './core/auth/guards/has-permission.guard';
 
 // @formatter:off
 /* eslint-disable max-len */
@@ -78,9 +79,50 @@ export const appRoutes: Route[] = [
         },
         children: [
             // {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            { path: 'clients', loadChildren: () => import('app/modules/admin/clients/clients.routes') },
-            { path: 'docuseal', loadChildren: () => import('app/modules/docuseal/docuseal.routes') },
-            { path: 'stores', loadChildren: () => import('app/modules/admin/stores/stores.routes') }
+            {
+                path: 'clients',
+                canActivate: [hasRoleGuard],
+                data: {
+                    expectedRole: ['admin']
+                },
+                loadChildren: () => import('app/modules/admin/clients/clients.routes')
+            },
+            {
+                path: 'docuseal',
+                canActivate: [hasRoleGuard],
+                data: {
+                    expectedRole: ['admin', 'agent']
+                },
+                loadChildren: () => import('app/modules/docuseal/docuseal.routes')
+            },
+            {
+                path: 'stores',
+                canActivate: [hasRoleGuard],
+                data: {
+                    expectedRole: ['admin']
+                },
+                loadChildren: () => import('app/modules/admin/stores/stores.routes')
+            }
+        ]
+    },
+    // Agent routes
+    {
+        path: '',
+        canActivate: [AuthGuard],
+        canActivateChild: [AuthGuard],
+        component: LayoutComponent,
+        resolve: {
+            initialData: initialDataResolver
+        },
+        children: [
+            {
+                path: 'clients-store',
+                canActivate: [hasRoleGuard],
+                data: {
+                    expectedRole: ['agent']
+                },
+                loadChildren: () => import('app/modules/agent/clients/clients.routes')
+            },
         ]
     }
 ];

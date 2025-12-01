@@ -116,7 +116,7 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
         if (!this.store?.id) return;
 
         this.isLoadingAgents = true;
-        this.agentsService.getAgents({ page: this.currentPage, limit: this.pageSize, search: this.searchTerm}).pipe(takeUntil(this.destroy$)).subscribe();
+        this.agentsService.getAgents({ page: this.currentPage, limit: this.pageSize, search: this.searchTerm, storeId: this.store.id }).pipe(takeUntil(this.destroy$)).subscribe();
     }
 
     onSearchChange(searchValue: string): void {

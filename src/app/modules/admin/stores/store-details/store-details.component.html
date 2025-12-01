@@ -3,10 +3,8 @@
     <div class="bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
         <div class="flex items-center justify-between text-white py-3 px-4 md:py-4 md:px-6">
             <div class="flex items-center min-w-0 flex-1">
-                <button mat-icon-button
-                        (click)="goBack()"
-                        matTooltip="Volver a tiendas"
-                        class="hover:bg-white/20 transition-colors duration-200 mr-2">
+                <button mat-icon-button (click)="goBack()" matTooltip="Volver a tiendas"
+                    class="hover:bg-white/20 transition-colors duration-200 mr-2">
                     <mat-icon class="text-white">arrow_back</mat-icon>
                 </button>
                 <div class="bg-white/20 p-2 rounded-full mr-2 md:mr-3 flex-shrink-0">
@@ -29,7 +27,8 @@
     <div class="flex-auto p-4 sm:p-6 md:p-10" *ngIf="!isLoading && store">
 
         <!-- Información de la Tienda -->
-        <div class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
+        <div
+            class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
             <div class="bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4 border-b border-gray-200">
                 <div class="flex items-center flex-wrap gap-2">
                     <div class="bg-barradas-100 p-2 rounded-lg flex-shrink-0">
@@ -45,7 +44,8 @@
                         <mat-icon class="text-gray-400 mr-2 text-sm">store</mat-icon>
                         <label class="text-sm font-medium text-gray-600">Nombre de la Tienda</label>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                    <div
+                        class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
                         <span class="font-medium text-gray-800">{{ store.name }}</span>
                     </div>
                 </div>
@@ -56,7 +56,8 @@
                         <mat-icon class="text-gray-400 mr-2 text-sm">location_city</mat-icon>
                         <label class="text-sm font-medium text-gray-600">Ciudad</label>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                    <div
+                        class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
                         <span class="font-medium text-gray-800">{{ city?.name || 'N/A' }}</span>
                     </div>
                 </div>
@@ -67,15 +68,18 @@
                         <mat-icon class="text-gray-400 mr-2 text-sm">location_on</mat-icon>
                         <label class="text-sm font-medium text-gray-600">Dirección</label>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                        <span class="font-medium text-gray-800">{{ store.address !== "" ? store.address : 'Sin dirección asignada' }}</span>
+                    <div
+                        class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
+                        <span class="font-medium text-gray-800">{{ store.address !== "" && store.address !== null ?
+                            store.address : 'Sin dirección asignada' }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Tabs para Agentes y Usuarios -->
-        <div class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg">
+        <div
+            class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg">
             <mat-tab-group class="custom-tabs" animationDuration="300ms">
                 <!-- Tab Agentes -->
                 <mat-tab>
@@ -83,7 +87,8 @@
                         <div class="flex items-center">
                             <mat-icon class="mr-2">people</mat-icon>
                             <span>Agentes</span>
-                            <span class="ml-2 px-2 py-0.5 bg-barradas-100 text-barradas-800 rounded-full text-xs font-medium">
+                            <span
+                                class="ml-2 px-2 py-0.5 bg-barradas-100 text-barradas-800 rounded-full text-xs font-medium">
                                 {{ totalAgents }}
                             </span>
                         </div>
@@ -94,19 +99,16 @@
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                             <mat-form-field appearance="outline" class="w-full sm:w-96" subscriptSizing="dynamic">
                                 <mat-label>Buscar agentes</mat-label>
-                                <input matInput
-                                       [(ngModel)]="searchTerm"
-                                       (ngModelChange)="onSearchChange($event)"
-                                       placeholder="Nombre, email...">
+                                <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)"
+                                    placeholder="Nombre, email...">
                                 <mat-icon matPrefix class="text-gray-400">search</mat-icon>
                                 <button mat-icon-button matSuffix *ngIf="searchTerm" (click)="clearSearch()">
                                     <mat-icon>close</mat-icon>
                                 </button>
                             </mat-form-field>
 
-                            <button mat-raised-button
-                                    (click)="openAgentDialog()"
-                                    class="w-full sm:w-auto bg-barradas-900 text-white">
+                            <button mat-raised-button (click)="openAgentDialog()"
+                                class="w-full sm:w-auto bg-barradas-900 text-white">
                                 <mat-icon class="mr-2">add</mat-icon>
                                 Nuevo Agente
                             </button>
@@ -122,16 +124,19 @@
                             <table mat-table [dataSource]="agents" class="w-full">
                                 <!-- Nombre Column -->
                                 <ng-container matColumnDef="name">
-                                    <th mat-header-cell *matHeaderCellDef class="px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                                    <th mat-header-cell *matHeaderCellDef
+                                        class="px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
                                         Nombre
                                     </th>
                                     <td mat-cell *matCellDef="let agent" class="px-4 py-4">
                                         <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-gradient-to-br from-barradas-300 to-barradas-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                            <div
+                                                class="w-10 h-10 bg-gradient-to-br from-barradas-300 to-barradas-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
                                                 {{ agent.firstName.charAt(0) }}{{ agent.lastName.charAt(0) }}
                                             </div>
                                             <div>
-                                                <p class="font-medium text-gray-900">{{ agent.firstName }} {{ agent.lastName }}</p>
+                                                <p class="font-medium text-gray-900">{{ agent.firstName }} {{
+                                                    agent.lastName }}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -139,7 +144,8 @@
 
                                 <!-- Email Column -->
                                 <ng-container matColumnDef="email">
-                                    <th mat-header-cell *matHeaderCellDef class="px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                                    <th mat-header-cell *matHeaderCellDef
+                                        class="px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
                                         Email
                                     </th>
                                     <td mat-cell *matCellDef="let agent" class="px-4 py-4">
@@ -149,7 +155,8 @@
 
                                 <!-- Phone Column -->
                                 <ng-container matColumnDef="phone">
-                                    <th mat-header-cell *matHeaderCellDef class="px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                                    <th mat-header-cell *matHeaderCellDef
+                                        class="px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
                                         Teléfono
                                     </th>
                                     <td mat-cell *matCellDef="let agent" class="px-4 py-4">
@@ -159,21 +166,18 @@
 
                                 <!-- Actions Column -->
                                 <ng-container matColumnDef="actions">
-                                    <th mat-header-cell *matHeaderCellDef class="text-center px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                                    <th mat-header-cell *matHeaderCellDef
+                                        class="text-center px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
                                         Acciones
                                     </th>
                                     <td mat-cell *matCellDef="let agent" class="px-4 py-4 text-center">
                                         <div class="flex items-center justify-center gap-1">
-                                            <button mat-icon-button
-                                                    class="text-barradas-600 hover:bg-barradas-50"
-                                                    (click)="openAgentDialog(agent)"
-                                                    matTooltip="Editar agente">
+                                            <button mat-icon-button class="text-barradas-600 hover:bg-barradas-50"
+                                                (click)="openAgentDialog(agent)" matTooltip="Editar agente">
                                                 <mat-icon>edit</mat-icon>
                                             </button>
-                                            <button mat-icon-button
-                                                    color="warn"
-                                                    (click)="deleteAgent(agent)"
-                                                    matTooltip="Eliminar agente">
+                                            <button mat-icon-button color="warn" (click)="deleteAgent(agent)"
+                                                matTooltip="Eliminar agente">
                                                 <mat-icon>delete</mat-icon>
                                             </button>
                                         </div>
@@ -188,11 +192,8 @@
 
                             <!-- Paginador -->
                             <div class="border-t border-gray-200 bg-barradas-50 mt-4">
-                                <mat-paginator
-                                    [length]="totalAgents"
-                                    [pageSize]="pageSize"
-                                    [pageIndex]="currentPage - 1"
-                                    [pageSizeOptions]="pageSizeOptions"
+                                <mat-paginator [length]="totalAgents" [pageSize]="pageSize"
+                                    [pageIndex]="currentPage - 1" [pageSizeOptions]="pageSizeOptions"
                                     (page)="onPageChange($event)">
                                 </mat-paginator>
                             </div>

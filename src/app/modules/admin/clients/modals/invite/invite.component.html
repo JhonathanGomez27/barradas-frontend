@@ -1,283 +1,330 @@
 <div mat-dialog-title class="flex bg-barradas-900 p-4">
-    <div class="flex items-center justify-between w-full text-white">
-        <div class="text-lg font-medium flex items-center">
-            <mat-icon class="mr-2 text-current">person_add</mat-icon>
-            Invitar Cliente
-        </div>
-        <button mat-icon-button (click)="onCancel()" [tabIndex]="-1">
-            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-        </button>
+  <div class="flex items-center justify-between w-full text-white">
+    <div class="text-lg font-medium flex items-center">
+      <mat-icon class="mr-2 text-current">person_add</mat-icon>
+      Invitar Cliente
     </div>
+    <button mat-icon-button (click)="onCancel()" [tabIndex]="-1">
+      <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+    </button>
+  </div>
 </div>
 
 <mat-dialog-content class="flex flex-col flex-auto p-0 sm:min-w-[700px] sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
-    <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()" class="w-full p-6">
-      <!-- Información Personal -->
-      <div class="mb-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-          <mat-icon class="mr-2 text-barradas-700">person</mat-icon>
-          Información Personal
-        </h3>
+  <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()" class="w-full p-6">
+    <!-- Información Personal -->
+    <div class="mb-6">
+      <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+        <mat-icon class="mr-2 text-barradas-700">person</mat-icon>
+        Información Personal
+      </h3>
 
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Nombre -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Nombre</mat-label>
-            <input matInput formControlName="name" required />
-            <mat-icon matPrefix class="mr-2">person</mat-icon>
-            <mat-error *ngIf="inviteForm.get('name')?.hasError('required')">El nombre es obligatorio</mat-error>
-          </mat-form-field>
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Nombre -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="name" required />
+          <mat-icon matPrefix class="mr-2">person</mat-icon>
+          <mat-error *ngIf="inviteForm.get('name')?.hasError('required')">El nombre es obligatorio</mat-error>
+        </mat-form-field>
 
-          <!-- Apellido -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Apellido</mat-label>
-            <input matInput formControlName="last_name" required />
-            <mat-icon matPrefix class="mr-2">badge</mat-icon>
-            <mat-error *ngIf="inviteForm.get('last_name')?.hasError('required')">El apellido es obligatorio</mat-error>
-          </mat-form-field>
+        <!-- Apellido -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Apellido</mat-label>
+          <input matInput formControlName="last_name" required />
+          <mat-icon matPrefix class="mr-2">badge</mat-icon>
+          <mat-error *ngIf="inviteForm.get('last_name')?.hasError('required')">El apellido es obligatorio</mat-error>
+        </mat-form-field>
 
-          <!-- Correo -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Correo Electrónico</mat-label>
-            <input matInput formControlName="email" type="email" required />
-            <mat-icon matPrefix class="mr-2">email</mat-icon>
-            <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">El correo es obligatorio</mat-error>
-            <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">Ingresa un correo válido</mat-error>
-          </mat-form-field>
+        <!-- Correo -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Correo Electrónico</mat-label>
+          <input matInput formControlName="email" type="email" required />
+          <mat-icon matPrefix class="mr-2">email</mat-icon>
+          <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">El correo es obligatorio</mat-error>
+          <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">Ingresa un correo válido</mat-error>
+        </mat-form-field>
 
-          <!-- Teléfono -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Teléfono</mat-label>
-            <input matInput formControlName="phone" required />
-            <mat-icon matPrefix class="mr-2">phone</mat-icon>
-            <mat-error *ngIf="inviteForm.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
-          </mat-form-field>
+        <!-- Teléfono -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="phone" required />
+          <mat-icon matPrefix class="mr-2">phone</mat-icon>
+          <mat-error *ngIf="inviteForm.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
+        </mat-form-field>
 
-          <!-- Dirección -->
-          <mat-form-field appearance="outline" class="w-full col-span-1 md:col-span-2" subscriptSizing="fixed">
-            <mat-label>Dirección</mat-label>
-            <input matInput formControlName="locationAddress" required />
-            <mat-icon matPrefix class="mr-2">location_on</mat-icon>
-            <mat-error *ngIf="inviteForm.get('locationAddress')?.hasError('required')">La dirección es obligatoria</mat-error>
-          </mat-form-field>
-        </div>
-      </div>
+        <!-- Dirección -->
+        <mat-form-field appearance="outline" class="w-full col-span-1 md:col-span-2" subscriptSizing="fixed">
+          <mat-label>Dirección</mat-label>
+          <input matInput formControlName="locationAddress" required />
+          <mat-icon matPrefix class="mr-2">location_on</mat-icon>
+          <mat-error *ngIf="inviteForm.get('locationAddress')?.hasError('required')">La dirección es
+            obligatoria</mat-error>
+        </mat-form-field>
 
-      <!-- Información del Crédito -->
-      <div class="border-t border-gray-200 pt-6 mb-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-          <mat-icon class="mr-2 text-barradas-700">credit_card</mat-icon>
-          Información del Crédito
-        </h3>
-
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Monto Total del Crédito -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Monto Total del Crédito</mat-label>
-            <input matInput formControlName="totalAmount" type="number" min="1" required />
-            <!-- <span matTextPrefix>$&nbsp;</span> -->
-            <span matTextSuffix>&nbsp;MXN</span>
-            <mat-icon matPrefix class="mr-2">attach_money</mat-icon>
-            <mat-error *ngIf="inviteForm.get('totalAmount')?.hasError('required')">El monto total es obligatorio</mat-error>
-            <mat-error *ngIf="inviteForm.get('totalAmount')?.hasError('min')">El monto debe ser mayor a 0</mat-error>
-          </mat-form-field>
-
-          <!-- Pago Inicial -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Pago Inicial</mat-label>
-            <input matInput formControlName="initialPayment" type="number" min="0" required />
-            <!-- <span matTextPrefix>$&nbsp;</span> -->
-            <span matTextSuffix>&nbsp;MXN</span>
-            <mat-icon matPrefix class="mr-2">payment</mat-icon>
-            <mat-hint>{{ inviteForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
-            <mat-error *ngIf="inviteForm.get('initialPayment')?.hasError('required')">El pago inicial es obligatorio</mat-error>
-            <mat-error *ngIf="inviteForm.get('initialPayment')?.hasError('exceedsTotal')">El pago inicial no puede superar el monto total</mat-error>
-          </mat-form-field>
-
-          <!-- Tipo de Pago -->
-          <div class="col-span-1 md:col-span-2">
-            <label class="text-sm font-medium text-gray-700 mb-2 block">Tipo de Pago</label>
-            <mat-button-toggle-group formControlName="paymentType" class="w-full">
-              <mat-button-toggle value="WEEKLY" class="flex-1">
-                <mat-icon class="mr-2">calendar_view_week</mat-icon>
-                Semanal
-              </mat-button-toggle>
-              <mat-button-toggle value="DAILY" class="flex-1">
-                <mat-icon class="mr-2">today</mat-icon>
-                Diario
-              </mat-button-toggle>
-            </mat-button-toggle-group>
-          </div>
-
-          <!-- Plazo del Crédito -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-            <mat-label>Plazo del Crédito</mat-label>
-            <mat-select formControlName="selectedTerm" required>
-              <mat-option [value]="0" disabled>Selecciona un plazo</mat-option>
-              <mat-option *ngFor="let term of availableTerms" [value]="term">
-                {{ term }} {{ inviteForm.get('paymentType')?.value === 'WEEKLY' ? 'semanas' : 'días' }}
-              </mat-option>
-            </mat-select>
-            <mat-icon matPrefix class="mr-2">schedule</mat-icon>
-            <mat-error *ngIf="inviteForm.get('selectedTerm')?.hasError('required')">El plazo es obligatorio</mat-error>
-          </mat-form-field>
-
-          <!-- Día de Pago (solo para semanal) -->
-          <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed" *ngIf="inviteForm.get('paymentType')?.value === 'WEEKLY'">
-            <mat-label>Día de Pago Semanal</mat-label>
-            <mat-select formControlName="repaymentDay" required>
-              <mat-option *ngFor="let day of weekDays" [value]="day.value">
-                {{ day.fullName }}
-              </mat-option>
-            </mat-select>
-            <mat-icon matPrefix class="mr-2">event</mat-icon>
-            <mat-error *ngIf="inviteForm.get('repaymentDay')?.hasError('required')">El día de pago es obligatorio</mat-error>
-          </mat-form-field>
-        </div>
-
-        <!-- Resumen del Crédito -->
-        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center">
-            <mat-icon class="mr-2 text-blue-600" style="font-size: 18px;">info</mat-icon>
-            Resumen del Crédito
-          </h4>
-          <div class="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span class="text-gray-600">Monto Total:</span>
-              <span class="ml-2 font-semibold text-gray-900">{{ formatCurrency(inviteForm.get('totalAmount')?.value || 0) }}</span>
-            </div>
-            <div>
-              <span class="text-gray-600">Pago Inicial:</span>
-              <span class="ml-2 font-semibold text-gray-900">{{ formatCurrency(inviteForm.get('initialPayment')?.value || 0) }}</span>
-            </div>
-            <div>
-              <span class="text-gray-600">Monto a Financiar:</span>
-              <span class="ml-2 font-semibold text-gray-900">{{ formatCurrency((inviteForm.get('totalAmount')?.value || 0) - (inviteForm.get('initialPayment')?.value || 0)) }}</span>
-            </div>
-            <div>
-              <span class="text-gray-600">Plazo:</span>
-              <span class="ml-2 font-semibold text-gray-900">
-                {{ inviteForm.get('selectedTerm')?.value || 0 }}
-                {{ inviteForm.get('paymentType')?.value === 'WEEKLY' ? 'semanas' : 'días' }}
+        <!-- Selector de Tienda (Solo para Admin) -->
+        <mat-form-field *ngIf="rol === 'admin'" appearance="outline" class="w-full col-span-1 md:col-span-2"
+          subscriptSizing="fixed">
+          <mat-label>Tienda</mat-label>
+          <mat-select formControlName="storeId" placeholder="Seleccionar tienda">
+            <mat-option>
+              <ngx-mat-select-search [formControl]="storeFilterCtrl" placeholderLabel="Buscar tienda..."
+                noEntriesFoundLabel="No se encontraron tiendas">
+              </ngx-mat-select-search>
+            </mat-option>
+            <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+              <span class="flex items-center">
+                <mat-icon class="mr-2 text-barradas-500 scale-75" svgIcon="mat_outline:storefront"></mat-icon>
+                {{ store.name }}
               </span>
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
+          <mat-error *ngIf="inviteForm.get('storeId')?.hasError('required')">La tienda es obligatoria</mat-error>
+        </mat-form-field>
+
+        <!-- Visualización de Tienda (Solo para Agente) -->
+        <mat-form-field *ngIf="rol === 'agent'" appearance="outline" class="w-full col-span-1 md:col-span-2"
+          subscriptSizing="fixed">
+          <mat-label>Tienda</mat-label>
+          <input matInput [value]="selectedStore?.name || 'Cargando...'" disabled class="text-gray-700 font-medium">
+          <mat-icon matPrefix class="mr-2 text-barradas-500">store</mat-icon>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Información del Crédito -->
+    <div class="border-t border-gray-200 pt-6 mb-6">
+      <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+        <mat-icon class="mr-2 text-barradas-700">credit_card</mat-icon>
+        Información del Crédito
+      </h3>
+
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Monto Total del Crédito -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Monto Total del Crédito</mat-label>
+          <input matInput formControlName="totalAmount" type="number" min="1" required />
+          <!-- <span matTextPrefix>$&nbsp;</span> -->
+          <span matTextSuffix>&nbsp;MXN</span>
+          <mat-icon matPrefix class="mr-2">attach_money</mat-icon>
+          <mat-error *ngIf="inviteForm.get('totalAmount')?.hasError('required')">El monto total es
+            obligatorio</mat-error>
+          <mat-error *ngIf="inviteForm.get('totalAmount')?.hasError('min')">El monto debe ser mayor a 0</mat-error>
+        </mat-form-field>
+
+        <!-- Pago Inicial -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Pago Inicial</mat-label>
+          <input matInput formControlName="initialPayment" type="number" min="0" required />
+          <!-- <span matTextPrefix>$&nbsp;</span> -->
+          <span matTextSuffix>&nbsp;MXN</span>
+          <mat-icon matPrefix class="mr-2">payment</mat-icon>
+          <mat-hint>{{ inviteForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
+          <mat-error *ngIf="inviteForm.get('initialPayment')?.hasError('required')">El pago inicial es
+            obligatorio</mat-error>
+          <mat-error *ngIf="inviteForm.get('initialPayment')?.hasError('exceedsTotal')">El pago inicial no puede superar
+            el monto total</mat-error>
+        </mat-form-field>
+
+        <!-- Tipo de Pago -->
+        <div class="col-span-1 md:col-span-2">
+          <label class="text-sm font-medium text-gray-700 mb-2 block">Tipo de Pago</label>
+          <mat-button-toggle-group formControlName="paymentType" class="w-full">
+            <mat-button-toggle value="WEEKLY" class="flex-1">
+              <mat-icon class="mr-2">calendar_view_week</mat-icon>
+              Semanal
+            </mat-button-toggle>
+            <mat-button-toggle value="DAILY" class="flex-1">
+              <mat-icon class="mr-2">today</mat-icon>
+              Diario
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <!-- Plazo del Crédito -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+          <mat-label>Plazo del Crédito</mat-label>
+          <mat-select formControlName="selectedTerm" required>
+            <mat-option [value]="0" disabled>Selecciona un plazo</mat-option>
+            <mat-option *ngFor="let term of availableTerms" [value]="term">
+              {{ term }} {{ inviteForm.get('paymentType')?.value === 'WEEKLY' ? 'semanas' : 'días' }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix class="mr-2">schedule</mat-icon>
+          <mat-error *ngIf="inviteForm.get('selectedTerm')?.hasError('required')">El plazo es obligatorio</mat-error>
+        </mat-form-field>
+
+        <!-- Día de Pago (solo para semanal) -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed"
+          *ngIf="inviteForm.get('paymentType')?.value === 'WEEKLY'">
+          <mat-label>Día de Pago Semanal</mat-label>
+          <mat-select formControlName="repaymentDay" required>
+            <mat-option *ngFor="let day of weekDays" [value]="day.value">
+              {{ day.fullName }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix class="mr-2">event</mat-icon>
+          <mat-error *ngIf="inviteForm.get('repaymentDay')?.hasError('required')">El día de pago es
+            obligatorio</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Resumen del Crédito -->
+      <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center">
+          <mat-icon class="mr-2 text-blue-600" style="font-size: 18px;">info</mat-icon>
+          Resumen del Crédito
+        </h4>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <span class="text-gray-600">Monto Total:</span>
+            <span class="ml-2 font-semibold text-gray-900">{{ formatCurrency(inviteForm.get('totalAmount')?.value || 0)
+              }}</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Pago Inicial:</span>
+            <span class="ml-2 font-semibold text-gray-900">{{ formatCurrency(inviteForm.get('initialPayment')?.value ||
+              0) }}</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Monto a Financiar:</span>
+            <span class="ml-2 font-semibold text-gray-900">{{ formatCurrency((inviteForm.get('totalAmount')?.value || 0)
+              - (inviteForm.get('initialPayment')?.value || 0)) }}</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Plazo:</span>
+            <span class="ml-2 font-semibold text-gray-900">
+              {{ inviteForm.get('selectedTerm')?.value || 0 }}
+              {{ inviteForm.get('paymentType')?.value === 'WEEKLY' ? 'semanas' : 'días' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documentos Requeridos -->
+    <div class="border-t border-gray-200 pt-6">
+      <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+        <mat-icon class="mr-2 text-barradas-700">upload_file</mat-icon>
+        Documentos Requeridos
+      </h3>
+
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- INE Frente -->
+        <div class="w-full">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-600">{{ fileUploads['INE_FRONT'].label }}</label>
+            <span class="text-xs text-red-500" *ngIf="fileUploads['INE_FRONT'].required">*Requerido</span>
+          </div>
+          <div
+            class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
+            <div *ngIf="!fileUploads['INE_FRONT'].file" class="flex items-center justify-center h-full">
+              <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
+                <mat-icon class="mr-2">upload</mat-icon>
+                <span class="text-sm font-medium">Seleccionar archivo</span>
+                <input type="file" class="hidden" accept="image/*,.pdf"
+                  (change)="onDocumentFileSelected($event, 'INE_FRONT')">
+              </label>
+            </div>
+            <div *ngIf="fileUploads['INE_FRONT'].file" class="flex items-center justify-between gap-2 w-full">
+              <div class="flex items-center flex-1 min-w-0 overflow-hidden">
+                <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
+                <div class="flex-1 min-w-0 overflow-hidden">
+                  <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('INE_FRONT')">
+                    {{ getFileName('INE_FRONT') }}
+                  </p>
+                  <p class="text-xs text-gray-500">{{ getFileSize('INE_FRONT') }}</p>
+                </div>
+              </div>
+              <button mat-icon-button color="warn" (click)="removeDocumentFile('INE_FRONT')" type="button"
+                class="flex-shrink-0">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- INE Reverso -->
+        <div class="w-full">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-600">{{ fileUploads['INE_BACK'].label }}</label>
+            <span class="text-xs text-red-500" *ngIf="fileUploads['INE_BACK'].required">*Requerido</span>
+          </div>
+          <div
+            class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
+            <div *ngIf="!fileUploads['INE_BACK'].file" class="flex items-center justify-center h-full">
+              <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
+                <mat-icon class="mr-2">upload</mat-icon>
+                <span class="text-sm font-medium">Seleccionar archivo</span>
+                <input type="file" class="hidden" accept="image/*,.pdf"
+                  (change)="onDocumentFileSelected($event, 'INE_BACK')">
+              </label>
+            </div>
+            <div *ngIf="fileUploads['INE_BACK'].file" class="flex items-center justify-between gap-2 w-full">
+              <div class="flex items-center flex-1 min-w-0 overflow-hidden">
+                <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
+                <div class="flex-1 min-w-0 overflow-hidden">
+                  <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('INE_BACK')">
+                    {{ getFileName('INE_BACK') }}
+                  </p>
+                  <p class="text-xs text-gray-500">{{ getFileSize('INE_BACK') }}</p>
+                </div>
+              </div>
+              <button mat-icon-button color="warn" (click)="removeDocumentFile('INE_BACK')" type="button"
+                class="flex-shrink-0">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cotización -->
+        <div class="w-full">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-600">{{ fileUploads['QUOTE'].label }}</label>
+            <span class="text-xs text-red-500" *ngIf="fileUploads['QUOTE'].required">*Requerido</span>
+          </div>
+          <div
+            class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
+            <div *ngIf="!fileUploads['QUOTE'].file" class="flex items-center justify-center h-full">
+              <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
+                <mat-icon class="mr-2">upload</mat-icon>
+                <span class="text-sm font-medium">Seleccionar archivo</span>
+                <input type="file" class="hidden" accept="image/*,.pdf"
+                  (change)="onDocumentFileSelected($event, 'QUOTE')">
+              </label>
+            </div>
+            <div *ngIf="fileUploads['QUOTE'].file" class="flex items-center justify-between gap-2 w-full">
+              <div class="flex items-center flex-1 min-w-0 overflow-hidden">
+                <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
+                <div class="flex-1 min-w-0 overflow-hidden">
+                  <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('QUOTE')">
+                    {{ getFileName('QUOTE') }}
+                  </p>
+                  <p class="text-xs text-gray-500">{{ getFileSize('QUOTE') }}</p>
+                </div>
+              </div>
+              <button mat-icon-button color="warn" (click)="removeDocumentFile('QUOTE')" type="button"
+                class="flex-shrink-0">
+                <mat-icon>close</mat-icon>
+              </button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Documentos Requeridos -->
-      <div class="border-t border-gray-200 pt-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-          <mat-icon class="mr-2 text-barradas-700">upload_file</mat-icon>
-          Documentos Requeridos
-        </h3>
-
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- INE Frente -->
-            <div class="w-full">
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm font-medium text-gray-600">{{ fileUploads['INE_FRONT'].label }}</label>
-                <span class="text-xs text-red-500" *ngIf="fileUploads['INE_FRONT'].required">*Requerido</span>
-              </div>
-              <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
-                <div *ngIf="!fileUploads['INE_FRONT'].file" class="flex items-center justify-center h-full">
-                  <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
-                    <mat-icon class="mr-2">upload</mat-icon>
-                    <span class="text-sm font-medium">Seleccionar archivo</span>
-                    <input type="file" class="hidden" accept="image/*,.pdf" (change)="onDocumentFileSelected($event, 'INE_FRONT')">
-                  </label>
-                </div>
-                <div *ngIf="fileUploads['INE_FRONT'].file" class="flex items-center justify-between gap-2 w-full">
-                  <div class="flex items-center flex-1 min-w-0 overflow-hidden">
-                    <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
-                    <div class="flex-1 min-w-0 overflow-hidden">
-                      <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('INE_FRONT')">
-                        {{ getFileName('INE_FRONT') }}
-                      </p>
-                      <p class="text-xs text-gray-500">{{ getFileSize('INE_FRONT') }}</p>
-                    </div>
-                  </div>
-                  <button mat-icon-button color="warn" (click)="removeDocumentFile('INE_FRONT')" type="button" class="flex-shrink-0">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- INE Reverso -->
-            <div class="w-full">
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm font-medium text-gray-600">{{ fileUploads['INE_BACK'].label }}</label>
-                <span class="text-xs text-red-500" *ngIf="fileUploads['INE_BACK'].required">*Requerido</span>
-              </div>
-              <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
-                <div *ngIf="!fileUploads['INE_BACK'].file" class="flex items-center justify-center h-full">
-                  <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
-                    <mat-icon class="mr-2">upload</mat-icon>
-                    <span class="text-sm font-medium">Seleccionar archivo</span>
-                    <input type="file" class="hidden" accept="image/*,.pdf" (change)="onDocumentFileSelected($event, 'INE_BACK')">
-                  </label>
-                </div>
-                <div *ngIf="fileUploads['INE_BACK'].file" class="flex items-center justify-between gap-2 w-full">
-                  <div class="flex items-center flex-1 min-w-0 overflow-hidden">
-                    <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
-                    <div class="flex-1 min-w-0 overflow-hidden">
-                      <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('INE_BACK')">
-                        {{ getFileName('INE_BACK') }}
-                      </p>
-                      <p class="text-xs text-gray-500">{{ getFileSize('INE_BACK') }}</p>
-                    </div>
-                  </div>
-                  <button mat-icon-button color="warn" (click)="removeDocumentFile('INE_BACK')" type="button" class="flex-shrink-0">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Cotización -->
-            <div class="w-full">
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm font-medium text-gray-600">{{ fileUploads['QUOTE'].label }}</label>
-                <span class="text-xs text-red-500" *ngIf="fileUploads['QUOTE'].required">*Requerido</span>
-              </div>
-              <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
-                <div *ngIf="!fileUploads['QUOTE'].file" class="flex items-center justify-center h-full">
-                  <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
-                    <mat-icon class="mr-2">upload</mat-icon>
-                    <span class="text-sm font-medium">Seleccionar archivo</span>
-                    <input type="file" class="hidden" accept="image/*,.pdf" (change)="onDocumentFileSelected($event, 'QUOTE')">
-                  </label>
-                </div>
-                <div *ngIf="fileUploads['QUOTE'].file" class="flex items-center justify-between gap-2 w-full">
-                  <div class="flex items-center flex-1 min-w-0 overflow-hidden">
-                    <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
-                    <div class="flex-1 min-w-0 overflow-hidden">
-                      <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('QUOTE')">
-                        {{ getFileName('QUOTE') }}
-                      </p>
-                      <p class="text-xs text-gray-500">{{ getFileSize('QUOTE') }}</p>
-                    </div>
-                  </div>
-                  <button mat-icon-button color="warn" (click)="removeDocumentFile('QUOTE')" type="button" class="flex-shrink-0">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-        </div>
-      </div>
-    </form>
+    </div>
+  </form>
 </mat-dialog-content>
 
 <mat-dialog-actions class="justify-end py-4 px-6 bg-gray-50 border-t border-gray-200 gap-3">
-    <button mat-stroked-button (click)="onCancel()" [tabIndex]="-1" [disabled]="isLoading">
-      <mat-icon class="mr-1">close</mat-icon>
-      Cancelar
-    </button>
-    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="inviteForm.invalid || isLoading">
-        <mat-icon class="mr-1" *ngIf="!isLoading">send</mat-icon>
-        <mat-icon class="mr-1 animate-spin" *ngIf="isLoading">refresh</mat-icon>
-        {{ isLoading ? 'Procesando...' : 'Enviar Invitación' }}
-    </button>
+  <button mat-stroked-button (click)="onCancel()" [tabIndex]="-1" [disabled]="isLoading">
+    <mat-icon class="mr-1">close</mat-icon>
+    Cancelar
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="inviteForm.invalid || isLoading">
+    <mat-icon class="mr-1" *ngIf="!isLoading">send</mat-icon>
+    <mat-icon class="mr-1 animate-spin" *ngIf="isLoading">refresh</mat-icon>
+    {{ isLoading ? 'Procesando...' : 'Enviar Invitación' }}
+  </button>
 </mat-dialog-actions>
