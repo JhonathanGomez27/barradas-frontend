@@ -115,7 +115,7 @@ export class AgentsService {
      * Update agent
      */
     updateAgent(id: string, data: UpdateAgentDto): Observable<Agent> {
-        return this.httpClient.post<Agent>(`${this.url}/agents/${id}`, data).pipe(
+        return this.httpClient.put<Agent>(`${this.url}/agents/${id}`, data).pipe(
             tap(updatedAgent => {
                 const currentAgents = this._agents.value;
                 const index = currentAgents.findIndex(a => a.id === id);

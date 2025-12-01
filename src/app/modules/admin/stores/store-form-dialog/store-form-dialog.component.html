@@ -1,11 +1,11 @@
-<div mat-dialog-title class="flex bg-primary">
-    <div class="flex items-center justify-between w-full text-on-primary mt-3">
+<div mat-dialog-title class="flex bg-barradas-900">
+    <div class="flex items-center justify-between w-full text-white mt-3">
         <div class="text-lg font-medium flex items-center">
-            <mat-icon class="text-white">{{ isEditing ? 'edit' : 'add_business' }}</mat-icon>
+            <mat-icon class="text-white mr-2">{{ isEditing ? 'edit' : 'add_business' }}</mat-icon>
             <h2 class="text-xl font-semibold">{{ isEditing ? 'Editar Tienda' : 'Nueva Tienda' }}</h2>
         </div>
         <button mat-icon-button (click)="onCancel()" [tabIndex]="-1">
-            <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
         </button>
     </div>
 </div>
@@ -56,12 +56,12 @@
 
     </form>
 </mat-dialog-content>
-<mat-dialog-actions class="justify-end py-3 px-4 bg-gray-50 border-t border-gray-200">
+<mat-dialog-actions class="justify-end py-3 px-4 bg-barradas-50 border-t border-gray-200">
     <!-- Actions -->
     <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
         Cancelar
     </button>
-    <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="storeForm.invalid || isSubmitting" class="min-w-[120px]">
+    <button mat-raised-button class="bg-barradas-900 text-white min-w-[120px]" type="button" (click)="onSubmit()" [disabled]="storeForm.invalid || isSubmitting">
         <mat-spinner *ngIf="isSubmitting" diameter="20" class="mr-2"></mat-spinner>
         <span *ngIf="!isSubmitting">
             {{ isEditing ? 'Actualizar' : 'Crear Tienda' }}

@@ -403,9 +403,8 @@
                             {{ credits.length }} crédito{{ credits.length !== 1 ? 's' : '' }}
                         </span>
                         <button mat-raised-button
-                                color="primary"
-                                (click)="toggleCreateCreditForm()"
-                                class="text-xs">
+                                class="text-xs bg-barradas-900 text-white"
+                                (click)="toggleCreateCreditForm()">
                             <mat-icon class="mr-1" style="font-size: 16px;">add</mat-icon>
                             Nuevo Crédito
                         </button>
@@ -499,8 +498,8 @@
                                                 file:mr-3 file:py-2 file:px-4
                                                 file:rounded-lg file:border-0
                                                 file:text-sm file:font-medium
-                                                file:bg-indigo-50 file:text-indigo-700
-                                                hover:file:bg-indigo-100
+                                                file:bg-barradas-50 file:text-barradas-700
+                                                hover:file:bg-barradas-100
                                                 file:cursor-pointer
                                                 cursor-pointer
                                                 border border-gray-300 rounded-lg p-2"
@@ -516,7 +515,7 @@
                             <button mat-stroked-button type="button" (click)="toggleCreateCreditForm()">
                                 Cancelar
                             </button>
-                            <button mat-raised-button color="primary" type="submit" [disabled]="!newCreditForm.valid || !newCreditQuoteFile">
+                            <button mat-raised-button class="bg-barradas-900 text-white" type="submit" [disabled]="!newCreditForm.valid || !newCreditQuoteFile">
                                 <mat-icon class="mr-1">add</mat-icon>
                                 Crear Crédito
                             </button>
@@ -527,20 +526,23 @@
                 <!-- Lista de créditos -->
                 <div class="space-y-4" *ngIf="credits.length > 0; else noCredits">
                     <div *ngFor="let credit of credits; let i = index"
-                        class="border rounded-lg transition-all duration-200"
+                        class="border rounded-lg transition-all duration-200 bg-white"
                         [ngClass]="{
-                            'border-indigo-400 shadow-md': isCreditExpanded(credit.id),
-                            'border-gray-200 hover:border-indigo-300 hover:shadow-sm': !isCreditExpanded(credit.id)
+                            'border-barradas-500 shadow-md ring-1 ring-barradas-500/20': isCreditExpanded(credit.id),
+                            'border-gray-200 hover:border-barradas-300 hover:shadow-sm': !isCreditExpanded(credit.id)
                         }">
 
                         <!-- Header del Crédito (Siempre visible) -->
                         <div class="p-4 cursor-pointer" (click)="onCreditSelect(credit)">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                        <span class="text-sm font-semibold text-gray-700">Crédito #{{ i + 1 }}</span>
-
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                            <div class="flex flex-col gap-4">
+                                <!-- Top Row: ID, Status, Date (Right aligned) -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-barradas-100 text-barradas-700 font-bold text-sm">
+                                            {{ i + 1 }}
+                                        </div>
+                                        <span class="text-base font-bold text-gray-800">Crédito</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                             [ngClass]="{
                                                 'bg-green-100 text-green-800': credit.status === 'ACTIVE',
                                                 'bg-blue-100 text-blue-800': credit.status === 'PENDING',
@@ -550,58 +552,70 @@
                                             }">
                                             {{ statusMapperCredit[credit.status] || credit.status }}
                                         </span>
-
-                                        <span class="text-xs text-gray-500" *ngIf="credit.repaymentDay">
-                                            <mat-icon class="align-middle mr-1" style="font-size: 14px; width: 14px; height: 14px;">event</mat-icon>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                         <span class="text-xs text-gray-500 flex items-center" *ngIf="credit.repaymentDay">
+                                            <mat-icon class="mr-1 text-barradas-500" style="font-size: 16px; width: 16px; height: 16px;">event</mat-icon>
                                             {{ getWeekDayName(credit.repaymentDay) }}
                                         </span>
-                                    </div>
-
-                                    <div class="text-sm text-gray-600 space-y-1">
-                                        <p><strong>Monto Total:</strong> {{ formatCurrency(credit.totalAmount) }}</p>
-                                        <p *ngIf="credit.initalPayment"><strong>Pago Inicial:</strong> {{ formatCurrency(credit.initalPayment) }}</p>
-                                        <p><strong>Tipo de Pago:</strong> {{ getPaymentTypeLabel(credit.paymentType) }}</p>
-                                        <p><strong>Plazo:</strong> {{ getTermLabel(credit.selectedTerm, credit.paymentType) }}</p>
-                                        <p class="text-xs text-gray-500"><strong>Creado:</strong> {{ formatDate(credit.createdAt) }}</p>
+                                        <mat-icon class="text-gray-400 transition-transform duration-200"
+                                                [class.rotate-180]="isCreditExpanded(credit.id)">
+                                            expand_more
+                                        </mat-icon>
                                     </div>
                                 </div>
 
-                                <div class="ml-4 flex flex-col items-end gap-2">
-                                    <mat-icon *ngIf="hasContractDocuments(credit)"
-                                            class="text-green-500"
-                                            matTooltip="Tiene documentos adjuntos">
-                                        check_circle
-                                    </mat-icon>
-                                    <mat-icon *ngIf="!hasContractDocuments(credit)"
-                                            class="text-yellow-500"
-                                            matTooltip="Sin documentos adjuntos">
-                                        warning
-                                    </mat-icon>
-
-                                    <mat-icon class="text-gray-400 transition-transform duration-200"
-                                            [class.rotate-180]="isCreditExpanded(credit.id)">
-                                        expand_more
-                                    </mat-icon>
+                                <!-- Info Grid -->
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="flex flex-col p-3 rounded-lg bg-barradas-50/50 border border-barradas-100">
+                                        <span class="text-xs text-barradas-600 uppercase tracking-wider font-medium mb-1">Monto Total</span>
+                                        <span class="text-lg font-bold text-barradas-900">{{ formatCurrency(credit.totalAmount) }}</span>
+                                    </div>
+                                    <div class="flex flex-col p-3 rounded-lg bg-gray-50 border border-gray-100" *ngIf="credit.initalPayment">
+                                        <span class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Pago Inicial</span>
+                                        <span class="text-base font-semibold text-gray-700">{{ formatCurrency(credit.initalPayment) }}</span>
+                                    </div>
+                                    <div class="flex flex-col p-3">
+                                        <span class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Esquema</span>
+                                        <span class="text-sm font-medium text-gray-700 flex items-center">
+                                            <mat-icon class="text-barradas-400 mr-1" style="font-size: 16px; width: 16px; height: 16px;">schedule</mat-icon>
+                                            {{ getPaymentTypeLabel(credit.paymentType) }}
+                                        </span>
+                                        <span class="text-xs text-gray-500 mt-1 ml-5">{{ getTermLabel(credit.selectedTerm, credit.paymentType) }}</span>
+                                    </div>
+                                    <div class="flex flex-col p-3 items-start md:items-end justify-center">
+                                         <div class="flex items-center gap-2 mb-1" *ngIf="hasContractDocuments(credit); else noDocsWarning">
+                                            <mat-icon class="text-green-500" style="font-size: 20px; width: 20px; height: 20px;">check_circle</mat-icon>
+                                            <span class="text-xs text-green-700 font-medium">Documentación Completa</span>
+                                         </div>
+                                         <ng-template #noDocsWarning>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <mat-icon class="text-amber-500" style="font-size: 20px; width: 20px; height: 20px;">warning</mat-icon>
+                                                <span class="text-xs text-amber-700 font-medium">Falta Documentación</span>
+                                            </div>
+                                         </ng-template>
+                                         <span class="text-xs text-gray-400">Creado: {{ formatDate(credit.createdAt) }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Detalles Expandibles del Crédito -->
                         <div *ngIf="isCreditExpanded(credit.id)"
-                            class="border-t border-gray-200 bg-gray-50"
+                            class="border-t border-barradas-100 bg-barradas-50/30"
                             [@slideDown]>
 
                             <!-- Documentos del Crédito -->
-                            <div class="p-4 border-b border-gray-200" *ngIf="getCreditDocuments(credit).length > 0">
+                            <div class="p-4 border-b border-barradas-100" *ngIf="getCreditDocuments(credit).length > 0">
                                 <div class="flex items-center mb-3">
-                                    <mat-icon class="text-blue-600 mr-2">folder</mat-icon>
-                                    <h4 class="font-semibold text-gray-700 text-sm">Documentos</h4>
+                                    <mat-icon class="text-barradas-600 mr-2">folder</mat-icon>
+                                    <h4 class="font-semibold text-barradas-800 text-sm">Documentos</h4>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div *ngFor="let doc of getCreditDocuments(credit)"
-                                        class="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between">
+                                        class="bg-white rounded-lg p-3 border border-barradas-100 flex items-center justify-between hover:shadow-sm transition-shadow">
                                         <div class="flex items-center flex-1 min-w-0 mr-2">
-                                            <mat-icon class="text-blue-500 mr-2 flex-shrink-0" style="font-size: 20px;">
+                                            <mat-icon class="text-barradas-500 mr-2 flex-shrink-0" style="font-size: 20px;">
                                                 {{ getDocumentIcon(doc.docType) }}
                                             </mat-icon>
                                             <div class="min-w-0 flex-1">
@@ -611,17 +625,15 @@
                                         </div>
                                         <div class="flex gap-1 flex-shrink-0">
                                             <button mat-icon-button
-                                                    color="primary"
+                                                    class="text-barradas-600 hover:bg-barradas-50 scale-90"
                                                     (click)="previewFile(doc.id, doc.title, doc.mimeType)"
-                                                    matTooltip="Ver"
-                                                    class="scale-90">
+                                                    matTooltip="Ver">
                                                 <mat-icon style="font-size: 20px;">visibility</mat-icon>
                                             </button>
                                             <button mat-icon-button
-                                                    color="accent"
+                                                    class="text-barradas-600 hover:bg-barradas-50 scale-90"
                                                     (click)="downloadFile(doc.id, doc.title)"
-                                                    matTooltip="Descargar"
-                                                    class="scale-90">
+                                                    matTooltip="Descargar">
                                                 <mat-icon style="font-size: 20px;">download</mat-icon>
                                             </button>
                                         </div>
@@ -630,16 +642,15 @@
                             </div>
 
                             <!-- Gestión del Estado del Crédito -->
-                            <div class="p-4 border-b border-gray-200" *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'">
+                            <div class="p-4 border-b border-barradas-100" *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'">
                                 <div class="flex items-center mb-3">
                                     <mat-icon class="text-green-600 mr-2">settings</mat-icon>
                                     <h4 class="font-semibold text-gray-700 text-sm">Cambiar Estado del Crédito</h4>
                                 </div>
                                 <div class="flex flex-col sm:flex-row gap-2">
                                     <button mat-raised-button
-                                            color="primary"
-                                            (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')"
-                                            class="flex-1 text-sm">
+                                            class="flex-1 text-sm bg-barradas-900 text-white"
+                                            (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')">
                                         <mat-icon class="mr-1" style="font-size: 18px;">paid</mat-icon>
                                         Marcar como Pagado
                                     </button>
@@ -657,7 +668,7 @@
                             <div class="p-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center">
-                                        <mat-icon class="text-purple-600 mr-2">draw</mat-icon>
+                                        <mat-icon class="text-barradas-700 mr-2">draw</mat-icon>
                                         <h4 class="font-semibold text-gray-700 text-sm">Firma Electrónica</h4>
                                     </div>
                                     <span *ngIf="getCreditSignature(credit)"
@@ -689,16 +700,15 @@
 
                                         <!-- Call to Action: Configurar firma -->
                                         <div *ngIf="getCreditSignature(credit).status === 'CREATED'"
-                                            class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                                            class="bg-gradient-to-br from-barradas-50 to-white rounded-lg p-4 border border-barradas-200">
                                             <div class="flex items-center justify-between gap-3">
                                                 <div class="flex-1">
-                                                    <p class="text-sm font-medium text-gray-800 mb-1">Configure los Campos de Firma</p>
-                                                    <p class="text-xs text-gray-600">Use el constructor visual para posicionar los campos</p>
+                                                    <p class="text-sm font-medium text-barradas-900 mb-1">Configure los Campos de Firma</p>
+                                                    <p class="text-xs text-barradas-600">Use el constructor visual para posicionar los campos</p>
                                                 </div>
                                                 <button mat-raised-button
-                                                        color="primary"
-                                                        (click)="$event.stopPropagation(); initiateSignatureProcessForCredit(credit)"
-                                                        class="text-xs whitespace-nowrap">
+                                                        class="text-xs whitespace-nowrap bg-barradas-900 text-white"
+                                                        (click)="$event.stopPropagation(); initiateSignatureProcessForCredit(credit)">
                                                     <mat-icon class="mr-1" style="font-size: 16px;">draw</mat-icon>
                                                     Configurar
                                                 </button>
@@ -712,7 +722,7 @@
                                                 <!-- Documento Original -->
                                                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
                                                     <div class="flex items-center flex-1 min-w-0 mr-2">
-                                                        <mat-icon class="text-blue-500 mr-2 flex-shrink-0" style="font-size: 18px;">picture_as_pdf</mat-icon>
+                                                        <mat-icon class="text-barradas-500 mr-2 flex-shrink-0" style="font-size: 18px;">picture_as_pdf</mat-icon>
                                                         <span class="text-xs text-gray-700 truncate">Contrato Original</span>
                                                     </div>
                                                     <button mat-icon-button
@@ -801,8 +811,8 @@
                                                         file:mr-3 file:py-2 file:px-4
                                                         file:rounded-lg file:border-0
                                                         file:text-xs file:font-medium
-                                                        file:bg-purple-50 file:text-purple-700
-                                                        hover:file:bg-purple-100
+                                                        file:bg-barradas-50 file:text-barradas-700
+                                                        hover:file:bg-barradas-100
                                                         file:cursor-pointer
                                                         cursor-pointer
                                                         border border-gray-300 rounded-lg p-2"

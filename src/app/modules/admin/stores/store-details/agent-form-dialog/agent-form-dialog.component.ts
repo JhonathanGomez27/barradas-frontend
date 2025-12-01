@@ -26,7 +26,7 @@ export interface AgentDialogData {
         MatIconModule
     ],
     template: `
-    <div mat-dialog-title class="flex bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+    <div mat-dialog-title class="flex bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
       <div class="flex items-center justify-between w-full text-white py-3 px-4">
         <div class="flex items-center">
           <div class="bg-white/20 p-2 rounded-full mr-3">
@@ -123,11 +123,11 @@ export interface AgentDialogData {
       </form>
     </mat-dialog-content>
 
-    <mat-dialog-actions class="justify-end py-3 px-4 bg-gray-50 border-t">
+    <mat-dialog-actions class="justify-end py-3 px-4 bg-barradas-50 border-t">
       <button mat-stroked-button (click)="onCancel()" class="mr-2">
         Cancelar
       </button>
-      <button mat-raised-button color="primary"
+      <button mat-raised-button class="bg-barradas-900 text-white"
               [disabled]="agentForm.invalid"
               (click)="onSubmit()">
         <mat-icon class="mr-1">{{ data.agent ? 'save' : 'add' }}</mat-icon>
