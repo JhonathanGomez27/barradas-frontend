@@ -79,12 +79,14 @@ export class AuthService {
                 // Set the authenticated flag to true
                 this._authenticated = true;
 
+                const rol = response.role;
+
                 // Store the user on the user service
                 this._userService.user = {
                     id: '1',
-                    email: 'admin@admin.com',
-                    name: 'Admin',
-                    // avatar: 'assets/images/avatars/1.jpg'
+                    email: rol === 'admin' ? response.admin.email : response.agent.email,
+                    name: rol === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
+                    rol: rol
                 };
 
                 // Return a new observable with the response
@@ -127,9 +129,9 @@ export class AuthService {
                     // Store the user on the user service
                     this._userService.user = {
                         id: '1',
-                        email: 'admin@admin.com',
-                        name: 'Admin',
-                        // avatar: 'assets/images/avatars/1.jpg'
+                        email: response.role === 'admin' ? response.admin.email : response.agent.email,
+                        name: response.role === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
+                        rol: response.role
                     };
 
                     // Return true
