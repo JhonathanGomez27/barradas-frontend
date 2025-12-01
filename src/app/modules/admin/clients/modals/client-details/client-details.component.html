@@ -1,6 +1,6 @@
-<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-gray-50" cdkScrollable>
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-barradas-50" cdkScrollable>
     <!-- Header -->
-    <div class="bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg">
+    <div class="bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
         <div class="flex items-center justify-between text-white py-3 px-4 md:py-4 md:px-6">
             <div class="flex items-center min-w-0 flex-1">
                 <button mat-icon-button (click)="back()" matTooltip="Volver a clientes"
@@ -60,11 +60,11 @@
         <!-- Información personal editable -->
         <div
             class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-3 md:p-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4 border-b border-gray-200">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center gap-2 flex-1">
-                        <div class="bg-primary-100 p-2 rounded-lg flex-shrink-0">
-                            <mat-icon class="text-primary-600 text-xl">account_circle</mat-icon>
+                        <div class="bg-barradas-300/20 p-2 rounded-lg flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">account_circle</mat-icon>
                         </div>
                         <h3 class="font-semibold text-gray-800 text-base md:text-lg">Información Personal</h3>
                         <span *ngIf="isEditMode"
@@ -194,7 +194,7 @@
                             </mat-option>
                             <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
                                 <span class="flex items-center">
-                                    <mat-icon class="mr-2 text-primary-500 scale-75"
+                                    <mat-icon class="mr-2 text-barradas-500 scale-75"
                                         svgIcon="mat_outline:storefront"></mat-icon>
                                     {{ store.name }}
                                 </span>
@@ -234,7 +234,7 @@
         <!-- Documentos existentes -->
         <div
             class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-3 md:p-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4 border-b border-gray-200">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center">
                         <div class="bg-blue-100 p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
@@ -244,7 +244,7 @@
                     </div>
                     <div class="flex items-center">
                         <span
-                            class="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-primary-100 text-primary-800">
+                            class="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-barradas-300/20 text-barradas-900">
                             <mat-icon class="mr-1"
                                 style="font-size: 16px; width: 16px; height: 16px;">description</mat-icon>
                             {{ clientDetails.documents?.length || 0 }}
@@ -256,7 +256,7 @@
             <div class="hidden md:block overflow-x-auto overflow-y-auto"
                 [ngClass]="{'max-h-72': clientDetails.documents.length > 4}">
                 <table class="w-full divide-y divide-gray-200 table-fixed">
-                    <thead class="bg-gray-50 sticky top-0 z-10">
+                    <thead class="bg-barradas-50 sticky top-0 z-10">
                         <tr>
                             <th
                                 class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -380,7 +380,7 @@
                     </div>
                     <div class="relative">
                         <input [id]="docType.key" type="file" (change)="onFileSelected($event, docType.key)"
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-2 transition-all duration-200 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-barradas-50 file:text-barradas-700 hover:file:bg-barradas-300/20 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-2 transition-all duration-200 hover:border-barradas-300 focus:border-barradas-500 focus:ring-2 focus:ring-barradas-300/50"
                             accept="image/*,.pdf" />
                     </div>
                 </div>
@@ -389,16 +389,16 @@
 
         <!-- Sección de Créditos -->
         <div class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
-            <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 p-3 md:p-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-barradas-50 to-barradas-300/30 p-3 md:p-4 border-b border-gray-200">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center">
-                        <div class="bg-indigo-100 p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
-                            <mat-icon class="text-indigo-600 text-xl">account_balance_wallet</mat-icon>
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">account_balance_wallet</mat-icon>
                         </div>
                         <h3 class="font-semibold text-gray-800 text-base md:text-lg">Créditos del Cliente</h3>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-indigo-100 text-indigo-800">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-barradas-300/20 text-barradas-900">
                             <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px;">numbers</mat-icon>
                             {{ credits.length }} crédito{{ credits.length !== 1 ? 's' : '' }}
                         </span>
@@ -415,7 +415,7 @@
 
             <div class="p-4 md:p-6">
                 <!-- Formulario para crear nuevo crédito -->
-                <div *ngIf="showCreateCreditForm" class="mb-6 p-4 border border-indigo-200 rounded-lg bg-indigo-50" [@slideDown]>
+                <div *ngIf="showCreateCreditForm" class="mb-6 p-4 border border-white rounded-lg bg-white" [@slideDown]>
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-semibold text-gray-700">Crear Nuevo Crédito</h4>
                         <button mat-icon-button (click)="toggleCreateCreditForm()">

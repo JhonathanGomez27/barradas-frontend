@@ -1,5 +1,5 @@
-<div mat-dialog-title class="flex bg-primary p-4">
-    <div class="flex items-center justify-between w-full text-on-primary">
+<div mat-dialog-title class="flex bg-barradas-900 p-4">
+    <div class="flex items-center justify-between w-full text-white">
         <div class="text-lg font-medium flex items-center">
             <mat-icon class="mr-2 text-current">person_add</mat-icon>
             Invitar Cliente
@@ -15,7 +15,7 @@
       <!-- Información Personal -->
       <div class="mb-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-          <mat-icon class="mr-2 text-primary-600">person</mat-icon>
+          <mat-icon class="mr-2 text-barradas-700">person</mat-icon>
           Información Personal
         </h3>
 
@@ -66,7 +66,7 @@
       <!-- Información del Crédito -->
       <div class="border-t border-gray-200 pt-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-          <mat-icon class="mr-2 text-primary-600">credit_card</mat-icon>
+          <mat-icon class="mr-2 text-barradas-700">credit_card</mat-icon>
           Información del Crédito
         </h3>
 
@@ -168,7 +168,7 @@
       <!-- Documentos Requeridos -->
       <div class="border-t border-gray-200 pt-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-          <mat-icon class="mr-2 text-primary-600">upload_file</mat-icon>
+          <mat-icon class="mr-2 text-barradas-700">upload_file</mat-icon>
           Documentos Requeridos
         </h3>
 
@@ -181,7 +181,7 @@
               </div>
               <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
                 <div *ngIf="!fileUploads['INE_FRONT'].file" class="flex items-center justify-center h-full">
-                  <label class="flex items-center cursor-pointer text-primary-600 hover:text-primary-700">
+                  <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
                     <mat-icon class="mr-2">upload</mat-icon>
                     <span class="text-sm font-medium">Seleccionar archivo</span>
                     <input type="file" class="hidden" accept="image/*,.pdf" (change)="onDocumentFileSelected($event, 'INE_FRONT')">
@@ -212,7 +212,7 @@
               </div>
               <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
                 <div *ngIf="!fileUploads['INE_BACK'].file" class="flex items-center justify-center h-full">
-                  <label class="flex items-center cursor-pointer text-primary-600 hover:text-primary-700">
+                  <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
                     <mat-icon class="mr-2">upload</mat-icon>
                     <span class="text-sm font-medium">Seleccionar archivo</span>
                     <input type="file" class="hidden" accept="image/*,.pdf" (change)="onDocumentFileSelected($event, 'INE_BACK')">
@@ -243,7 +243,7 @@
               </div>
               <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
                 <div *ngIf="!fileUploads['QUOTE'].file" class="flex items-center justify-center h-full">
-                  <label class="flex items-center cursor-pointer text-primary-600 hover:text-primary-700">
+                  <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
                     <mat-icon class="mr-2">upload</mat-icon>
                     <span class="text-sm font-medium">Seleccionar archivo</span>
                     <input type="file" class="hidden" accept="image/*,.pdf" (change)="onDocumentFileSelected($event, 'QUOTE')">
