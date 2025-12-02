@@ -125,13 +125,14 @@ export class InviteComponent implements OnInit {
             },
         });
 
-        this.storeId = this.data.storeId;
-        this.rol = this.data.rol;
     }
 
     ngOnInit(): void {
 
         this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
+            this.storeId = this.data.storeId;
+            this.rol = this.data.rol;
+
             this.stores = response;
             this.selectedStore = this.stores.find(store => store.id === this.storeId);
 
@@ -414,7 +415,6 @@ export class InviteComponent implements OnInit {
             .subscribe({
                 next: (terms) => {
                     this.creditTerms = terms;
-                    console.log('Términos de crédito obtenidos:', terms);
                     // Inicializar términos disponibles con WEEKLY por defecto
                     this.updateAvailableTerms('WEEKLY');
                 },
