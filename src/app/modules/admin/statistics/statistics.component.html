@@ -1,0 +1,366 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-barradas-50" cdkScrollable>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-6 sm:px-10 sm:py-8">
+            <div class="min-w-0 flex-1">
+                <!-- Breadcrumbs -->
+                <div class="mb-2">
+                    <div class="flex items-center font-medium text-barradas-300">
+                        <mat-icon class="mr-2 text-white">bar_chart</mat-icon>
+                        <span class="text-white">Estadísticas</span>
+                    </div>
+                </div>
+                <!-- Title -->
+                <div class="flex items-center">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                        Panel de Control
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6 md:p-10">
+
+        <!-- Filters -->
+        <div
+            class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">filter_alt</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Filtros de Búsqueda</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-6">
+                <form [formGroup]="filterForm">
+                    <!-- Grid de Filtros -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Rango de Fechas -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Rango de Fechas</mat-label>
+                            <mat-date-range-input [rangePicker]="picker">
+                                <input matStartDate formControlName="startDate" placeholder="Fecha inicial">
+                                <input matEndDate formControlName="endDate" placeholder="Fecha final">
+                            </mat-date-range-input>
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-date-range-picker #picker></mat-date-range-picker>
+                            <mat-icon matPrefix class="text-gray-400">date_range</mat-icon>
+                        </mat-form-field>
+
+                        <!-- Estado del Cliente -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Estado del Cliente</mat-label>
+                            <mat-select formControlName="clientStatus">
+                                <mat-option [value]="null">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:all_inclusive"
+                                            class="mr-2 text-gray-400 scale-75"></mat-icon>
+                                        Todos los estados
+                                    </span>
+                                </mat-option>
+                                <mat-option *ngFor="let status of clientStatuses" [value]="status">
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-2 scale-75" [ngClass]="{
+                                            'text-green-500': status === 'COMPLETED',
+                                            'text-blue-500': status === 'INVITED',
+                                            'text-yellow-500': status === 'IN_PROGRESS',
+                                            'text-violet-500': status === 'NO_CONTRACT_SENDED',
+                                            'text-orange-500': status === 'CONTRACT_SENDED',
+                                            'text-gray-500': status === 'CREATED'
+                                        }" svgIcon="mat_outline:circle"></mat-icon>
+                                        {{statusMapper[status] || status}}
+                                    </span>
+                                </mat-option>
+                            </mat-select>
+                            <mat-icon matPrefix class="text-gray-400">person</mat-icon>
+                        </mat-form-field>
+
+                        <!-- Estado del Crédito -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Estado del Crédito</mat-label>
+                            <mat-select formControlName="creditStatus">
+                                <mat-option [value]="null">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:all_inclusive"
+                                            class="mr-2 text-gray-400 scale-75"></mat-icon>
+                                        Todos los estados
+                                    </span>
+                                </mat-option>
+                                <mat-option *ngFor="let status of creditStatuses" [value]="status">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:credit_card" class="mr-2 scale-75" [ngClass]="{
+                                            'text-green-500': status === 'CLOSED',
+                                            'text-blue-500': status === 'ACTIVE',
+                                            'text-yellow-500': status === 'PENDING',
+                                            'text-red-500': status === 'DEFAULTED',
+                                            'text-gray-500': status === 'CANCELLED'
+                                        }"></mat-icon>
+                                        {{statusCreditsMapper[status] || status}}
+                                    </span>
+                                </mat-option>
+                            </mat-select>
+                            <mat-icon matPrefix class="text-gray-400">account_balance_wallet</mat-icon>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Tienda</mat-label>
+                            <mat-select formControlName="storeId">
+                                <mat-option>
+                                    <ngx-mat-select-search [formControl]="storeFilterCtrl"
+                                        placeholderLabel="Buscar tienda..."
+                                        noEntriesFoundLabel="No se encontraron tiendas">
+                                    </ngx-mat-select-search>
+                                </mat-option>
+                                <mat-option value="">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:all_inclusive"
+                                            class="mr-2 text-gray-400 scale-75"></mat-icon>
+                                        Todas las tiendas
+                                    </span>
+                                </mat-option>
+                                <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:store"
+                                            class="mr-2 text-barradas-500 scale-75"></mat-icon>
+                                        {{ store.name }}
+                                    </span>
+                                </mat-option>
+                            </mat-select>
+                            <mat-icon matPrefix class="text-gray-400">storefront</mat-icon>
+                        </mat-form-field>
+
+                        <!-- ID de Tienda -->
+                        <!-- <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>ID de Tienda</mat-label>
+                            <input matInput formControlName="storeId" placeholder="UUID">
+                            <mat-icon matPrefix class="text-gray-400">storefront</mat-icon>
+                        </mat-form-field> -->
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-screen-xl mx-auto">
+
+            <!-- Clients Chart -->
+            <div
+                class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+                <div
+                    class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">people</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Distribución de Clientes</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col flex-auto h-80">
+                        <apx-chart *ngIf="clientChartOptions.series?.length" [series]="clientChartOptions.series"
+                            [chart]="clientChartOptions.chart" [labels]="clientChartOptions.labels"
+                            [responsive]="clientChartOptions.responsive" [legend]="clientChartOptions.legend"
+                            [colors]="clientChartOptions.colors">
+                        </apx-chart>
+                        <div *ngIf="!clientChartOptions.series?.length"
+                            class="flex flex-auto items-center justify-center text-gray-400">
+                            <div class="text-center">
+                                <mat-icon class="text-6xl mb-2">pie_chart_outline</mat-icon>
+                                <p class="text-sm">No hay datos disponibles</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="flex items-baseline justify-between">
+                            <div>
+                                <div class="text-3xl font-bold text-gray-900">{{clientStats?.total || 0}}</div>
+                                <div class="text-sm text-gray-500 mt-1">Total de Clientes</div>
+                            </div>
+                            <div class="bg-barradas-100 p-3 rounded-lg">
+                                <mat-icon class="text-barradas-700">people</mat-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credits Chart -->
+            <div
+                class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+                <div
+                    class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">account_balance_wallet</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Estado de Créditos</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col flex-auto h-80">
+                        <apx-chart *ngIf="hasSeriesData(creditChartOptions)" [series]="creditChartOptions.series"
+                            [chart]="creditChartOptions.chart" [xaxis]="creditChartOptions.xaxis"
+                            [plotOptions]="creditChartOptions.plotOptions" [dataLabels]="creditChartOptions.dataLabels"
+                            [colors]="creditChartOptions.colors">
+                        </apx-chart>
+                        <div *ngIf="!hasSeriesData(creditChartOptions)"
+                            class="flex flex-auto items-center justify-center text-gray-400">
+                            <div class="text-center">
+                                <mat-icon class="text-6xl mb-2">bar_chart</mat-icon>
+                                <p class="text-sm">No hay datos disponibles</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="flex items-baseline justify-between">
+                            <div>
+                                <div class="text-3xl font-bold text-gray-900">{{creditStats?.total || 0}}</div>
+                                <div class="text-sm text-gray-500 mt-1">Total de Créditos</div>
+                            </div>
+                            <div class="bg-barradas-100 p-3 rounded-lg">
+                                <mat-icon class="text-barradas-700">account_balance_wallet</mat-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="w-full mt-6">
+            <!-- Stores Stats -->
+            <div
+                class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden xl:col-span-3 transition-all duration-300 hover:shadow-xl">
+                <div
+                    class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                                <mat-icon class="text-barradas-700 text-xl">storefront</mat-icon>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 text-base md:text-lg">Rendimiento de Tiendas</h3>
+                        </div>
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-barradas-300/20 text-barradas-900">
+                            <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px;">list</mat-icon>
+                            {{ storeStats?.stores?.length || 0 }} tiendas
+                        </span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-barradas-50">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">store</mat-icon>
+                                        Nombre de Tienda
+                                    </div>
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <mat-icon class="mr-2 text-gray-400"
+                                            style="font-size: 18px;">location_city</mat-icon>
+                                        Ciudad
+                                    </div>
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <mat-icon class="mr-2 text-gray-400"
+                                            style="font-size: 18px;">support_agent</mat-icon>
+                                        Agentes
+                                    </div>
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">people</mat-icon>
+                                        Total Clientes
+                                    </div>
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <mat-icon class="mr-2 text-gray-400"
+                                            style="font-size: 18px;">account_balance_wallet</mat-icon>
+                                        Total Créditos
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr *ngFor="let store of storeStats?.stores"
+                                class="hover:bg-barradas-50 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-br from-barradas-300 to-barradas-500 rounded-lg flex items-center justify-center text-white font-semibold mr-3 flex-shrink-0">
+                                            {{ store.name.charAt(0).toUpperCase() }}
+                                        </div>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{store.name}}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <mat-icon class="mr-1 text-gray-400"
+                                            style="font-size: 16px; width: 16px; height: 16px;">location_on</mat-icon>
+                                        {{store.city?.name}}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                        <mat-icon class="mr-1"
+                                            style="font-size: 14px; width: 14px; height: 14px;">person</mat-icon>
+                                        {{store.agents}}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                        <mat-icon class="mr-1"
+                                            style="font-size: 14px; width: 14px; height: 14px;">people</mat-icon>
+                                        {{store.clients?.total}}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
+                                        <mat-icon class="mr-1"
+                                            style="font-size: 14px; width: 14px; height: 14px;">account_balance</mat-icon>
+                                        {{store.credits?.total}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr *ngIf="!storeStats?.stores?.length">
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div class="bg-gray-100 p-4 rounded-full mb-3">
+                                            <mat-icon class="text-gray-400 text-4xl">store</mat-icon>
+                                        </div>
+                                        <p class="text-gray-500 text-sm">No se encontraron tiendas</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

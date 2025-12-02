@@ -80,6 +80,14 @@ export const appRoutes: Route[] = [
         children: [
             // {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {
+                path: 'statistics',
+                canActivate: [hasRoleGuard],
+                data: {
+                    expectedRole: ['admin']
+                },
+                loadChildren: () => import('app/modules/admin/statistics/statistics.routes')
+            },
+            {
                 path: 'clients',
                 canActivate: [hasRoleGuard],
                 data: {

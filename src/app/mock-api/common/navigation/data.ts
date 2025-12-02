@@ -10,6 +10,14 @@ export const defaultNavigation: FuseNavigationItem[] = [
     //     link : '/example'
     // },
     {
+        id: 'statistics',
+        title: 'Estadísticas',
+        type: 'basic',
+        icon: 'heroicons_outline:chart-pie',
+        link: '/statistics',
+        roles: ['admin']
+    },
+    {
         id: 'clients',
         title: 'Clientes',
         type: 'basic',
