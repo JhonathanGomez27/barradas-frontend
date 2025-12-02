@@ -19,6 +19,8 @@ import { FuseNavigationService } from '@fuse/components/navigation/navigation.se
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { FuseVerticalNavigationComponent } from '@fuse/components/navigation/vertical/vertical.component';
 import { FuseUtilsService } from '@fuse/services/utils/utils.service';
+import { ShowForRolesDirective } from 'app/core/directives/show-for-roles.directive';
+import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -32,11 +34,11 @@ import { Subject, takeUntil } from 'rxjs';
         MatTooltipModule,
         NgTemplateOutlet,
         MatIconModule,
+        // ShowForRolesDirective
     ],
 })
 export class FuseVerticalNavigationBasicItemComponent
-    implements OnInit, OnDestroy
-{
+    implements OnInit, OnDestroy {
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _fuseNavigationService = inject(FuseNavigationService);
     private _fuseUtilsService = inject(FuseUtilsService);
@@ -84,6 +86,8 @@ export class FuseVerticalNavigationBasicItemComponent
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
+
+
     }
 
     /**

@@ -46,6 +46,7 @@ import { FuseVerticalNavigationGroupItemComponent } from '@fuse/components/navig
 import { FuseVerticalNavigationSpacerItemComponent } from '@fuse/components/navigation/vertical/components/spacer/spacer.component';
 import { FuseScrollbarDirective } from '@fuse/directives/scrollbar/scrollbar.directive';
 import { FuseUtilsService } from '@fuse/services/utils/utils.service';
+import { UserService } from 'app/core/user/user.service';
 import {
     delay,
     filter,
@@ -55,6 +56,8 @@ import {
     Subscription,
     takeUntil,
 } from 'rxjs';
+import { _VisuallyHiddenLoader } from "@angular/cdk/private";
+import { ShowForRolesDirective } from 'app/core/directives/show-for-roles.directive';
 
 @Component({
     selector: 'fuse-vertical-navigation',
@@ -72,11 +75,12 @@ import {
         FuseVerticalNavigationDividerItemComponent,
         FuseVerticalNavigationGroupItemComponent,
         FuseVerticalNavigationSpacerItemComponent,
+        // _VisuallyHiddenLoader,
+        ShowForRolesDirective
     ],
 })
 export class FuseVerticalNavigationComponent
-    implements OnChanges, OnInit, AfterViewInit, OnDestroy
-{
+    implements OnChanges, OnInit, AfterViewInit, OnDestroy {
     /* eslint-disable @typescript-eslint/naming-convention */
     static ngAcceptInputType_inner: BooleanInput;
     static ngAcceptInputType_opened: BooleanInput;
@@ -133,6 +137,11 @@ export class FuseVerticalNavigationComponent
     private _fuseScrollbarDirectives!: QueryList<FuseScrollbarDirective>;
     private _fuseScrollbarDirectivesSubscription: Subscription;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+
+    private _userService: UserService = inject(UserService);
+
+
+    userRol: string = '';
 
     /**
      * Constructor
@@ -367,6 +376,13 @@ export class FuseVerticalNavigationComponent
                     this.closeAside();
                 }
             });
+
+        this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
+            this.userRol = response?.rol;
+            this._changeDetectorRef.markForCheck();
+        });
+
+        console.log(this.navigation)
     }
 
     /**
