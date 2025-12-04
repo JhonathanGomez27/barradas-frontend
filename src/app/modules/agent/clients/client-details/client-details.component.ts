@@ -198,7 +198,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             locationAddress: [''],
             locationLat: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
             locationLng: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
-            storeId: ['']
+            storeId: [''],
+            agentId: new FormControl({ value: null, disabled: true })
         });
 
         this.newCreditForm = this.fb.group({
@@ -266,7 +267,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                     // Se obtienen del resolver a través de credits$
                     this.editClientForm.patchValue({
                         ...this.clientDetails,
-                        storeId: this.clientDetails.store?.id || ''
+                        storeId: this.clientDetails.store?.id || '',
+                        agentId: this.clientDetails.agent?.id || ''
                     });
 
                     this.isLoading = false;

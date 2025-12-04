@@ -26,6 +26,7 @@ import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
 import { Credit } from '../../clients.interface';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { Agent, AgentsService } from 'app/modules/admin/stores/agents.service';
 
 interface FileUpload {
   file: File | null;
@@ -177,6 +178,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     storeFilterCtrl: FormControl = new FormControl('');
     filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
 
+    agents: Agent[] = [];
+    agentFilterCtrl: FormControl = new FormControl('');
+    filteredAgents: ReplaySubject<Agent[]> = new ReplaySubject<Agent[]>(1);
+
     constructor(
         private clientesService : ClientsService,
         private dialog: MatDialog,
@@ -187,7 +192,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         private _docusealService: DocusealService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
-        private _storesService: StoresService
+        private _storesService: StoresService,
+        private _agentsService: AgentsService
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -198,7 +204,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             locationAddress: [''],
             locationLat: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
             locationLng: ['', Validators.pattern(/^-?\d+(\.\d+)?$/)],
-            storeId: ['']
+            storeId: [''],
+            agentId: new FormControl({ value: null, disabled: true })
         });
 
         this.newCreditForm = this.fb.group({
@@ -249,6 +256,21 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             this._changeDetectorRef.markForCheck();
         });
 
+        this.agentFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
+            this.filterAgents();
+            this._changeDetectorRef.markForCheck();
+        });
+
+        this.editClientForm.get('storeId')?.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((storeId) => {
+            if (storeId === null || storeId === '') {
+                this.editClientForm.get('agentId')?.disable({ emitEvent: false });
+                return;
+            }
+
+            this.editClientForm.get('agentId')?.reset(null, { emitEvent: false });
+            this.loadAgentsByStore(storeId);
+        });
+
         // Obtener términos de crédito
         this.getCreditTerms();
         this.setupNewCreditFormListeners();
@@ -266,8 +288,14 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                     // Se obtienen del resolver a través de credits$
                     this.editClientForm.patchValue({
                         ...this.clientDetails,
-                        storeId: this.clientDetails.store?.id || ''
+                        storeId: this.clientDetails.store?.id || '',
+                        agentId: this.clientDetails.agent?.id || ''
                     });
+
+                    // Cargar agentes de la tienda asociada
+                    if( this.clientDetails.store?.id ) {
+                        this.loadAgentsByStore(this.clientDetails.store?.id);
+                    }
 
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
@@ -865,7 +893,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                 lastName: this.clientDetails.lastName,
                 phone: this.clientDetails.phone,
                 locationAddress: this.clientDetails.locationAddress,
-                storeId: this.clientDetails.store?.id || ''
+                storeId: this.clientDetails.store?.id || '',
+                agentId: this.clientDetails.agent?.id || ''
             });
         } else {
             // Cuando salimos del modo edición, limpiamos los archivos seleccionados
@@ -893,6 +922,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             const value = this.editClientForm.get(key)?.value;
             if (value) {
                 formData.append(key, value);
+            }
+
+            if (key === 'agentId' && (value === null || value === '')) {
+                formData.append(key, null);
             }
         });
 
@@ -1070,6 +1103,45 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         this.reloadClientCredits();
     }
 
+    private filterAgents(): void {
+        if (!this.agents) {
+            return;
+        }
+        // Get the search keyword
+        let search = this.agentFilterCtrl.value;
+        if (!search) {
+            this.filteredAgents.next(this.agents.slice());
+            return;
+        } else {
+            search = search.toLowerCase();
+        }
+        // Filter the agents
+        this.filteredAgents.next(
+            this.agents.filter(agent => agent.firstName.toLowerCase().indexOf(search) > -1 ||
+                agent.lastName.toLowerCase().indexOf(search) > -1 ||
+                agent.email.toLowerCase().indexOf(search) > -1)
+        );
+    }
+
+    loadAgentsByStore(storeId: string): void {
+        if (storeId === null || storeId === '') {
+            this.editClientForm.get('agentId')?.disable({ emitEvent: false });
+            return;
+        }
+
+        this._agentsService.getAgents({storeId}).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (agents) => {
+                // Manejar los agentes obtenidos
+                this.agents = agents.data;
+                this.filteredAgents.next(this.agents.slice());
+                this.editClientForm.get('agentId')?.enable({ emitEvent: false });
+                this._changeDetectorRef.markForCheck();
+            },
+            error: (error) => {
+                console.error('Error al cargar los agentes de la tienda:', error);
+            }
+        });
+    }
 }
 
 // Componente de diálogo para previsualizar archivos
