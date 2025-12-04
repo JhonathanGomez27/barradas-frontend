@@ -5,6 +5,7 @@ import { inject } from '@angular/core';
 import { environment } from 'environment/environment';
 import { StoreDetailsComponent } from './store-details/store-details.component';
 import { AgentsService } from './agents.service';
+import { HttpParams } from '@angular/common/http';
 
 const StoresResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _storesService = inject(StoresService);
@@ -33,6 +34,18 @@ const AgentsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: Ro
     return _AgentsService.getAgents(params);
 }
 
+const StoreUsersResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+    const _storesService = inject(StoresService);
+    const storeId = route.paramMap.get('id');
+    const params = {
+        page: 1,
+        limit: environment.pagination,
+        storeId: storeId
+    }
+
+    return _storesService.getClientsStore(new HttpParams({ fromObject: params }));
+}
+
 export default [
     {
         path: '',
@@ -48,6 +61,7 @@ export default [
         resolve: {
             agents: AgentsResolver,
             store: StoreResolver,
+            storeUsers: StoreUsersResolver
         }
     }
 ] as Routes;

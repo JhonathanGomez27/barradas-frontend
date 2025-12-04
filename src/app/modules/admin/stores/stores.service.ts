@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
@@ -65,6 +65,10 @@ export class StoresService {
     private _pagination: BehaviorSubject<{ total: number; page: number; limit: number; }> =
         new BehaviorSubject({ total: 0, page: 1, limit: 10, totalPages: 0 });
     public readonly pagination$ = this._pagination.asObservable();
+
+    private _storeUsers: BehaviorSubject<PaginatedResponse<any>> =
+        new BehaviorSubject<PaginatedResponse<any>>({ data: [], total: 0, page: 1, limit: 10 });
+    public readonly storeUsers$ = this._storeUsers.asObservable();
 
     constructor(
         private httpClient: HttpClient
@@ -160,6 +164,14 @@ export class StoresService {
             tap(() => {
                 const currentStores = this._stores.value.filter(s => s.id !== id);
                 this._stores.next(currentStores);
+            })
+        );
+    }
+
+    getClientsStore(params: HttpParams): Observable<PaginatedResponse<any>> {
+        return this.httpClient.get<PaginatedResponse<any>>(`${this.url}/users`, { params }).pipe(
+            tap((clients) => {
+                this._storeUsers.next(clients);
             })
         );
     }

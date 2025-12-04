@@ -22,6 +22,7 @@ import { CdkScrollable } from '@angular/cdk/scrolling';
 import { AgentFormDialogComponent } from './agent-form-dialog/agent-form-dialog.component';
 import { environment } from 'environment/environment';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { HttpParams } from '@angular/common/http';
 
 @Component({
     selector: 'app-store-details',
@@ -64,6 +65,29 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
     private searchSubject$ = new Subject<string>();
 
+    users: any[] = [];
+    totalUsers = 0;
+    usersPageSize = environment.pagination;
+    usersCurrentPage = 1;
+    usersPageSizeOptions = [5, 10, 20, 25];
+    isLoadingUsers = false;
+    statusMapper: { [key: string]: string } = {
+        CREATED: 'Creado',
+        INVITED: 'Invitación enviada',
+        IN_PROGRESS: 'Pendiente de completar Documentación',
+        COMPLETED: 'Finalizado con contrato',
+        NO_CONTRACT_SENDED: 'Gestionado sin contrato',
+        CONTRACT_SENDED: 'Gestionado con contrato sin firmar'
+    };
+    private statusClassMapper: { [key: string]: string } = {
+        COMPLETED: 'bg-green-100 text-green-800',
+        INVITED: 'bg-blue-100 text-blue-800',
+        IN_PROGRESS: 'bg-yellow-100 text-yellow-800',
+        NO_CONTRACT_SENDED: 'bg-violet-100 text-violet-800',
+        CONTRACT_SENDED: 'bg-orange-100 text-orange-800',
+        CREATED: 'bg-gray-100 text-gray-800'
+    };
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -100,6 +124,15 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
                 this.loadAgents();
             });
 
+            this.storesService.storeUsers$.pipe(takeUntil(this.destroy$)).subscribe((response: any) => {
+                this.users = response?.data ?? [];
+                this.totalUsers = response?.total ?? 0;
+                this.usersCurrentPage = response?.page ?? 1;
+                this.usersPageSize = response?.limit ?? this.usersPageSize;
+                this.isLoadingUsers = false;
+                this._changeDetectorRef.markForCheck();
+            });
+
 
         } else {
             this.router.navigate(['/stores']);
@@ -133,6 +166,51 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
         this.currentPage = event.pageIndex + 1;
         this.pageSize = event.pageSize;
         this.loadAgents();
+    }
+
+    loadUsers(): void {
+        if (!this.store?.id) {
+            return;
+        }
+        this.isLoadingUsers = true;
+        const params = new HttpParams({
+            fromObject: {
+                page: this.usersCurrentPage.toString(),
+                limit: this.usersPageSize.toString(),
+                storeId: this.store.id
+            }
+        });
+
+        this.storesService.getClientsStore(params)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                error: (error) => {
+                    console.error('Error loading store users:', error);
+                    this.isLoadingUsers = false;
+                }
+            });
+    }
+
+    onUsersPageChange(event: PageEvent): void {
+        this.usersCurrentPage = event.pageIndex + 1;
+        this.usersPageSize = event.pageSize;
+        this.loadUsers();
+    }
+
+    getUserStatusLabel(status?: string | null): string {
+        if (!status) {
+            return 'Sin estado';
+        }
+
+        return this.statusMapper[status] || status;
+    }
+
+    getUserStatusClasses(status?: string | null): string {
+        if (!status) {
+            return 'bg-gray-100 text-gray-800';
+        }
+
+        return this.statusClassMapper[status] || 'bg-gray-100 text-gray-800';
     }
 
     openAgentDialog(agent: Agent | null = null): void {
