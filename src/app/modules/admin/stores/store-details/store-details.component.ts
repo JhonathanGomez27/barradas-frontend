@@ -105,6 +105,9 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
         if (storeId) {
             this.storesService.store$.pipe(takeUntil(this.destroy$)).subscribe((response: any) => {
                 this.store = response;
+                if (this.store && this.store.cityId) {
+                    this.city = this.store.city || null;
+                }
                 this._changeDetectorRef.markForCheck();
             });
 

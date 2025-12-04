@@ -172,7 +172,10 @@ export class InviteComponent implements OnInit {
                 this.inviteForm.get('agentId')?.disable({ emitEvent: false });
                 return;
             }
-            this.loadAgentsByStore(storeId);
+
+            if(this.rol === 'admin'){
+                this.loadAgentsByStore(storeId);
+            }
         });
 
         this.getCreditTerms();
@@ -330,6 +333,10 @@ export class InviteComponent implements OnInit {
                 repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
                 status: 'PENDING'
             }
+
+            console.log(creditData);
+
+            // return;
 
             this._clientsService.inviteClient(clientData).pipe(takeUntil(this._unsubscribeAll)).subscribe({
                 next: (response: any) => {

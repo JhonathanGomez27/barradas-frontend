@@ -634,7 +634,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         const formValue = this.newCreditForm.getRawValue();
         const creditData = {
             clientId: this.clientDetails.id,
-            initalPayment: formValue.initialPayment,
+            initialPayment: formValue.initialPayment,
             initialPaymentRate: parseFloat(formValue.initialPaymentRate),
             totalAmount: formValue.totalAmount,
             paymentType: formValue.paymentType,

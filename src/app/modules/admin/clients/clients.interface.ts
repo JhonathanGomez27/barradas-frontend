@@ -58,7 +58,7 @@ export interface CreditSignature {
 
 export interface CreateCreditDto {
     clientId: string;
-    initalPayment?: number;
+    initialPayment?: number;
     initialPaymentRate: number;
     totalAmount: number;
     paymentType: 'WEEKLY' | 'DAILY';
@@ -68,7 +68,7 @@ export interface CreateCreditDto {
 }
 
 export interface UpdateCreditDto {
-    initalPayment?: number;
+    initialPayment?: number;
     initialPaymentRate?: number;
     totalAmount?: number;
     paymentType?: 'WEEKLY' | 'DAILY';

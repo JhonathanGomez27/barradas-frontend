@@ -608,7 +608,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         const formValue = this.newCreditForm.getRawValue();
         const creditData = {
             clientId: this.clientDetails.id,
-            initalPayment: formValue.initialPayment,
+            initialPayment: formValue.initialPayment,
             initialPaymentRate: parseFloat(formValue.initialPaymentRate),
             totalAmount: formValue.totalAmount,
             paymentType: formValue.paymentType,
@@ -991,8 +991,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                 const payloadElectronicSignature = {
                     clientId: this.clientDetails.id,
                     documentId: docUploaded.id,
-                    document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`,
-                    // document_url: `${environment.url}/documents/${docUploaded.id}/download`,
+                    // document_url: `https://www.confiabarradas.com/api/documents/66d28ef0-055f-429b-80c3-3ecbcdd4cd05/download`,
+                    document_url: `${environment.url}/documents/${docUploaded.id}/download`,
                     creditId: creditId
                 }
 

@@ -371,8 +371,8 @@ export class StatisticsComponent implements OnInit, OnDestroy {
       storeId: filters.storeId || undefined,
       clientStatus: filters.clientStatus || undefined,
       creditStatus: filters.creditStatus || undefined,
-      startDate: filters.startDate ? filters.startDate.toISOString() : undefined,
-      endDate: filters.endDate ? filters.endDate.toISOString() : undefined
+      startDate: filters.startDate ? (filters.startDate instanceof Date ? filters.startDate.toISOString() : new Date(filters.startDate).toISOString()) : undefined,
+      endDate: filters.endDate ? (filters.endDate instanceof Date ? filters.endDate.toISOString() : new Date(filters.endDate).toISOString()) : undefined
     };
   }
 
