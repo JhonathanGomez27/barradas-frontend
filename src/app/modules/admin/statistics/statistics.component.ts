@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,14 +9,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FuseCardComponent } from '@fuse/components/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexGrid, ApexLegend, ApexNonAxisChartSeries, ApexPlotOptions, ApexResponsive, ApexStroke, ApexTitleSubtitle, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent, NgApexchartsModule } from 'ng-apexcharts';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { StatisticsService } from './statistics.service';
-import { ClientStatus, CreditStatus } from './statistics.types';
+import { AgentCreditEntry, AgentCreditStatsResponse, AgentPerformanceEntry, AgentPerformanceResponse, ClientStatus, CreditStatus, DashboardStatsResponse } from './statistics.types';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Store, StoresService } from '../stores/stores.service';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries | ApexNonAxisChartSeries;
@@ -50,25 +50,31 @@ export type ChartOptions = {
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
+    MatProgressBarModule,
     NgApexchartsModule,
     // FuseCardComponent,
-    ScrollingModule
+    ScrollingModule,
+    NgxMatSelectSearchModule
   ],
   templateUrl: './statistics.component.html'
 })
-export class StatisticsComponent implements OnInit {
+export class StatisticsComponent implements OnInit, OnDestroy {
   @ViewChild('chart') chart: ChartComponent;
 
   clientStats: any;
   creditStats: any;
   storeStats: any;
+  dashboardStats: DashboardStatsResponse | null = null;
+  agentCreditStats: AgentCreditStatsResponse | null = null;
+  agentPerformanceStats: AgentPerformanceResponse | null = null;
 
   clientChartOptions: Partial<ChartOptions>;
   creditChartOptions: Partial<ChartOptions>;
+  agentCreditsChartOptions: Partial<ChartOptions>;
 
   filterForm: FormGroup;
   clientStatuses: ClientStatus[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'NO_CONTRACT_SENDED', 'CONTRACT_SENDED', 'COMPLETED'];
-  creditStatuses: CreditStatus[] = ['PENDING', 'ACTIVE', 'CLOSED', 'DEFAULTED', 'CANCELLED'];
+  creditStatuses: CreditStatus[] = ['PENDING', 'ACTIVE', 'CLOSED', 'COMPLETED', 'DEFAULTED', 'CANCELLED'];
 
   statusMapper: { [key: string]: string } = {
     'CREATED': 'Creado',
@@ -83,6 +89,7 @@ export class StatisticsComponent implements OnInit {
     'PENDING': 'Pendiente',
     'ACTIVE': 'Activo',
     'CLOSED': 'Pagado',
+    'COMPLETED': 'Completado',
     'DEFAULTED': 'En Mora',
     'CANCELLED': 'Cancelado'
   };
@@ -264,6 +271,59 @@ export class StatisticsComponent implements OnInit {
         }
       }
     };
+
+    this.agentCreditsChartOptions = {
+      series: [],
+      chart: {
+        type: 'bar',
+        height: 360,
+        stacked: true,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: {
+          show: false
+        }
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 6,
+          horizontal: false,
+          columnWidth: '55%'
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      xaxis: {
+        categories: [],
+        labels: {
+          rotate: -30,
+          style: {
+            fontSize: '12px',
+            fontWeight: 500,
+            colors: '#6b7280'
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            fontSize: '12px',
+            fontWeight: 500,
+            colors: '#6b7280'
+          }
+        }
+      },
+      legend: {
+        position: 'top',
+        fontSize: '13px',
+        fontWeight: 500
+      },
+      colors: ['#0f766e', '#2563eb', '#22c55e'],
+      grid: {
+        borderColor: '#e5e7eb',
+        strokeDashArray: 4
+      }
+    };
   }
 
   ngOnInit(): void {
@@ -275,12 +335,12 @@ export class StatisticsComponent implements OnInit {
       creditStatus: new FormControl(null)
     });
 
-    this.loadData();
+    this.loadAllSections();
 
     this.filterForm.valueChanges
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe(() => {
-        this.loadData();
+        this.loadAllSections();
       });
 
     this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
@@ -295,15 +355,35 @@ export class StatisticsComponent implements OnInit {
     });
   }
 
-  loadData(): void {
-    const filters = this.filterForm.value;
-    const params = {
-      ...filters,
-      startDate: filters.startDate ? filters.startDate.toISOString() : null,
-      endDate: filters.endDate ? filters.endDate.toISOString() : null
-    };
+  loadAllSections(): void {
+    const baseFilters = this.buildBaseFilters();
+    this.loadClientStats(baseFilters);
+    this.loadCreditStats(baseFilters);
+    this.loadStoreStats(baseFilters);
+    this.loadDashboardStats(baseFilters);
+    this.loadAgentCredits(baseFilters);
+    this.loadAgentPerformance(baseFilters);
+  }
 
-    this._statisticsService.getClientsStatistics(params).subscribe({
+  private buildBaseFilters() {
+    const filters = this.filterForm.value;
+    return {
+      storeId: filters.storeId || undefined,
+      clientStatus: filters.clientStatus || undefined,
+      creditStatus: filters.creditStatus || undefined,
+      startDate: filters.startDate ? filters.startDate.toISOString() : undefined,
+      endDate: filters.endDate ? filters.endDate.toISOString() : undefined
+    };
+  }
+
+  private loadClientStats(baseFilters: any): void {
+    this._statisticsService.getClientsStatistics({
+      storeId: baseFilters.storeId,
+      clientStatus: baseFilters.clientStatus,
+      status: baseFilters.clientStatus,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
       next: (res) => {
         this.clientStats = res;
         this.updateClientChart(res);
@@ -311,11 +391,19 @@ export class StatisticsComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this._snackBar.open('Error cargando estadísticas de clientes', 'Cerrar', { duration: 3000 });
+        this.showError('Error cargando estadísticas de clientes');
       }
     });
+  }
 
-    this._statisticsService.getCreditsStatistics(params).subscribe({
+  private loadCreditStats(baseFilters: any): void {
+    this._statisticsService.getCreditsStatistics({
+      storeId: baseFilters.storeId,
+      creditStatus: baseFilters.creditStatus,
+      status: baseFilters.creditStatus,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
       next: (res) => {
         this.creditStats = res;
         this.updateCreditChart(res);
@@ -323,18 +411,79 @@ export class StatisticsComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this._snackBar.open('Error cargando estadísticas de créditos', 'Cerrar', { duration: 3000 });
+        this.showError('Error cargando estadísticas de créditos');
       }
     });
+  }
 
-    this._statisticsService.getStoresStatistics(params).subscribe({
+  private loadStoreStats(baseFilters: any): void {
+    this._statisticsService.getStoresStatistics({
+      storeId: baseFilters.storeId,
+      clientStatus: baseFilters.clientStatus,
+      creditStatus: baseFilters.creditStatus,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
       next: (res) => {
         this.storeStats = res;
         this._changeDetectorRef.markForCheck();
       },
       error: (err) => {
         console.error(err);
-        this._snackBar.open('Error cargando estadísticas de tiendas', 'Cerrar', { duration: 3000 });
+        this.showError('Error cargando estadísticas de tiendas');
+      }
+    });
+  }
+
+  private loadDashboardStats(baseFilters: any): void {
+    this._statisticsService.getDashboardStatistics({
+      storeId: baseFilters.storeId,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => {
+        this.dashboardStats = res;
+        this._changeDetectorRef.markForCheck();
+      },
+      error: (err) => {
+        console.error(err);
+        this.showError('Error cargando el resumen general');
+      }
+    });
+  }
+
+  private loadAgentCredits(baseFilters: any): void {
+    this._statisticsService.getAgentCreditsStatistics({
+      storeId: baseFilters.storeId,
+      creditStatus: baseFilters.creditStatus,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => {
+        this.agentCreditStats = res;
+        this.updateAgentCreditsChart(res);
+        this._changeDetectorRef.markForCheck();
+      },
+      error: (err) => {
+        console.error(err);
+        this.showError('Error cargando créditos por agente');
+      }
+    });
+  }
+
+  private loadAgentPerformance(baseFilters: any): void {
+    this._statisticsService.getAgentPerformanceStatistics({
+      storeId: baseFilters.storeId,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => {
+        this.agentPerformanceStats = res;
+        this._changeDetectorRef.markForCheck();
+      },
+      error: (err) => {
+        console.error(err);
+        this.showError('Error cargando rendimiento de agentes');
       }
     });
   }
@@ -358,6 +507,37 @@ export class StatisticsComponent implements OnInit {
     }
   }
 
+  private updateAgentCreditsChart(data: AgentCreditStatsResponse): void {
+    if (!data || !data.agents || !data.agents.length) {
+      this.agentCreditsChartOptions.series = [];
+      this.agentCreditsChartOptions.xaxis = { categories: [] };
+      return;
+    }
+
+    const categories = data.agents.map(agent => `${agent.firstName} ${agent.lastName}`);
+    const totalSeries = data.agents.map(agent => agent.credits.total);
+    const activeSeries = data.agents.map(agent => this.getCreditCount(agent, 'ACTIVE'));
+    const completedSeries = data.agents.map(agent => this.getCreditCountForStatuses(agent, ['CLOSED']));
+
+    this.agentCreditsChartOptions.series = [
+      { name: 'Total créditos', data: totalSeries },
+      { name: 'Activos', data: activeSeries },
+      { name: 'Completados', data: completedSeries }
+    ];
+    this.agentCreditsChartOptions.xaxis = {
+      categories,
+      labels: this.agentCreditsChartOptions.xaxis?.labels
+    };
+  }
+
+  private getCreditCount(agent: AgentCreditEntry, status: CreditStatus): number {
+    return agent.credits.byStatus.find(s => s.status === status)?.count || 0;
+  }
+
+  private getCreditCountForStatuses(agent: AgentCreditEntry, statuses: CreditStatus[]): number {
+    return statuses.reduce((total, status) => total + this.getCreditCount(agent, status), 0);
+  }
+
   hasSeriesData(options: Partial<ChartOptions>): boolean {
     if (!options || !options.series || options.series.length === 0) {
       return false;
@@ -371,6 +551,74 @@ export class StatisticsComponent implements OnInit {
       return true;
     }
     return false;
+  }
+
+  formatCurrency(value?: number): string {
+    if (value === null || value === undefined) {
+      return '$0';
+    }
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(value);
+  }
+
+  formatPercent(value?: number): string {
+    if (value === null || value === undefined) {
+      return '0%';
+    }
+    return `${value.toFixed(1)}%`;
+  }
+
+  getClientsCompletionRate(): number {
+    if (!this.dashboardStats?.clients?.total) {
+      return 0;
+    }
+    return (this.dashboardStats.clients.completed / this.dashboardStats.clients.total) * 100;
+  }
+
+  getCreditsActiveRate(): number {
+    if (!this.dashboardStats?.credits?.total) {
+      return 0;
+    }
+    return (this.dashboardStats.credits.active / this.dashboardStats.credits.total) * 100;
+  }
+
+  getClientStatusClasses(status: ClientStatus): string {
+    const mapper = {
+      'COMPLETED': 'bg-green-100 text-green-800',
+      'IN_PROGRESS': 'bg-yellow-100 text-yellow-800',
+      'INVITED': 'bg-blue-100 text-blue-800',
+      'CREATED': 'bg-gray-100 text-gray-800',
+      'NO_CONTRACT_SENDED': 'bg-violet-100 text-violet-800',
+      'CONTRACT_SENDED': 'bg-orange-100 text-orange-800'
+    } as Record<string, string>;
+    return mapper[status] || 'bg-gray-100 text-gray-800';
+  }
+
+  getCreditStatusClasses(status: CreditStatus): string {
+    const mapper = {
+      'ACTIVE': 'bg-blue-100 text-blue-800',
+      'PENDING': 'bg-yellow-100 text-yellow-800',
+      'CLOSED': 'bg-emerald-100 text-emerald-800',
+      'COMPLETED': 'bg-emerald-100 text-emerald-800',
+      'DEFAULTED': 'bg-red-100 text-red-800',
+      'CANCELLED': 'bg-gray-100 text-gray-800'
+    } as Record<string, string>;
+    return mapper[status] || 'bg-gray-100 text-gray-800';
+  }
+
+  getAgentDisplayName(firstName?: string, lastName?: string): string {
+    return `${firstName || ''} ${lastName || ''}`.trim() || 'Sin nombre';
+  }
+
+  trackByStore(index: number, store: any): string {
+    return store?.id || index;
+  }
+
+  trackByAgent(index: number, agent: AgentPerformanceEntry): string {
+    return agent?.id || index.toString();
+  }
+
+  showError(message: string): void {
+    this._snackBar.open(message, 'Cerrar', { duration: 3000 });
   }
 
   ngOnDestroy(): void {
