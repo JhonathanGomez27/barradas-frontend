@@ -89,7 +89,9 @@ export class AuthService {
                     email: rol === 'admin' ? response.admin.email : response.agent.email,
                     name: rol === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
                     rol: rol,
-                    storeId: rol === 'admin' ? null : response.agent.storeId
+                    storeId: rol === 'admin' ? null : response.agent.storeId,
+                    storeName: rol === 'admin' ? null : response.agent.store.name,
+                    storeCity: rol === 'admin' ? null : response.agent.store.city.name
                 };
 
                 // Return a new observable with the response
@@ -134,7 +136,9 @@ export class AuthService {
                         email: response.role === 'admin' ? response.admin.email : response.agent.email,
                         name: response.role === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
                         rol: response.role,
-                        storeId: response.role === 'admin' ? null : response.agent.storeId
+                        storeId: response.role === 'admin' ? null : response.agent.storeId,
+                        storeName: response.role === 'admin' ? null : response.agent.store.name,
+                        storeCity: response.role === 'admin' ? null : response.agent.store.city.name
                     };
 
                     console.log(location.pathname);

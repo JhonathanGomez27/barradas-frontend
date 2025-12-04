@@ -3,6 +3,8 @@ export interface User {
     name: string;
     email: string;
     rol?: string;
+    storeName?: string;
+    storeCity?: string;
     storeId?: string;
     avatar?: string;
     status?: string;

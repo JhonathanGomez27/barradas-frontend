@@ -47,6 +47,18 @@
                     {{ user.email }}
                 </div>
             </div>
+
+            @if (user?.rol === 'agent') {
+            <div class="mt-4 w-full rounded-xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur">
+                <div class="text-xs font-semibold uppercase tracking-wide text-barradas-200">Tienda asignada</div>
+                <div class="mt-1 text-base font-semibold text-white">
+                    {{ user.storeName || 'Sin tienda asignada' }}
+                </div>
+                <div class="text-sm text-barradas-200">
+                    {{ user.storeCity || 'Ciudad por confirmar' }}
+                </div>
+            </div>
+            }
         </div>
     </ng-container>
     <!-- Navigation footer hook -->
