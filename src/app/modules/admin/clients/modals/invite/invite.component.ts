@@ -20,6 +20,9 @@ import { ClientsService } from '../../clients.service';
 import Swal from 'sweetalert2';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { Agent, AgentsService } from 'app/modules/admin/stores/agents.service';
+import { HttpParams } from '@angular/common/http';
 
 interface FileUpload {
     file: File | null;
@@ -31,7 +34,7 @@ interface FileUpload {
 @Component({
     selector: 'app-invite',
     imports: [
-        CommonModule,
+    CommonModule,
         ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
@@ -41,6 +44,7 @@ interface FileUpload {
         MatSelectModule,
         MatRadioModule,
         MatButtonToggleModule,
+        NgxMatSelectSearchModule,
         ClipboardModule
     ],
     templateUrl: './invite.component.html',
@@ -88,13 +92,18 @@ export class InviteComponent implements OnInit {
     rol: string = '';
     selectedStore: Store | null = null;
 
+    agents: Agent[] = [];
+    agentFilterCtrl: FormControl = new FormControl('');
+    filteredAgents: ReplaySubject<Agent[]> = new ReplaySubject<Agent[]>(1);
+
     constructor(
         private _formBuilder: FormBuilder,
         public dialogRef: MatDialogRef<InviteComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { storeId: string, rol: string },
+        @Inject(MAT_DIALOG_DATA) public data: { storeId: string, rol: string , agentId: string | null},
         private _clientsService: ClientsService,
         private _storesService: StoresService,
         private _changeDetectorRef: ChangeDetectorRef,
+        private _agentsService: AgentsService
     ) {
         this.inviteForm = this._formBuilder.group({
             // Información personal
@@ -104,6 +113,7 @@ export class InviteComponent implements OnInit {
             phone: ['', [Validators.required]],
             locationAddress: ['', [Validators.required]],
             storeId: [null, [Validators.required]],
+            agentId: new FormControl({ value: this.data.agentId, disabled: true }),
             // Información del crédito
             totalAmount: [null, [Validators.required, Validators.min(1)]],
             initialPayment: [null, [Validators.required, Validators.min(0)]],
@@ -150,6 +160,19 @@ export class InviteComponent implements OnInit {
         this.storeFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
             this.filterStores();
             this._changeDetectorRef.markForCheck();
+        });
+
+        this.agentFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
+            this.filterAgents();
+            this._changeDetectorRef.markForCheck();
+        });
+
+        this.inviteForm.get('storeId')?.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((storeId) => {
+            if (storeId === null || storeId === '') {
+                this.inviteForm.get('agentId')?.disable({ emitEvent: false });
+                return;
+            }
+            this.loadAgentsByStore(storeId);
         });
 
         this.getCreditTerms();
@@ -294,7 +317,8 @@ export class InviteComponent implements OnInit {
                 email: formValue.email,
                 phone: formValue.phone,
                 locationAddress: formValue.locationAddress,
-                storeId: formValue.storeId
+                storeId: formValue.storeId,
+                agentId: formValue.agentId
             };
 
             const creditData = {
@@ -459,5 +483,45 @@ export class InviteComponent implements OnInit {
         this.filteredStores.next(
             this.stores.filter(store => store.name.toLowerCase().indexOf(search) > -1)
         );
+    }
+
+    private filterAgents(): void {
+        if (!this.agents) {
+            return;
+        }
+        // Get the search keyword
+        let search = this.agentFilterCtrl.value;
+        if (!search) {
+            this.filteredAgents.next(this.agents.slice());
+            return;
+        } else {
+            search = search.toLowerCase();
+        }
+        // Filter the agents
+        this.filteredAgents.next(
+            this.agents.filter(agent => agent.firstName.toLowerCase().indexOf(search) > -1 ||
+                agent.lastName.toLowerCase().indexOf(search) > -1 ||
+                agent.email.toLowerCase().indexOf(search) > -1)
+        );
+    }
+
+    loadAgentsByStore(storeId: string): void {
+        if (storeId === null || storeId === '') {
+            this.inviteForm.get('agentId')?.disable({ emitEvent: false });
+            return;
+        }
+
+        this._agentsService.getAgents({storeId}).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (agents) => {
+                // Manejar los agentes obtenidos
+                this.agents = agents.data;
+                this.filteredAgents.next(this.agents.slice());
+                this.inviteForm.get('agentId')?.enable({ emitEvent: false });
+                this._changeDetectorRef.markForCheck();
+            },
+            error: (error) => {
+                console.error('Error al cargar los agentes de la tienda:', error);
+            }
+        });
     }
 }

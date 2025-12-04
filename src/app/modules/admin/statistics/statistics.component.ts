@@ -51,7 +51,7 @@ export type ChartOptions = {
     MatIconModule,
     MatSnackBarModule,
     NgApexchartsModule,
-    FuseCardComponent,
+    // FuseCardComponent,
     ScrollingModule
   ],
   templateUrl: './statistics.component.html'

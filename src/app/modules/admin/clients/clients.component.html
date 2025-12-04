@@ -278,6 +278,23 @@
                         </td>
                     </ng-container>
 
+                    <ng-container matColumnDef="store">
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" style="font-size: 18px;">storefront</mat-icon>
+                                Tienda
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let client" class="px-4 py-4 text-gray-600">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-1 text-gray-400" style="font-size: 16px;">store</mat-icon>
+                                <span>
+                                    {{ client.store?.name || 'N/A' }}
+                                </span>
+                            </div>
+                        </td>
+                    </ng-container>
+
                     <!-- Created At Column -->
                     <ng-container matColumnDef="created_at">
                         <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-barradas-50">

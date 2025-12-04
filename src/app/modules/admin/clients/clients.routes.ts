@@ -7,6 +7,7 @@ import { environment } from 'environment/environment';
 import { ClientDetailsComponent } from './modals/client-details/client-details.component';
 import { StoresService } from '../stores/stores.service';
 import { hasRoleGuard } from 'app/core/auth/guards/has-permission.guard';
+import { AgentsService } from '../stores/agents.service';
 
 const limit: number = environment.pagination;
 

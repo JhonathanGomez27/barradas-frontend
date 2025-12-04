@@ -63,7 +63,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
         'NO_CONTRACT_SENDED': 'Gestionado sin contrato',
         'CONTRACT_SENDED': 'Gestionado con contrato sin firmar'
     };
-    displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'created_at', 'updated_at', 'actions'];
+    displayedColumns: string[] = ['email', 'name', 'phone', 'status', 'store', 'created_at', 'updated_at', 'actions'];
 
     statusCreditsMapper: { [key: string]: string } = {
         'PENDING': 'Pendiente',
@@ -240,7 +240,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
             disableClose: true,
             data: {
                 storeId: null,
-                rol: 'admin'
+                rol: 'admin',
+                agentId: null
             }
         });
 

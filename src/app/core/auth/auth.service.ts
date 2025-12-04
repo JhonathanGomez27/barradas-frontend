@@ -85,7 +85,7 @@ export class AuthService {
 
                 // Store the user on the user service
                 this._userService.user = {
-                    id: '1',
+                    id: rol === 'admin' ? response.admin.id : response.agent.id,
                     email: rol === 'admin' ? response.admin.email : response.agent.email,
                     name: rol === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
                     rol: rol,
@@ -130,7 +130,7 @@ export class AuthService {
 
                     // Store the user on the user service
                     this._userService.user = {
-                        id: '1',
+                        id: response.role === 'admin' ? response.admin.id : response.agent.id,
                         email: response.role === 'admin' ? response.admin.email : response.agent.email,
                         name: response.role === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
                         rol: response.role,

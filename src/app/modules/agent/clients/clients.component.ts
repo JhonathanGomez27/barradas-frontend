@@ -110,7 +110,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
   storeFilterCtrl: FormControl = new FormControl('');
   filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
 
-  agentInfo: { storeId: string, rol: string } = { storeId: null, rol: null };
+  agentInfo: { storeId: string, rol: string, id: string } = { storeId: null, rol: null, id: null };
 
   constructor(
     private _clientsService: ClientsService,
@@ -156,7 +156,7 @@ export class ClientsComponent implements OnInit, OnDestroy {
     });
 
     this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: User) => {
-      this.agentInfo = { storeId: response.storeId, rol: response.rol };
+      this.agentInfo = { storeId: response.storeId, rol: response.rol, id: response.id };
       this._changeDetectorRef.markForCheck();
     });
 
@@ -250,7 +250,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
       disableClose: true,
       data: {
         storeId: this.agentInfo.storeId,
-        rol: this.agentInfo.rol
+        rol: this.agentInfo.rol,
+        agentId: this.agentInfo.id
       }
     });
 

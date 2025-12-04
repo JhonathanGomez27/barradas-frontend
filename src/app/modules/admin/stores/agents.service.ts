@@ -86,6 +86,8 @@ export class AgentsService {
                     page: params?.page || 1,
                     limit: params?.limit || 10
                 });
+
+                return response;
             })
         );
     }
