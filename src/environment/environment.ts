@@ -1,9 +1,9 @@
-// const host = 'http://localhost:3000';
-// const hostUrl = 'http://localhost:4200';
-// const socketUrl = 'http://localhost:3000/web-rtc';
-const host = 'https://www.confiabarradas.com';
-const hostUrl = 'https://app.confiabarradas.com';
-const socketUrl = 'https://www.confiabarradas.com/web-rtc';
+// const host = 'http://78.13.183.42';
+// const hostUrl = 'http://78.13.183.42';
+// const socketUrl = 'http://78.13.183.42/web-rtc';
+const host = 'https://www.crediconsumomx.com';
+const hostUrl = 'https://app.crediconsumomx.com';
+const socketUrl = 'https://www.crediconsumomx.com/web-rtc';
 
 export const environment = {
     host: `${host}`,

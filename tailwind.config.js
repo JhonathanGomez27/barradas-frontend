@@ -12,7 +12,7 @@ const generatePalette = require(
  * Tailwind-like color palettes automatically
  */
 const customPalettes = {
-    brand: generatePalette('#5A7F78'),
+    brand: generatePalette('#16425B'),
 };
 
 /**
@@ -100,11 +100,11 @@ const config = {
             colors: {
                 gray: colors.slate,
                 barradas: {
-                    50: '#F7F8FC',
-                    300: '#BBDEC6',
-                    500: '#5A7F78',
-                    700: '#314C53',
-                    900: '#010300',
+                    50: '#FFFFFF',
+                    300: '#81C3D7',
+                    500: '#2F6690',
+                    700: '#16425B',
+                    900: '#3A7CA5',
                 },
             },
             flex: {
