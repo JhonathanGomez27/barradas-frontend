@@ -1,5 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { User } from 'app/core/user/user.types';
+import { UserService } from 'app/core/user/user.service';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -177,6 +179,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     storeFilterCtrl: FormControl = new FormControl('');
     filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
 
+    // Video Rooms
+    videoRooms: any[] = [];
+    currentUser: User | null = null;
+
     constructor(
         private clientesService: ClientsService,
         private dialog: MatDialog,
@@ -187,7 +193,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         private _docusealService: DocusealService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
-        private _storesService: StoresService
+        private _storesService: StoresService,
+        private _userService: UserService
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -253,6 +260,12 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         // Obtener términos de crédito
         this.getCreditTerms();
         this.setupNewCreditFormListeners();
+
+        // Obtener el usuario actual
+        this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((user: User) => {
+            this.currentUser = user;
+            this._changeDetectorRef.markForCheck();
+        });
     }
 
     loadClientDetails(clientId: string): void {
@@ -273,6 +286,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
 
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
+
+                    // Cargar salas de video
+                    this.loadVideoRooms();
                 },
                 error: (error) => {
                     console.error('Error al cargar detalles del cliente:', error);
@@ -789,7 +805,119 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     getWeekDayName(value: string): string {
         const day = this.weekDays.find(d => d.value === value);
         return day ? day.fullName : '';
-    }    // Obtener icono según el estado del crédito
+    }
+
+    // --- Video Rooms Logic ---
+
+    loadVideoRooms(): void {
+        if (!this.clientDetails?.id) return;
+
+        this.clientesService.getVideoRoomsByClient(this.clientDetails.id)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response: any) => {
+                    // El backend puede devolver { data: [...] } o directamente [...]
+                    this.videoRooms = response.data || response || [];
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: (error) => {
+                    console.error('Error al cargar video rooms:', error);
+                }
+            });
+    }
+
+    createVideoRoom(): void {
+        const agentId = this.currentUser?.id;
+        const clientId = this.clientDetails?.id;
+
+        if (!agentId || !clientId) {
+            this._alertsService.showAlertMessage({
+                type: 'error',
+                text: 'No se pudo identificar al agente o al cliente.',
+                title: 'Error'
+            });
+            return;
+        }
+
+        this.isLoading = true;
+        this.clientesService.createVideoRoom(agentId, clientId)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (room: any) => {
+                    this.isLoading = false;
+                    this._alertsService.showAlertMessage({
+                        type: 'success',
+                        text: 'Sala de videollamada creada correctamente',
+                        title: 'Éxito'
+                    });
+                    this.loadVideoRooms();
+                },
+                error: (error) => {
+                    console.error('Error al crear sala:', error);
+                    this.isLoading = false;
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al crear la sala de videollamada',
+                        title: 'Error'
+                    });
+                }
+            });
+    }
+
+    openVideoRoom(url: string): void {
+        window.open(url, '_blank', 'width=1280,height=720');
+    }
+
+    copyVideoRoomUrl(url: string): void {
+        navigator.clipboard.writeText(url);
+        this._alertsService.showAlertMessage({
+            type: 'success',
+            text: 'URL copiada al portapapeles',
+            title: 'Éxito'
+        });
+    }
+
+    endVideoRoom(roomId: string): void {
+        const dialog = this._fuseConfirmationService.open({
+            title: 'Finalizar Videollamada',
+            message: '¿Estás seguro de que deseas finalizar esta videollamada? La sala se cerrará para todos.',
+            icon: {
+                show: true,
+                name: 'heroicons_outline:exclamation-triangle',
+                color: 'warn'
+            },
+            actions: {
+                confirm: { show: true, label: 'Finalizar', color: 'warn' },
+                cancel: { show: true, label: 'Cancelar' }
+            }
+        });
+
+        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+            if (result === 'confirmed') {
+                this.clientesService.endVideoRoom(roomId)
+                    .pipe(takeUntil(this._unsubscribeAll))
+                    .subscribe({
+                        next: () => {
+                            this._alertsService.showAlertMessage({
+                                type: 'success',
+                                text: 'Videollamada finalizada',
+                                title: 'Éxito'
+                            });
+                            this.loadVideoRooms();
+                        },
+                        error: (error) => {
+                            console.error('Error finalizando videollamada:', error);
+                            this._alertsService.showAlertMessage({
+                                type: 'error',
+                                text: 'Error al finalizar la videollamada',
+                                title: 'Error'
+                            });
+                        }
+                    });
+            }
+        });
+    }
+    // Obtener icono según el estado del crédito
     getCreditStatusIcon(status: string): string {
         switch (status) {
             case 'ACTIVE': return 'check_circle';

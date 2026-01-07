@@ -122,4 +122,17 @@ export class ClientsService {
   getCreditTerms(): Observable<any> {
     return this.httpClient.get(`${this._url}/credits/payment-terms`);
   }
+
+  // Video Rooms
+  createVideoRoom(agentId: string, clientId: string): Observable<any> {
+    return this.httpClient.post(`${this._url}/video-rooms`, { agentId, clientId });
+  }
+
+  getVideoRoomsByClient(clientId: string): Observable<any> {
+    return this.httpClient.get(`${this._url}/video-rooms/client/${clientId}`);
+  }
+
+  endVideoRoom(roomId: string): Observable<any> {
+    return this.httpClient.patch(`${this._url}/video-rooms/${roomId}/end`, {});
+  }
 }
