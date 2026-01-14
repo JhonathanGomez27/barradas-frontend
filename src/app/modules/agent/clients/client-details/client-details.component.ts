@@ -288,7 +288,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                     this._changeDetectorRef.markForCheck();
 
                     // Cargar salas de video
-                    this.loadVideoRooms();
+                    // this.loadVideoRooms();
                 },
                 error: (error) => {
                     console.error('Error al cargar detalles del cliente:', error);
