@@ -54,6 +54,13 @@ export const authInterceptor = (
                 // Sign out
                 authService.signOut();
 
+                const url = router.url;
+                const isAuthUrl = url.includes('sign-in') || url.includes('sign-up');
+
+                if (isAuthUrl) {
+                    return throwError(() => new Error('Unauthorized'));
+                }
+
                 // Navigate to the login page
                 router.navigate(['/invalid-token']);
 
@@ -61,7 +68,7 @@ export const authInterceptor = (
                 // location.reload();
             }
 
-            return throwError(error);
+            return throwError(() => new Error('Unauthorized'));
         })
     );
 };
