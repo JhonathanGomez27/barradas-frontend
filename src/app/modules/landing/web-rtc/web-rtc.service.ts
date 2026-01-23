@@ -9,7 +9,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class WebRtcService {
 
-  private socketUrl: string = environment.socketUrl;
+//   private socketUrl: string = environment.socketUrl;
 
   private socket?: Socket;
   private peerConnection: RTCPeerConnection | null = null;
@@ -57,24 +57,24 @@ export class WebRtcService {
    * Initialize Socket.IO connection
    */
   initializeSocket(): void {
-    if (this.socket && this.socket.connected) {
-      return;
-    }
+    // if (this.socket && this.socket.connected) {
+    //   return;
+    // }
 
-    if (this.socket) {
-      this.socket.connect();
-      return;
-    }
+    // if (this.socket) {
+    //   this.socket.connect();
+    //   return;
+    // }
 
-    this.socket = io(this.socketUrl, {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000
-    });
+    // this.socket = io(this.socketUrl, {
+    //   transports: ['websocket'],
+    //   reconnection: true,
+    //   reconnectionAttempts: 10,
+    //   reconnectionDelay: 1000,
+    //   reconnectionDelayMax: 5000
+    // });
 
-    this.setupSocketListeners();
+    // this.setupSocketListeners();
   }
 
   /**
