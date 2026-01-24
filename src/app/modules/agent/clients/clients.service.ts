@@ -135,4 +135,8 @@ export class ClientsService {
   endVideoRoom(roomId: string): Observable<any> {
     return this.httpClient.patch(`${this._url}/video-rooms/${roomId}/end`, {});
   }
+
+  removeVideoRoom(roomId: string): Observable<any> {
+    return this.httpClient.delete(`${this._url}/video-rooms/${roomId}`);
+  }
 }

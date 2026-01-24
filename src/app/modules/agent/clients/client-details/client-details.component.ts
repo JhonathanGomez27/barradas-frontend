@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -54,7 +55,9 @@ interface FileUpload {
         CdkScrollable,
         NgxMatSelectSearchModule,
         MatSelectModule,
-        MatButtonToggleModule
+        MatSelectModule,
+        MatButtonToggleModule,
+        MatMenuModule
     ],
     templateUrl: './client-details.component.html',
     animations: [
@@ -288,7 +291,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                     this._changeDetectorRef.markForCheck();
 
                     // Cargar salas de video
-                    // this.loadVideoRooms();
+                    this.loadVideoRooms();
                 },
                 error: (error) => {
                     console.error('Error al cargar detalles del cliente:', error);
@@ -839,12 +842,12 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.isLoading = true;
+        // this.isLoading = true;
         this.clientesService.createVideoRoom(agentId, clientId)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (room: any) => {
-                    this.isLoading = false;
+                    // this.isLoading = false;
                     this._alertsService.showAlertMessage({
                         type: 'success',
                         text: 'Sala de videollamada creada correctamente',
@@ -917,6 +920,50 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             }
         });
     }
+
+    deleteVideoRoom(roomId: string): void {
+        const dialog = this._fuseConfirmationService.open({
+            title: 'Eliminar videollamada',
+            message: '¿Estás seguro de que deseas eliminar esta videollamada?',
+            icon: {
+                show: true,
+                name: 'heroicons_outline:exclamation-triangle',
+                color: 'warn'
+            },
+            actions: {
+                confirm: { show: true, label: 'Eliminar', color: 'warn' },
+                cancel: { show: true, label: 'Cancelar' }
+            }
+        });
+
+        dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+            if (result === 'confirmed') {
+                this.clientesService.removeVideoRoom(roomId)
+                    .pipe(takeUntil(this._unsubscribeAll))
+                    .subscribe({
+                        next: () => {
+                            this._alertsService.showAlertMessage({
+                                type: 'success',
+                                text: 'Videollamada eliminada',
+                                title: 'Éxito'
+                            });
+
+                            //delete video room from array
+                            this.videoRooms = this.videoRooms.filter((room: any) => room.id !== roomId);
+                        },
+                        error: (error) => {
+                            console.error('Error eliminando videollamada:', error);
+                            this._alertsService.showAlertMessage({
+                                type: 'error',
+                                text: 'Error al eliminar la videollamada',
+                                title: 'Error'
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
     // Obtener icono según el estado del crédito
     getCreditStatusIcon(status: string): string {
         switch (status) {
