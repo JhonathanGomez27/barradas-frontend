@@ -82,6 +82,8 @@ export class AuthService {
                 this._authenticated = true;
 
                 const rol = response.role;
+                const decodedToken = AuthUtils.decodeToken(response.access_token);
+                const permissions = decodedToken?.permissions || [];
 
                 // Store the user on the user service
                 this._userService.user = {
@@ -91,7 +93,9 @@ export class AuthService {
                     rol: rol,
                     storeId: rol === 'admin' ? null : response.agent.storeId,
                     storeName: rol === 'admin' ? null : response.agent.store.name,
-                    storeCity: rol === 'admin' ? null : response.agent.store.city.name
+                    storeCity: rol === 'admin' ? null : response.agent.store.city.name,
+                    permissions: permissions,
+                    roleId: decodedToken?.roleId
                 };
 
                 // Return a new observable with the response
@@ -131,6 +135,9 @@ export class AuthService {
                     this._authenticated = true;
 
                     // Store the user on the user service
+                    const decodedToken = AuthUtils.decodeToken(this.accessToken);
+                    const permissions = decodedToken?.permissions || [];
+
                     this._userService.user = {
                         id: response.role === 'admin' ? response.admin.id : response.agent.id,
                         email: response.role === 'admin' ? response.admin.email : response.agent.email,
@@ -138,7 +145,9 @@ export class AuthService {
                         rol: response.role,
                         storeId: response.role === 'admin' ? null : response.agent.storeId,
                         storeName: response.role === 'admin' ? null : response.agent.store.name,
-                        storeCity: response.role === 'admin' ? null : response.agent.store.city.name
+                        storeCity: response.role === 'admin' ? null : response.agent.store.city.name,
+                        permissions: permissions,
+                        roleId: decodedToken?.roleId
                     };
 
                     console.log(location.pathname);

@@ -1,0 +1,119 @@
+<div class="flex flex-col flex-auto min-w-0">
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent">
+        <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center font-medium text-secondary">
+                <div class="cursor-pointer hover:text-primary" (click)="goBack()">Roles</div>
+                <div class="flex items-center ml-1 whitespace-nowrap">
+                    <mat-icon class="icon-size-5 text-secondary" [svgIcon]="'heroicons_solid:chevron-right'"></mat-icon>
+                    <span class="ml-1 text-secondary">{{ mode === 'create' ? 'Nuevo Rol' : 'Editar Rol' }}</span>
+                </div>
+            </div>
+            <div class="mt-2">
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                    {{ mode === 'create' ? 'Crear Nuevo Rol' : (role?.displayName || 'Cargando...') }}
+                </h2>
+            </div>
+        </div>
+        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4 gap-2">
+            <button mat-button (click)="goBack()">
+                Cancelar
+            </button>
+            <button mat-flat-button [color]="'primary'" (click)="save()" [disabled]="isLoading || roleForm.invalid">
+                <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                <span class="ml-2">Guardar Cambios</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-auto p-6 sm:p-10">
+        <div class="max-w-screen-xl w-full mx-auto">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Col 1: Role Information -->
+                <div class="flex flex-col">
+                    <div class="bg-card rounded-2xl shadow p-6">
+                        <div class="text-lg font-medium mb-4">Información del Rol</div>
+                        
+                        <form [formGroup]="roleForm" class="flex flex-col">
+                            <mat-form-field class="w-full">
+                                <mat-label>Identificador (Snake Case)</mat-label>
+                                <input matInput formControlName="name" placeholder="ej. supervisor_ventas">
+                                <mat-icon matPrefix [svgIcon]="'heroicons_outline:tag'"></mat-icon>
+                                <mat-error *ngIf="roleForm.get('name')?.hasError('required')">
+                                    El identificador es requerido
+                                </mat-error>
+                                <mat-error *ngIf="roleForm.get('name')?.hasError('pattern')">
+                                    Solo letras minúsculas, números y guiones bajos
+                                </mat-error>
+                                <mat-hint *ngIf="mode === 'create'">
+                                    Usado internamente. No se puede cambiar después.
+                                </mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full mt-4">
+                                <mat-label>Nombre Visible</mat-label>
+                                <input matInput formControlName="displayName" placeholder="ej. Supervisor de Ventas">
+                                <mat-icon matPrefix [svgIcon]="'heroicons_outline:identification'"></mat-icon>
+                                <mat-error *ngIf="roleForm.get('displayName')?.hasError('required')">
+                                    El nombre visible es requerido
+                                </mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full mt-4">
+                                <mat-label>Descripción</mat-label>
+                                <textarea matInput formControlName="description" rows="4"></textarea>
+                                <mat-icon matPrefix [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                            </mat-form-field>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Col 2: Permissions -->
+                <div class="flex flex-col">
+                    <div class="bg-card rounded-2xl shadow p-6">
+                        <div class="text-lg font-medium mb-4 flex justify-between items-center">
+                            <span>Permisos</span>
+                            <span class="text-sm text-secondary">{{ selectedPermissions.size }} seleccionados</span>
+                        </div>
+
+                        <mat-accordion multi>
+                            <mat-expansion-panel *ngFor="let module of permissionGroups | keyvalue" [expanded]="true" class="mb-2 shadow-none border">
+                                <mat-expansion-panel-header class="bg-gray-50 dark:bg-gray-900">
+                                    <mat-panel-title class="font-bold text-md">
+                                        {{ module.key | uppercase }}
+                                    </mat-panel-title>
+                                </mat-expansion-panel-header>
+
+                                <div class="flex flex-col gap-2 p-2">
+                                    <div *ngFor="let perm of module.value" class="flex items-start space-x-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                        <mat-checkbox 
+                                            [checked]="hasPermission(perm.id)"
+                                            (change)="togglePermission(perm.id)"
+                                            [color]="'primary'"
+                                            class="mt-1">
+                                        </mat-checkbox>
+                                        
+                                        <div class="flex flex-col cursor-pointer" (click)="togglePermission(perm.id)">
+                                            <span class="text-sm font-medium leading-tight">
+                                                {{ perm.action | titlecase }} 
+                                            </span>
+                                            <span class="text-xs text-secondary mt-0.5">
+                                                {{ perm.method }} {{ perm.route }}
+                                            </span>
+                                            <span *ngIf="perm.isPublic" class="text-xs text-green-500 font-medium">
+                                                (Público)
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </mat-expansion-panel>
+                        </mat-accordion>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

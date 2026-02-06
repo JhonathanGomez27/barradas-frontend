@@ -19,7 +19,7 @@ import { FuseNavigationService } from '@fuse/components/navigation/navigation.se
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { FuseVerticalNavigationComponent } from '@fuse/components/navigation/vertical/vertical.component';
 import { FuseUtilsService } from '@fuse/services/utils/utils.service';
-import { ShowForRolesDirective } from 'app/core/directives/show-for-roles.directive';
+import { ShowForPermissionsDirective } from 'app/core/directives/show-for-roles.directive';
 import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -34,7 +34,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatTooltipModule,
         NgTemplateOutlet,
         MatIconModule,
-        // ShowForRolesDirective
+        // ShowForPermissionsDirective
     ],
 })
 export class FuseVerticalNavigationBasicItemComponent

@@ -34,6 +34,14 @@ export const defaultNavigation: FuseNavigationItem[] = [
         roles: ['admin']
     },
     {
+        id: 'rbac',
+        title: 'Roles y Permisos',
+        type: 'basic',
+        icon: 'heroicons_outline:shield-check',
+        link: '/rbac',
+        roles: ['admin']
+    },
+    {
         id: 'clients-store',
         title: 'Clientes',
         type: 'basic',

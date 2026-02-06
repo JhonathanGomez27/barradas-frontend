@@ -3,12 +3,14 @@ import { distinctUntilChanged, map, Subscription, tap } from 'rxjs';
 import { UserService } from '../user/user.service';
 
 @Directive({
-  selector: '[appShowForRoles]',
+  selector: '[appShowForRoles], [appShowForPermissions]',
   standalone: true
 })
-export class ShowForRolesDirective implements OnInit, OnDestroy {
+export class ShowForPermissionsDirective implements OnInit, OnDestroy {
 
     @Input('appShowForRoles') roles: string[] = [];
+    @Input('appShowForPermissions') permissions: string[] = [];
+    
     private sub?: Subscription;
 
     constructor(
@@ -19,10 +21,25 @@ export class ShowForRolesDirective implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.sub = this._userService.user$.pipe(
-            map((user) => Boolean(user && this.roles.includes(user.rol))),
+            map((user) => {
+                if (!user) return false;
+
+                // Check permissions first if provided
+                if (this.permissions.length > 0) {
+                    const userPermissions = user.permissions || [];
+                    return this.permissions.some(p => userPermissions.includes(p));
+                }
+
+                // Fallback to roles
+                if (this.roles.length > 0) {
+                    return this.roles.includes(user.rol || '');
+                }
+
+                return false;
+            }),
             distinctUntilChanged(),
-            tap((hasRole) =>
-                hasRole
+            tap((hasAccess) =>
+                hasAccess
                 ? this.viewContainerRef.createEmbeddedView(this.templateRef)
                 : this.viewContainerRef.clear())
         ).subscribe();

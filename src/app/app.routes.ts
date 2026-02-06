@@ -3,7 +3,7 @@ import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
-import { hasRoleGuard } from './core/auth/guards/has-permission.guard';
+import { hasPermissionGuard } from './core/auth/guards/has-permission.guard';
 
 // @formatter:off
 /* eslint-disable max-len */
@@ -81,7 +81,7 @@ export const appRoutes: Route[] = [
             // {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
             {
                 path: 'statistics',
-                canActivate: [hasRoleGuard],
+                canActivate: [hasPermissionGuard],
                 data: {
                     expectedRole: ['admin']
                 },
@@ -89,7 +89,7 @@ export const appRoutes: Route[] = [
             },
             {
                 path: 'clients',
-                canActivate: [hasRoleGuard],
+                canActivate: [hasPermissionGuard],
                 data: {
                     expectedRole: ['admin']
                 },
@@ -97,7 +97,7 @@ export const appRoutes: Route[] = [
             },
             {
                 path: 'docuseal',
-                canActivate: [hasRoleGuard],
+                canActivate: [hasPermissionGuard],
                 data: {
                     expectedRole: ['admin', 'agent']
                 },
@@ -105,11 +105,19 @@ export const appRoutes: Route[] = [
             },
             {
                 path: 'stores',
-                canActivate: [hasRoleGuard],
+                canActivate: [hasPermissionGuard],
                 data: {
                     expectedRole: ['admin']
                 },
                 loadChildren: () => import('app/modules/admin/stores/stores.routes')
+            },
+            {
+                path: 'rbac',
+                canActivate: [hasPermissionGuard],
+                data: {
+                    expectedRole: ['admin']
+                },
+                loadChildren: () => import('app/modules/admin/rbac/rbac.routes')
             }
         ]
     },
@@ -125,7 +133,7 @@ export const appRoutes: Route[] = [
         children: [
             {
                 path: 'clients-store',
-                canActivate: [hasRoleGuard],
+                canActivate: [hasPermissionGuard],
                 data: {
                     expectedRole: ['agent']
                 },

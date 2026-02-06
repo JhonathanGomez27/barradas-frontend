@@ -1,0 +1,157 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-barradas-50" cdkScrollable>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-6 sm:px-10 sm:py-8">
+            <div class="min-w-0 flex-1">
+                <!-- Breadcrumbs -->
+                <div class="mb-2">
+                    <div class="flex items-center font-medium text-barradas-300">
+                        <mat-icon class="mr-2 text-white">admin_panel_settings</mat-icon>
+                        <span class="text-white">Administración</span>
+                        <mat-icon class="mx-2 text-barradas-300 icon-size-4" [svgIcon]="'heroicons_solid:chevron-right'"></mat-icon>
+                        <span class="text-white">Roles y Permisos</span>
+                    </div>
+                </div>
+                <!-- Title -->
+                <div class="flex items-center">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                        Roles del Sistema
+                    </h2>
+                    <span class="ml-4 px-3 py-1 bg-white/20 rounded-full text-sm font-medium text-white">
+                        {{ roles.length }} total
+                    </span>
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button mat-stroked-button
+                        class="bg-white/10 text-white border-white/30 hover:bg-white/20 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+                        (click)="loadRoles()"
+                        matTooltip="Actualizar lista">
+                    <mat-icon class="mr-2 text-white" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+                    <span class="hidden sm:inline">Refrescar</span>
+                </button>
+                <button mat-raised-button
+                        class="bg-white text-barradas-900 hover:bg-barradas-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
+                        (click)="createRole()">
+                    <mat-icon class="mr-2" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span>Nuevo Rol</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6 md:p-10">
+        
+        <!-- Tabla de Roles -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">security</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Lista de Roles</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table mat-table [dataSource]="roles" class="min-w-full">
+                    
+                    <!-- Name Column -->
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" [svgIcon]="'heroicons_outline:tag'"></mat-icon>
+                                ID
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let role" class="px-4 py-4 text-gray-600 font-mono text-sm">
+                            {{role.name}}
+                        </td>
+                    </ng-container>
+
+                    <!-- DisplayName Column -->
+                    <ng-container matColumnDef="displayName">
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" [svgIcon]="'heroicons_outline:identification'"></mat-icon>
+                                Nombre
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let role" class="px-4 py-4 text-gray-800 font-medium">
+                            {{role.displayName}}
+                        </td>
+                    </ng-container>
+
+                    <!-- Description Column -->
+                    <ng-container matColumnDef="description">
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                                Descripción
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let role" class="px-4 py-4 text-gray-600">
+                            {{role.description || '-'}}
+                        </td>
+                    </ng-container>
+
+                    <!-- IsSystem Column -->
+                    <ng-container matColumnDef="isSystem">
+                        <th mat-header-cell *matHeaderCellDef class="text-left px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 text-gray-400" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+                                Tipo
+                            </div>
+                        </th>
+                        <td mat-cell *matCellDef="let role" class="px-4 py-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200"
+                                  [ngClass]="{
+                                    'bg-red-100 text-red-800': role.isSystem,
+                                    'bg-blue-100 text-blue-800': !role.isSystem
+                                  }">
+                                {{ role.isSystem ? 'Sistema' : 'Personalizado' }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Actions Column -->
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef class="text-center px-4 py-3 font-semibold text-gray-700 bg-barradas-50">
+                            <mat-icon class="text-gray-400">settings</mat-icon>
+                        </th>
+                        <td mat-cell *matCellDef="let role" class="px-4 py-4 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <!-- Edit Role Details & Permissions -->
+                                <button mat-icon-button 
+                                    color="primary"
+                                    (click)="editRole(role)" 
+                                    [matTooltip]="'Editar Rol y Permisos'"
+                                    class="hover:bg-barradas-300/20 transition-colors">
+                                    <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                </button>
+
+                                <!-- Delete Role (Disabled for System Roles) -->
+                                <button mat-icon-button 
+                                    color="warn"
+                                    (click)="deleteRole(role)" 
+                                    [disabled]="role.isSystem"
+                                    [matTooltip]="role.isSystem ? 'No se puede eliminar roles de sistema' : 'Eliminar Rol'"
+                                    class="hover:bg-red-50 transition-colors">
+                                    <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-barradas-50 transition-colors duration-150 border-b border-gray-100"></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
