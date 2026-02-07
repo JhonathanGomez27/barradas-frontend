@@ -382,7 +382,7 @@ export class FuseVerticalNavigationComponent
             this._changeDetectorRef.markForCheck();
         });
 
-        console.log(this.navigation)
+        // console.log(this.navigation)
     }
 
     /**

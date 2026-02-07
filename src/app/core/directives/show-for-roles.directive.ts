@@ -10,7 +10,7 @@ export class ShowForPermissionsDirective implements OnInit, OnDestroy {
 
     @Input('appShowForRoles') roles: string[] = [];
     @Input('appShowForPermissions') permissions: string[] = [];
-    
+
     private sub?: Subscription;
 
     constructor(
@@ -20,6 +20,7 @@ export class ShowForPermissionsDirective implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
+        console.log(this.permissions);
         this.sub = this._userService.user$.pipe(
             map((user) => {
                 if (!user) return false;

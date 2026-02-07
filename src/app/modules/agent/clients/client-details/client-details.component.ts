@@ -524,6 +524,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     getCreditTerms(): void {
+        if (!this.hasPermission('credits:read:all:get:credits.payment-terms')) return;
+
         this.clientesService.getCreditTerms()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
@@ -821,6 +823,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
 
     loadVideoRooms(): void {
         if (!this.clientDetails?.id) return;
+        if (!this.hasPermission('video-rooms:read:all:get:video-rooms.client.clientId')) return;
 
         this.clientesService.getVideoRoomsByClient(this.clientDetails.id)
             .pipe(takeUntil(this._unsubscribeAll))

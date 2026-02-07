@@ -137,6 +137,7 @@ export class AuthService {
                     // Store the user on the user service
                     const decodedToken = AuthUtils.decodeToken(this.accessToken);
                     const permissions = decodedToken?.permissions || [];
+                    // console.log(permissions);
 
                     this._userService.user = {
                         id: response.role === 'admin' ? response.admin.id : response.agent.id,
@@ -149,8 +150,6 @@ export class AuthService {
                         permissions: permissions,
                         roleId: decodedToken?.roleId
                     };
-
-                    console.log(location.pathname);
 
                     if (response.role === 'admin') {
                         const redirectURL = '/signed-in-redirect';

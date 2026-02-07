@@ -83,7 +83,7 @@ export const appRoutes: Route[] = [
                 path: 'statistics',
                 canActivate: [hasPermissionGuard],
                 data: {
-                    expectedRole: ['admin']
+                    expectedPermission: ['stats:read:all:get:stats.dashboard']
                 },
                 loadChildren: () => import('app/modules/admin/statistics/statistics.routes')
             },
@@ -91,7 +91,8 @@ export const appRoutes: Route[] = [
                 path: 'clients',
                 canActivate: [hasPermissionGuard],
                 data: {
-                    expectedRole: ['admin']
+                    expectedRole: ['admin'],
+                    expectedPermission: ['users:read:all:get:users']
                 },
                 loadChildren: () => import('app/modules/admin/clients/clients.routes')
             },
@@ -99,7 +100,8 @@ export const appRoutes: Route[] = [
                 path: 'docuseal',
                 canActivate: [hasPermissionGuard],
                 data: {
-                    expectedRole: ['admin', 'agent']
+                    expectedRole: ['admin', 'agent'],
+                    expectedPermission: ['docuseal:create:all:post:docuseal.create-signed-token']
                 },
                 loadChildren: () => import('app/modules/docuseal/docuseal.routes')
             },
@@ -107,7 +109,8 @@ export const appRoutes: Route[] = [
                 path: 'stores',
                 canActivate: [hasPermissionGuard],
                 data: {
-                    expectedRole: ['admin']
+                    expectedRole: ['admin'],
+                    expectedPermission: ['stores:read:store:get:stores']
                 },
                 loadChildren: () => import('app/modules/admin/stores/stores.routes')
             },
@@ -115,7 +118,8 @@ export const appRoutes: Route[] = [
                 path: 'rbac',
                 canActivate: [hasPermissionGuard],
                 data: {
-                    expectedRole: ['admin']
+                    expectedRole: ['admin'],
+                    expectedPermission: ['rbac:read:all:get:rbac']
                 },
                 loadChildren: () => import('app/modules/admin/rbac/rbac.routes')
             }

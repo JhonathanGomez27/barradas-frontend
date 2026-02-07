@@ -10,26 +10,44 @@ import { StoresService } from 'app/modules/admin/stores/stores.service';
 import { ClientDetailsComponent } from './client-details/client-details.component';
 
 import { hasPermissionGuard } from 'app/core/auth/guards/has-permission.guard';
+import { of } from 'rxjs';
+import { PermissionService } from 'app/shared/services/permission.service';
 
 const limit: number = environment.pagination;
 
+
 const ClientsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _ClientsService = inject(ClientsService);
+const _permissionService = inject(PermissionService);
 
     let params = new HttpParams();
     params = params.set('page', 1);
     params = params.set('limit', limit);
+
+    if (!_permissionService.hasPermission('agents:read:own:get:agents.me.users')) {
+        return of(null);
+    }
 
     return _ClientsService.getClients(params);
 }
 
 const StoresAllResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _StoresAllService = inject(StoresService);
+const _permissionService = inject(PermissionService);
+
+    if (!_permissionService.hasPermission('stores:read:store:get:stores')) {
+        return of(null);
+    }
     return _StoresAllService.getAllStoresNoPagination();
 }
 
 const CreditsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _CreditsService = inject(ClientsService);
+const _permissionService = inject(PermissionService);
+
+    if (!_permissionService.hasPermission('credits:read:all:get:credits.list.clientId')) {
+        return of(null);
+    }
     return _CreditsService.getClientCredits(route.params.id, new HttpParams().set('limit', environment.pagination).set('page', '1'));
 }
 
