@@ -38,6 +38,8 @@ interface FileUpload {
     required: boolean;
 }
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-client-details',
     standalone: true,
@@ -197,7 +199,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _storesService: StoresService,
-        private _userService: UserService
+        private _userService: UserService,
+        private _permissionService: PermissionService
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -220,6 +223,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             selectedTerm: [null, [Validators.required, Validators.min(1)]],
             repaymentDay: ['MONDAY', [Validators.required]],
         });
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     ngOnInit(): void {

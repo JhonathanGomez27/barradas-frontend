@@ -9,6 +9,8 @@ import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { StoresService } from 'app/modules/admin/stores/stores.service';
 import { ClientDetailsComponent } from './client-details/client-details.component';
 
+import { hasPermissionGuard } from 'app/core/auth/guards/has-permission.guard';
+
 const limit: number = environment.pagination;
 
 const ClientsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
@@ -35,6 +37,11 @@ export default [
     {
         path: '',
         component: ClientsComponent,
+        canActivate: [hasPermissionGuard],
+        data: {
+            expectedRole: ['agent'],
+            expectedPermission: ['agents:read:own:get:agents.me.users']
+        },
         resolve: {
             clients: ClientsResolver,
             stores: StoresAllResolver
@@ -43,6 +50,11 @@ export default [
     {
         path: ':id',
         component: ClientDetailsComponent,
+        canActivate: [hasPermissionGuard],
+        data: {
+            expectedRole: ['agent'],
+            expectedPermission: ['users:read:all:get:users.id']
+        },
         resolve: {
             stores: StoresAllResolver,
             credits: CreditsResolver

@@ -24,6 +24,8 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
   selector: 'app-clients',
   standalone: true,
@@ -120,7 +122,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
     private _activatedRoute: ActivatedRoute,
     private _router: Router,
     private _storesService: StoresService,
-    private _userService: UserService
+    private _userService: UserService,
+    private _permissionService: PermissionService
   ) {
     this.Toast = Swal.mixin({
       toast: true,
@@ -133,6 +136,10 @@ export class ClientsComponent implements OnInit, OnDestroy {
         toast.addEventListener('mouseleave', Swal.resumeTimer);
       },
     });
+  }
+
+  hasPermission(permission: string): boolean {
+    return this._permissionService.hasPermission(permission);
   }
 
   ngOnInit(): void {

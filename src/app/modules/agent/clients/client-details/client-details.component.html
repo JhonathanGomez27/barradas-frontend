@@ -51,6 +51,7 @@
                 </span>
             </div>
             <button mat-raised-button [color]="isEditMode ? 'warn' : 'primary'" (click)="toggleEditMode()"
+                *ngIf="hasPermission('users:update:all:patch:users.id')"
                 class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
                 <mat-icon class="mr-2">{{ isEditMode ? 'close' : 'edit' }}</mat-icon>
                 {{ isEditMode ? 'Cancelar Edición' : 'Editar Cliente' }}
@@ -406,6 +407,7 @@
                             {{ credits.length }} crédito{{ credits.length !== 1 ? 's' : '' }}
                         </span>
                         <button mat-raised-button class="text-xs bg-barradas-900 text-white"
+                            *ngIf="hasPermission('credits:create:all:post:credits')"
                             (click)="toggleCreateCreditForm()">
                             <mat-icon class="mr-1" style="font-size: 16px;">add</mat-icon>
                             Nuevo Crédito
@@ -694,6 +696,7 @@
                         <h3 class="font-semibold text-gray-800 text-base md:text-lg">Reuniones</h3>
                     </div>
                     <button mat-raised-button color="primary" (click)="createVideoRoom()" [disabled]="isLoading"
+                        *ngIf="hasPermission('video-rooms:create:all:post:video-rooms')"
                         class="shadow-md">
                         <mat-icon class="mr-1">add_to_queue</mat-icon>
                         Crear Reunion
@@ -782,14 +785,14 @@
                                     <span>Copiar enlace de invitación</span>
                                 </button>
                                 
-                                <button mat-menu-item (click)="endVideoRoom(room.id)" *ngIf="room.status === 'ACTIVE'" class="text-amber-600">
+                                <button mat-menu-item (click)="endVideoRoom(room.id)" *ngIf="room.status === 'ACTIVE' && hasPermission('video-rooms:update:all:patch:video-rooms.id.end')" class="text-amber-600">
                                     <mat-icon class="text-amber-500">call_end</mat-icon>
                                     <span>Finalizar llamada</span>
                                 </button>
 
                                 <mat-divider class="my-1"></mat-divider>
                                 
-                                <button mat-menu-item (click)="deleteVideoRoom(room.id)" class="text-red-600">
+                                <button mat-menu-item (click)="deleteVideoRoom(room.id)" *ngIf="hasPermission('video-rooms:delete:all:delete:video-rooms.id')" class="text-red-600">
                                     <mat-icon class="text-red-500">delete_outline</mat-icon>
                                     <span>Eliminar registro</span>
                                 </button>

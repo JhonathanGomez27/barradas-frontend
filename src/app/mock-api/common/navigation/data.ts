@@ -50,7 +50,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user-group',
         link: '/clients-store',
-        roles: ['agent']
+        roles: ['agent'],
+        permissions: ['agents:read:own:get:agents.me.users']
     }
 ];
 export const compactNavigation: FuseNavigationItem[] = [
