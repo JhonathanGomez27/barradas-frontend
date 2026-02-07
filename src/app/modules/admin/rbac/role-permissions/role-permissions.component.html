@@ -27,7 +27,9 @@
                 </button>
                 <button mat-raised-button
                     class="bg-white text-barradas-900 hover:bg-barradas-50 shadow-md hover:shadow-lg transition-all duration-300"
-                    (click)="save()" [disabled]="isLoading || roleForm.invalid">
+                    (click)="save()"
+                    *ngIf="mode === 'create' ? hasPermissionViaService('admin:create:all:post:admin.rbac.roles') : hasPermissionViaService('admin:update:all:put:admin.rbac.roles.roleId.permissions')"
+                    [disabled]="isLoading || roleForm.invalid">
                     <mat-icon class="mr-2" *ngIf="!isLoading">save</mat-icon>
                     <mat-icon class="mr-2 animate-spin" *ngIf="isLoading">refresh</mat-icon>
                     {{ isLoading ? 'Guardando...' : 'Guardar' }}

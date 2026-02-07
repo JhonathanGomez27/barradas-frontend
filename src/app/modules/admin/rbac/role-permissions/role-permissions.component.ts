@@ -13,16 +13,18 @@ import { RbacService } from '../rbac.service';
 import { Permission, PermissionGroup, Role } from 'app/core/models/rbac.models';
 import { forkJoin, of, switchMap, Subject, takeUntil } from 'rxjs';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-role-permissions',
     standalone: true,
     imports: [
-        CommonModule, 
+        CommonModule,
         ReactiveFormsModule,
-        MatExpansionModule, 
-        MatCheckboxModule, 
-        MatButtonModule, 
-        MatIconModule, 
+        MatExpansionModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
         MatFormFieldModule,
         MatInputModule,
         MatSnackBarModule
@@ -44,6 +46,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     private _router = inject(Router);
     private _snackBar = inject(MatSnackBar);
     private _fb = inject(FormBuilder);
+    private _permissionService = inject(PermissionService);
 
     constructor() {
         this.roleForm = this._fb.group({
@@ -55,7 +58,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.roleId = this._route.snapshot.paramMap.get('id') || '';
-        
+
         // Auto-generate snake_case name from displayName in create mode
         this.roleForm.get('displayName')?.valueChanges
             .pipe(takeUntil(this._unsubscribeAll))
@@ -67,14 +70,26 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
             });
 
         if (this.roleId === 'new') {
+            if (!this.hasPermissionViaService('admin:create:all:post:admin.rbac.roles')) {
+                this.goBack();
+                return;
+            }
             this.mode = 'create';
             this.loadPermissionsOnly();
         } else {
+            if (!this.hasPermissionViaService('admin:read:all:get:admin.rbac.roles.roleId')) {
+                this.goBack();
+                return;
+            }
             this.mode = 'edit';
             // In edit mode, name is fixed
             this.roleForm.get('name')?.disable();
             this.loadData();
         }
+    }
+
+    hasPermissionViaService(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     ngOnDestroy(): void {
@@ -97,28 +112,28 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
         this._rbacService.getPermissions().subscribe({
             next: (permissions) => {
                 this.permissionGroups = permissions;
-                
+
                 // Transform permissionGroups to use moduleTag as key and sort by moduleTag
                 const groupedByTag: PermissionGroup = {};
                 const sortedModules = Object.keys(this.permissionGroups).sort((a, b) => {
                     // Get representative permissions for each module
                     const permA = this.permissionGroups[a][0];
                     const permB = this.permissionGroups[b][0];
-                    
+
                     // Use moduleTag if available, otherwise use module name
                     const tagA = permA?.moduleTag || a;
                     const tagB = permB?.moduleTag || b;
-                    
+
                     // Case insensitive comparison for proper sorting
                     return tagA.toLowerCase().localeCompare(tagB.toLowerCase());
                 });
-                
+
                 // Rebuild the permission groups with moduleTag keys
                 sortedModules.forEach(key => {
                     const perms = this.permissionGroups[key];
                     const representativePerm = perms[0];
                     const moduleTag = representativePerm?.moduleTag || key;
-                    
+
                     // If moduleTag exists and is different from key, use moduleTag as key
                     if (representativePerm?.moduleTag && representativePerm.moduleTag !== key) {
                         groupedByTag[representativePerm.moduleTag] = perms;
@@ -126,7 +141,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
                         groupedByTag[key] = perms;
                     }
                 });
-                
+
                 this.permissionGroups = groupedByTag;
                 this.isLoading = false;
             },
@@ -146,28 +161,28 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
             next: (result) => {
                 this.role = result.role;
                 this.permissionGroups = result.permissions;
-                
+
                 // Apply same transformation as in loadPermissionsOnly
                 const groupedByTag: PermissionGroup = {};
                 const sortedModules = Object.keys(this.permissionGroups).sort((a, b) => {
                     // Get representative permissions for each module
                     const permA = this.permissionGroups[a][0];
                     const permB = this.permissionGroups[b][0];
-                    
+
                     // Use moduleTag if available, otherwise use module name
                     const tagA = permA?.moduleTag || a;
                     const tagB = permB?.moduleTag || b;
-                    
+
                     // Case insensitive comparison for proper sorting
                     return tagA.toLowerCase().localeCompare(tagB.toLowerCase());
                 });
-                
+
                 // Rebuild the permission groups with moduleTag keys
                 sortedModules.forEach(key => {
                     const perms = this.permissionGroups[key];
                     const representativePerm = perms[0];
                     const moduleTag = representativePerm?.moduleTag || key;
-                    
+
                     // If moduleTag exists and is different from key, show both names
                     if (representativePerm?.moduleTag && representativePerm.moduleTag !== key) {
                         groupedByTag[representativePerm.moduleTag] = perms;
@@ -175,9 +190,9 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
                         groupedByTag[key] = perms;
                     }
                 });
-                
+
                 this.permissionGroups = groupedByTag;
-                
+
                 // Patch form
                 this.roleForm.patchValue({
                     name: this.role.name,

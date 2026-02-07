@@ -11,6 +11,8 @@ import { RbacService } from '../rbac.service';
 import { Role } from 'app/core/models/rbac.models';
 import Swal from 'sweetalert2';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-roles-list',
     standalone: true,
@@ -33,9 +35,14 @@ export class RolesListComponent implements OnInit {
     private _router = inject(Router);
     private _route = inject(ActivatedRoute);
     private _snackBar = inject(MatSnackBar);
+    private _permissionService = inject(PermissionService);
 
     ngOnInit(): void {
         this.loadRoles();
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     loadRoles(): void {

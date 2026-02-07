@@ -33,6 +33,7 @@
                     <span class="hidden sm:inline">Refrescar</span>
                 </button>
                 <button mat-raised-button
+                        *ngIf="hasPermission('admin:create:all:post:admin.rbac.roles')"
                         class="bg-white text-barradas-900 hover:bg-barradas-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
                         (click)="createRole()">
                     <mat-icon class="mr-2" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
@@ -129,6 +130,7 @@
                                 <!-- Edit Role Details & Permissions -->
                                 <button mat-icon-button 
                                     color="primary"
+                                    *ngIf="hasPermission('admin:read:all:get:admin.rbac.roles.roleId')"
                                     (click)="editRole(role)" 
                                     [matTooltip]="'Editar Rol y Permisos'"
                                     class="hover:bg-barradas-300/20 transition-colors">
@@ -138,6 +140,7 @@
                                 <!-- Delete Role (Disabled for System Roles) -->
                                 <button mat-icon-button 
                                     color="warn"
+                                    *ngIf="hasPermission('admin:delete:all:delete:admin.rbac.roles.roleId')"
                                     (click)="deleteRole(role)" 
                                     [disabled]="role.isSystem"
                                     [matTooltip]="role.isSystem ? 'No se puede eliminar roles de sistema' : 'Eliminar Rol'"
