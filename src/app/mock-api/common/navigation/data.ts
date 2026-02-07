@@ -42,7 +42,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:shield-check',
         link: '/rbac',
-        permissions: ['rbac:read:all:get:rbac']
+        permissions: ['admin:read:all:get:admin.rbac.roles']
         // roles: ['admin']
     },
     {
@@ -51,7 +51,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user-group',
         link: '/clients-store',
-        // roles: ['agent'],
+        roles: ['agent'],
         permissions: ['agents:read:own:get:agents.me.users']
     }
 ];

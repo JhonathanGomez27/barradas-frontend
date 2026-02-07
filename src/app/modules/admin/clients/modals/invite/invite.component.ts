@@ -23,6 +23,7 @@ import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { Agent, AgentsService } from 'app/modules/admin/stores/agents.service';
 import { HttpParams } from '@angular/common/http';
+import { PermissionService } from 'app/shared/services/permission.service';
 
 interface FileUpload {
     file: File | null;
@@ -103,7 +104,8 @@ export class InviteComponent implements OnInit {
         private _clientsService: ClientsService,
         private _storesService: StoresService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _agentsService: AgentsService
+        private _agentsService: AgentsService,
+        private _permissionService: PermissionService
     ) {
         this.inviteForm = this._formBuilder.group({
             // Información personal
@@ -441,6 +443,9 @@ export class InviteComponent implements OnInit {
     }
 
     getCreditTerms(): void {
+
+        if(!this._permissionService.hasPermission('credits:read:all:get:credits.payment-terms')) return;
+
         this._clientsService.getCreditTerms()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({

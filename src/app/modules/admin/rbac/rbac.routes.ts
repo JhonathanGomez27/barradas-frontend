@@ -14,7 +14,7 @@ export default [
         path: 'roles',
         canActivate: [hasPermissionGuard],
         data: {
-            expectedRole: ['admin'],
+            // expectedRole: ['admin'],
             expectedPermission: ['admin:read:all:get:admin.rbac.roles']
         },
         component: RolesListComponent
@@ -23,7 +23,7 @@ export default [
         path: 'roles/:id',
         canActivate: [hasPermissionGuard],
         data: {
-            expectedRole: ['admin'],
+            // expectedRole: ['admin'],
             expectedPermission: ['admin:read:all:get:admin.rbac.roles.roleId']
         },
         component: RolePermissionsComponent

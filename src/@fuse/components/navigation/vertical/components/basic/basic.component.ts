@@ -61,7 +61,7 @@ export class FuseVerticalNavigationBasicItemComponent
      * On init
      */
     ngOnInit(): void {
-        console.log(this.item);
+        // console.log(this.item);
         // Set the "isActiveMatchOptions" either from item's
         // "isActiveMatchOptions" or the equivalent form of
         // item's "exactMatch" option

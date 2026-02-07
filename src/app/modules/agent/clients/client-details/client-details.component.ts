@@ -418,6 +418,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     deleteElectronicSignatureProcessForCredit(credit: Credit): void {
+
+        if(!this.hasPermission('docuseal:delete:all:delete:docuseal.electronic-signatures.id')) return;
+
         const signature = this.getCreditSignature(credit);
         if (!signature) return;
 

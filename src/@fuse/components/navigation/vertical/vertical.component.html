@@ -20,19 +20,19 @@
         @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
         <!-- Aside -->
         @if (item.type === 'aside') {
-        <ng-container *appShowForPermissions="[item.permissions]">
+        <ng-container *appShowForAccess="{ roles: item.roles, permissions: item.permissions }">
             <fuse-vertical-navigation-aside-item [item]="item" [name]="name" [activeItemId]="activeAsideItemId"
                 [autoCollapse]="autoCollapse" [skipChildren]="true"
                 (click)="toggleAside(item)"></fuse-vertical-navigation-aside-item>
         </ng-container>
         }
 
-        <ng-container *appShowForPermissions="item.permissions">
-            <!-- Basic -->
-            @if (item.type === 'basic') {
+        <!-- Basic -->
+        @if (item.type === 'basic') {
+        <ng-container *appShowForAccess="{ roles: item.roles, permissions: item.permissions }">
             <fuse-vertical-navigation-basic-item [item]="item" [name]="name"></fuse-vertical-navigation-basic-item>
-            }
         </ng-container>
+        }
 
         <!-- Collapsable -->
         @if (item.type === 'collapsable') {
