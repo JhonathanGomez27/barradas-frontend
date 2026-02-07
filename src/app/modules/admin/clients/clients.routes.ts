@@ -37,7 +37,8 @@ export default [
         component: ClientsComponent,
         canActivate: [hasPermissionGuard],
         data: {
-            expectedRole: ['admin']
+            expectedRole: ['admin'],
+            expectedPermission: ['users:read:all:get:users']
         },
         resolve: {
             clients: ClientsResolver,
@@ -49,7 +50,8 @@ export default [
         component: ClientDetailsComponent,
         canActivate: [hasPermissionGuard],
         data: {
-            expectedRole: ['admin', 'agent']
+            expectedRole: ['admin', 'agent'],
+            expectedPermission: ['users:read:all:get:users.id']
         },
         resolve: {
             stores: StoresAllResolver,

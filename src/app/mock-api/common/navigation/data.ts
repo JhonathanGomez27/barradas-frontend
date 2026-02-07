@@ -24,7 +24,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user-group',
         link: '/clients',
-        roles: ['admin']
+        roles: ['admin'],
+        permissions: ['users:read:all:get:users']
     },
     {
         id: 'stores',

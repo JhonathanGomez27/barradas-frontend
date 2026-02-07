@@ -31,6 +31,7 @@
                     <span class="hidden sm:inline">Refrescar</span>
                 </button>
                 <button mat-raised-button
+                        *ngIf="hasPermission('invitations:create:all:post:invitations')"
                         class="bg-white text-barradas-900 hover:bg-barradas-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
                         (click)="openInviteDialog()">
                     <mat-icon class="mr-2">person_add</mat-icon>
@@ -351,7 +352,7 @@
                         <td mat-cell *matCellDef="let client" class="px-4 py-4 text-center">
                             <div class="flex items-center justify-center gap-1">
                                 <button mat-icon-button
-                                        *ngIf="client.status === 'INVITED'"
+                                        *ngIf="client.status === 'INVITED' && hasPermission('invitations:create:all:post:invitations')"
                                         color="primary"
                                         (click)="copyProfileLink(client, $event)"
                                         [disabled]="!client.links || client.links.length === 0"
@@ -360,6 +361,7 @@
                                     <mat-icon>content_copy</mat-icon>
                                 </button>
                                 <button mat-icon-button
+                                        *ngIf="hasPermission('users:delete:all:delete:users.id')"
                                         color="warn"
                                         (click)="confirmDeleteClient(client.id, $event)"
                                         matTooltip="Eliminar cliente"
@@ -415,7 +417,7 @@
                     </div>
                     <div class="flex justify-end gap-2" (click)="$event.stopPropagation()">
                         <button mat-icon-button
-                                *ngIf="client.status === 'INVITED'"
+                                *ngIf="client.status === 'INVITED' && hasPermission('invitations:create:all:post:invitations')"
                                 color="primary"
                                 (click)="copyProfileLink(client, $event)"
                                 [disabled]="!client.links || client.links.length === 0"
@@ -423,6 +425,7 @@
                             <mat-icon>content_copy</mat-icon>
                         </button>
                         <button mat-icon-button
+                                *ngIf="hasPermission('users:delete:all:delete:users.id')"
                                 color="warn"
                                 (click)="confirmDeleteClient(client.id, $event)"
                                 matTooltip="Eliminar">
@@ -452,7 +455,7 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay clientes para mostrar</h3>
                 <p class="text-gray-500 mb-6">Comienza invitando a tu primer cliente</p>
-                <button mat-raised-button color="primary" (click)="openInviteDialog()">
+                <button mat-raised-button color="primary" (click)="openInviteDialog()" *ngIf="hasPermission('invitations:create:all:post:invitations')">
                     <mat-icon class="mr-2">person_add</mat-icon>
                     Invitar Cliente
                 </button>

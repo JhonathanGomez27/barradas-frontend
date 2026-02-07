@@ -51,6 +51,7 @@
                 </span>
             </div>
             <button mat-raised-button [color]="isEditMode ? 'warn' : 'primary'" (click)="toggleEditMode()"
+                *ngIf="hasPermission('users:update:all:patch:users.id')"
                 class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
                 <mat-icon class="mr-2">{{ isEditMode ? 'close' : 'edit' }}</mat-icon>
                 {{ isEditMode ? 'Cancelar Edición' : 'Editar Cliente' }}
@@ -441,6 +442,7 @@
                             {{ credits.length }} crédito{{ credits.length !== 1 ? 's' : '' }}
                         </span>
                         <button mat-raised-button
+                                *ngIf="hasPermission('credits:create:all:post:credits')"
                                 class="text-xs bg-barradas-900 text-white"
                                 (click)="toggleCreateCreditForm()">
                             <mat-icon class="mr-1" style="font-size: 16px;">add</mat-icon>
@@ -687,12 +689,14 @@
                                 </div>
                                 <div class="flex flex-col sm:flex-row gap-2">
                                     <button mat-raised-button
+                                            *ngIf="hasPermission('credits:update:all:patch:credits.creditId.status')"
                                             class="flex-1 text-sm bg-barradas-900 text-white"
                                             (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')">
                                         <mat-icon class="mr-1" style="font-size: 18px;">paid</mat-icon>
                                         Marcar como Pagado
                                     </button>
                                     <button mat-stroked-button
+                                            *ngIf="hasPermission('credits:update:all:patch:credits.creditId.status')"
                                             color="warn"
                                             (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CANCELLED')"
                                             class="flex-1 text-sm">
@@ -728,6 +732,7 @@
                                         <!-- Botón para eliminar firma -->
                                         <div class="flex justify-end">
                                             <button mat-stroked-button
+                                                    *ngIf="hasPermission('docuseal:delete:all:delete:docuseal.electronic-signatures.id')"
                                                     color="warn"
                                                     (click)="$event.stopPropagation(); deleteElectronicSignatureProcessForCredit(credit)"
                                                     class="text-xs">
@@ -745,6 +750,7 @@
                                                     <p class="text-xs text-barradas-600">Use el constructor visual para posicionar los campos</p>
                                                 </div>
                                                 <button mat-raised-button
+                                                        *ngIf="hasPermission('docuseal:create:all:post:docuseal.create-signed-token')"
                                                         class="text-xs whitespace-nowrap bg-barradas-900 text-white"
                                                         (click)="$event.stopPropagation(); initiateSignatureProcessForCredit(credit)">
                                                     <mat-icon class="mr-1" style="font-size: 16px;">draw</mat-icon>
@@ -861,6 +867,7 @@
                                         </div>
 
                                         <button mat-raised-button
+                                                *ngIf="hasPermission('docuseal:create:all:post:docuseal.create-signed-token')"
                                                 color="primary"
                                                 (click)="$event.stopPropagation(); createSignatureProcessForCredit(credit)"
                                                 [disabled]="!getContractFileForCredit(credit.id)"
