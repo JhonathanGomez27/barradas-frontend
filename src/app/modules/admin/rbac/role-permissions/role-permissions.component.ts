@@ -185,6 +185,11 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
                     description: this.role.description
                 });
 
+                // Disable displayName if isSystem is true
+                if (this.role.isSystem) {
+                    this.roleForm.get('displayName')?.disable();
+                }
+
                 // Initialize selected permissions from role
                 this.selectedPermissions.clear();
                 if (result.role.permissions) {

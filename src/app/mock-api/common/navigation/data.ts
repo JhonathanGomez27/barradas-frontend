@@ -15,7 +15,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chart-pie',
         link: '/statistics',
-        roles: ['admin']
+        roles: ['admin'],
+        permissions: ['stats:read:all:get:stats.dashboard']
     },
     {
         id: 'clients',
