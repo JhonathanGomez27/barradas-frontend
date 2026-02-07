@@ -352,10 +352,12 @@
                                     class="hover:bg-barradas-300/20 transition-colors">
                                     <mat-icon>content_copy</mat-icon>
                                 </button>
-                                <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)"
-                                    matTooltip="Eliminar cliente" class="hover:bg-red-50 transition-colors">
-                                    <mat-icon>delete</mat-icon>
-                                </button>
+                                @if(hasPermission('users:delete:all:delete:users.id')){
+                                    <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)"
+                                        matTooltip="Eliminar cliente" class="hover:bg-red-50 transition-colors">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                }
                             </div>
                         </td>
                     </ng-container>
