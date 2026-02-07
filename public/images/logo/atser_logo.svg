@@ -1,0 +1,27 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1584 1584" width="500" height="500">
+	<style>
+		.s0 { fill: #bc482e } 
+		.s1 { fill: #dd572a } 
+		.s2 { fill: #e15529 } 
+		.s3 { fill: #0b633e } 
+		.s4 { fill: #00944c } 
+		.s5 { fill: #0b070d } 
+		.s6 { fill: #bd4730 } 
+	</style>
+	<g id="Capa 2">
+		<path id="&lt;Path&gt;" class="s0" d="m814 194v336l-322 556 322-174.67v44.67l-370.67 220.23h-248.69z"/>
+		<path id="&lt;Path&gt;" class="s1" d="m1063.33 955.33h241.34l-490.67-761.33v336z"/>
+		<path id="&lt;Path&gt;" class="s2" d="m700.67 911.33l-149.49 72.48-59.18 102.19 322-174.67z"/>
+		<path id="&lt;Path&gt;" class="s3" d="m814 109v85l-301 439z"/>
+		<path id="&lt;Path&gt;" class="s4" d="m814 194l294 419-294-504z"/>
+		<path id="&lt;Path&gt;" class="s5" d="m215 1559.25h69l58-164.25 38 112-53 1v51.25h141l-88-249.25h-74z"/>
+		<path id="&lt;Path&gt;" class="s5" d="m444 1310h174v53h-38l1 196.25h-70l-1-199.25h-66z"/>
+		<path id="&lt;Path&gt;" class="s5" d="m836 1310l-22 54h-106v42c0 0 70 0 99 0 29 0 29 38 29 38 0 0 0 58.75 0 87 0 28.25-22 28.25-22 28.25h-157l-23-51.25h129v-46c0 0-69 2-95 0-26-2-34-23-34-23v-97c0 0 0-32 29-32 29 0 173 0 173 0z"/>
+		<path id="&lt;Path&gt;" class="s5" d="m1037 1362l21-52h-199v249.25h179l20-51.25h-132v-44h112v-51h-115v-49z"/>
+		<path id="&lt;Path&gt;" class="s5" d="m1084 1559.25h67v-195.25h61v43h-48v48l48 104.25h70l-51-107.25c0 0 5-1 23 0 18 1 28-27 28-27 0 0 0-61 0-88 0-27-22-27-22-27h-176z"/>
+		<path id="&lt;Path&gt;" class="s3" d="m813.33 822v-120l-67 120z"/>
+		<path id="&lt;Path&gt;" class="s4" d="m813.33 702l66 120h-66z"/>
+		<path id="&lt;Path&gt;" class="s6" d="m193.97 1173.23l318.36-543.23 301-439-187 511z"/>
+		<path id="&lt;Path&gt;" class="s1" d="m1304 952.33l-196.67-342.33-294-419 228 511z"/>
+	</g>
+</svg>
