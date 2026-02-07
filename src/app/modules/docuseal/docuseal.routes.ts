@@ -2,6 +2,7 @@ import { ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot, Routes } from '
 import { SignBuilderComponent } from './sign-builder/sign-builder.component';
 import { inject } from '@angular/core';
 import { DocusealService } from './docuseal.service';
+import { hasPermissionGuard } from 'app/core/auth/guards/has-permission.guard';
 
 const SigantureBuilderResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _SigantureBuilderService = inject(DocusealService);
@@ -16,11 +17,21 @@ const SigantureFormResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, st
 export default [
     {
         path: '',
-        component: SignBuilderComponent
+        component: SignBuilderComponent,
+        canActivate: [hasPermissionGuard],
+        data: {
+            expectedRole: ['admin', 'agent'],
+            expectedPermission: ['docuseal:create:all:post:docuseal.create-signed-token']
+        }
     },
     {
         path: 'builder/:token',
         component: SignBuilderComponent,
+        canActivate: [hasPermissionGuard],
+        data: {
+            expectedRole: ['admin', 'agent'],
+            expectedPermission: ['docuseal:create:all:post:docuseal.create-signed-token']
+        },
         resolve: {
             signatureBuilder: SigantureBuilderResolver
         }

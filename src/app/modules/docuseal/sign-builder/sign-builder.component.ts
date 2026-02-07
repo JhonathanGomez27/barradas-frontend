@@ -11,6 +11,8 @@ import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from 'app/core/user/user.service';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-sign-builder',
     imports: [
@@ -202,8 +204,13 @@ export class SignBuilderComponent implements OnInit, OnDestroy {
         private _location: Location,
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
-        private _usersService: UserService
+        private _usersService: UserService,
+        private _permissionService: PermissionService
     ) { }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
+    }
 
     ngOnInit(): void {
         this._docusealService.signatureBuilder$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
