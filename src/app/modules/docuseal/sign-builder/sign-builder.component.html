@@ -52,6 +52,7 @@
 
                             <!-- Botón de envío -->
                             <button mat-raised-button
+                                    *ngIf="hasPermission('docuseal:create:all:post:docuseal.send-submission-email')"
                                     color="primary"
                                     (click)="confirmSignatureRequest()"
                                     [disabled]="loadingRequest"

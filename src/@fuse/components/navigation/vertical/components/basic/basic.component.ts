@@ -19,8 +19,6 @@ import { FuseNavigationService } from '@fuse/components/navigation/navigation.se
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
 import { FuseVerticalNavigationComponent } from '@fuse/components/navigation/vertical/vertical.component';
 import { FuseUtilsService } from '@fuse/services/utils/utils.service';
-import { ShowForRolesDirective } from 'app/core/directives/show-for-roles.directive';
-import { UserService } from 'app/core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -33,8 +31,7 @@ import { Subject, takeUntil } from 'rxjs';
         RouterLinkActive,
         MatTooltipModule,
         NgTemplateOutlet,
-        MatIconModule,
-        // ShowForRolesDirective
+        MatIconModule
     ],
 })
 export class FuseVerticalNavigationBasicItemComponent
@@ -64,6 +61,7 @@ export class FuseVerticalNavigationBasicItemComponent
      * On init
      */
     ngOnInit(): void {
+        // console.log(this.item);
         // Set the "isActiveMatchOptions" either from item's
         // "isActiveMatchOptions" or the equivalent form of
         // item's "exactMatch" option

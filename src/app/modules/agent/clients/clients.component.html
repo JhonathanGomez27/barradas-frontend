@@ -30,6 +30,7 @@
                     <span class="hidden sm:inline">Refrescar</span>
                 </button>
                 <button mat-raised-button
+                    *ngIf="hasPermission('invitations:create:all:post:invitations')"
                     class="bg-white text-barradas-900 hover:bg-barradas-50 shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
                     (click)="openInviteDialog()">
                     <mat-icon class="mr-2">person_add</mat-icon>
@@ -351,10 +352,12 @@
                                     class="hover:bg-barradas-300/20 transition-colors">
                                     <mat-icon>content_copy</mat-icon>
                                 </button>
-                                <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)"
-                                    matTooltip="Eliminar cliente" class="hover:bg-red-50 transition-colors">
-                                    <mat-icon>delete</mat-icon>
-                                </button>
+                                @if(hasPermission('users:delete:all:delete:users.id')){
+                                    <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)"
+                                        matTooltip="Eliminar cliente" class="hover:bg-red-50 transition-colors">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                }
                             </div>
                         </td>
                     </ng-container>
@@ -406,12 +409,13 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2" (click)="$event.stopPropagation()">
-                        <button mat-icon-button *ngIf="client.status === 'INVITED'" color="primary"
+                        <button mat-icon-button *ngIf="client.status === 'INVITED' && hasPermission('invitations:create:all:post:invitations')" color="primary"
                             (click)="copyProfileLink(client, $event)"
                             [disabled]="!client.links || client.links.length === 0" matTooltip="Copiar enlace">
                             <mat-icon>content_copy</mat-icon>
                         </button>
                         <button mat-icon-button color="warn" (click)="confirmDeleteClient(client.id, $event)"
+                            *ngIf="hasPermission('users:delete:all:delete:users.id')"
                             matTooltip="Eliminar">
                             <mat-icon>delete</mat-icon>
                         </button>

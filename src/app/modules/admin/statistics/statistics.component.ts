@@ -17,6 +17,9 @@ import { AgentCreditEntry, AgentCreditStatsResponse, AgentPerformanceEntry, Agen
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Store, StoresService } from '../stores/stores.service';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { UserService } from 'app/core/user/user.service';
+import { User } from 'app/core/user/user.types';
+import { PermissionService } from 'app/shared/services/permission.service';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries | ApexNonAxisChartSeries;
@@ -100,12 +103,15 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   storeFilter: string = '';
   storeFilterCtrl: FormControl = new FormControl('');
   filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
+  user: User;
 
   constructor(
     private _statisticsService: StatisticsService,
     private _changeDetectorRef: ChangeDetectorRef,
     private _snackBar: MatSnackBar,
-    private _storesService: StoresService
+    private _storesService: StoresService,
+    private _userService: UserService,
+    private _permissionService: PermissionService
   ) {
     this.clientChartOptions = {
       series: [],
@@ -327,6 +333,12 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this._userService.user$
+        .pipe(takeUntil(this._unsubscribeAll))
+        .subscribe((user: User) => {
+            this.user = user;
+        });
+
     this.filterForm = new FormGroup({
       storeId: new FormControl(null),
       startDate: new FormControl(null),
@@ -355,14 +367,39 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     });
   }
 
+  hasPermission(permission: string): boolean {
+    if (!this.user || !this.user.permissions) {
+        return false;
+    }
+    return this.user.permissions.includes(permission) || this.user.rol === 'admin';
+  }
+
   loadAllSections(): void {
     const baseFilters = this.buildBaseFilters();
-    this.loadClientStats(baseFilters);
-    this.loadCreditStats(baseFilters);
-    this.loadStoreStats(baseFilters);
-    this.loadDashboardStats(baseFilters);
-    this.loadAgentCredits(baseFilters);
-    this.loadAgentPerformance(baseFilters);
+
+    if (this._permissionService.hasPermission('stats:read:all:get:stats.clients')) {
+        this.loadClientStats(baseFilters);
+    }
+
+    if (this._permissionService.hasPermission('stats:read:all:get:stats.credits')) {
+        this.loadCreditStats(baseFilters);
+    }
+
+    if (this._permissionService.hasPermission('stats:read:store:get:stats.stores')) {
+        this.loadStoreStats(baseFilters);
+    }
+
+    if (this._permissionService.hasPermission('stats:read:all:get:stats.dashboard')) {
+        this.loadDashboardStats(baseFilters);
+    }
+
+    if (this._permissionService.hasPermission('stats:read:all:get:stats.agents.credits')) {
+        this.loadAgentCredits(baseFilters);
+    }
+
+    if (this._permissionService.hasPermission('stats:read:all:get:stats.agents.performance')) {
+        this.loadAgentPerformance(baseFilters);
+    }
   }
 
   private buildBaseFilters() {

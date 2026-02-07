@@ -38,6 +38,8 @@ interface FileUpload {
     required: boolean;
 }
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-client-details',
     standalone: true,
@@ -197,7 +199,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _storesService: StoresService,
-        private _userService: UserService
+        private _userService: UserService,
+        private _permissionService: PermissionService
     ) {
         this.editClientForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
@@ -220,6 +223,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             selectedTerm: [null, [Validators.required, Validators.min(1)]],
             repaymentDay: ['MONDAY', [Validators.required]],
         });
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     ngOnInit(): void {
@@ -411,6 +418,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     deleteElectronicSignatureProcessForCredit(credit: Credit): void {
+
+        if(!this.hasPermission('docuseal:delete:all:delete:docuseal.electronic-signatures.id')) return;
+
         const signature = this.getCreditSignature(credit);
         if (!signature) return;
 
@@ -517,6 +527,8 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     getCreditTerms(): void {
+        if (!this.hasPermission('credits:read:all:get:credits.payment-terms')) return;
+
         this.clientesService.getCreditTerms()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
@@ -814,6 +826,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
 
     loadVideoRooms(): void {
         if (!this.clientDetails?.id) return;
+        if (!this.hasPermission('video-rooms:read:all:get:video-rooms.client.clientId')) return;
 
         this.clientesService.getVideoRoomsByClient(this.clientDetails.id)
             .pipe(takeUntil(this._unsubscribeAll))

@@ -15,7 +15,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chart-pie',
         link: '/statistics',
-        roles: ['admin']
+        // roles: ['admin'],
+        permissions: ['stats:read:all:get:stats.dashboard']
     },
     {
         id: 'clients',
@@ -23,7 +24,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user-group',
         link: '/clients',
-        roles: ['admin']
+        // roles: ['admin'],
+        permissions: ['users:read:all:get:users']
     },
     {
         id: 'stores',
@@ -31,7 +33,17 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:building-office',
         link: '/stores',
-        roles: ['admin']
+        // roles: ['admin'],
+        permissions: ['stores:read:store:get:stores']
+    },
+    {
+        id: 'rbac',
+        title: 'Roles y Permisos',
+        type: 'basic',
+        icon: 'heroicons_outline:shield-check',
+        link: '/rbac',
+        permissions: ['admin:read:all:get:admin.rbac.roles']
+        // roles: ['admin']
     },
     {
         id: 'clients-store',
@@ -39,7 +51,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user-group',
         link: '/clients-store',
-        roles: ['agent']
+        roles: ['agent'],
+        permissions: ['agents:read:own:get:agents.me.users']
     }
 ];
 export const compactNavigation: FuseNavigationItem[] = [

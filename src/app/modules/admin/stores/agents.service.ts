@@ -10,6 +10,12 @@ export interface Agent {
     email: string;
     phone: string;
     storeId: string;
+    roleId?: string;
+    role?: {
+        id: string;
+        name: string;
+        displayName: string;
+    };
     createdAt?: string;
     updatedAt?: string;
 }
@@ -21,6 +27,7 @@ export interface CreateAgentDto {
     password: string;
     phone: string;
     storeId: string;
+    roleId?: string;
 }
 
 export interface UpdateAgentDto {
@@ -30,6 +37,7 @@ export interface UpdateAgentDto {
     password?: string;
     phone: string;
     storeId: string;
+    roleId?: string;
 }
 
 export interface PaginatedAgentsResponse {

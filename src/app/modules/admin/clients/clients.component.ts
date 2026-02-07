@@ -23,6 +23,8 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store, StoresService } from '../stores/stores.service';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-clients',
     standalone: true,
@@ -115,7 +117,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
-        private _storesService: StoresService
+        private _storesService: StoresService,
+        private _permissionService: PermissionService
     ) {
         this.Toast = Swal.mixin({
             toast: true,
@@ -128,6 +131,10 @@ export class ClientsComponent implements OnInit, OnDestroy {
                 toast.addEventListener('mouseleave', Swal.resumeTimer);
             },
         });
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     ngOnInit(): void {

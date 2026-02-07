@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -6,7 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { Agent } from '../../agents.service';
+import { RbacService } from 'app/modules/admin/rbac/rbac.service';
+import { Role } from 'app/core/models/rbac.models';
+import { PermissionService } from 'app/shared/services/permission.service';
 
 export interface AgentDialogData {
     agent: Agent | null;
@@ -23,7 +27,8 @@ export interface AgentDialogData {
         MatButtonModule,
         MatFormFieldModule,
         MatInputModule,
-        MatIconModule
+        MatIconModule,
+        MatSelectModule
     ],
     template: `
     <div mat-dialog-title class="flex bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
@@ -96,6 +101,27 @@ export interface AgentDialogData {
           </mat-error>
         </mat-form-field>
 
+        <!-- Rol -->
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+          <mat-label>Rol</mat-label>
+          <mat-select formControlName="roleId" placeholder="Seleccionar rol">
+            <mat-option [value]="null">
+              <span class="flex items-center">
+                <mat-icon class="mr-2 text-gray-400 scale-75">remove_circle_outline</mat-icon>
+                Sin rol asignado
+              </span>
+            </mat-option>
+            <mat-option *ngFor="let role of roles" [value]="role.id">
+              <span class="flex items-center">
+                <!-- <mat-icon class="mr-2 text-barradas-500 scale-75"></mat-icon> -->
+                {{ role.displayName }}
+              </span>
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix class="text-gray-400">admin_panel_settings</mat-icon>
+          <mat-hint>Asigna un rol para definir los permisos del agente</mat-hint>
+        </mat-form-field>
+
         <!-- Contraseña -->
         <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
           <mat-label>{{ data.agent ? 'Nueva Contraseña (opcional)' : 'Contraseña' }}</mat-label>
@@ -117,7 +143,7 @@ export interface AgentDialogData {
             La contraseña es requerida
           </mat-error>
           <mat-error *ngIf="agentForm.get('password')?.hasError('minlength')">
-            Debe tener al menos 6 caracteresP
+            Debe tener al menos 6 caracteres
           </mat-error>
         </mat-form-field>
       </form>
@@ -128,7 +154,7 @@ export interface AgentDialogData {
         Cancelar
       </button>
       <button mat-raised-button class="bg-barradas-900 text-white"
-              [disabled]="agentForm.invalid"
+              [disabled]="agentForm.invalid || isLoading"
               (click)="onSubmit()">
         <mat-icon class="mr-1">{{ data.agent ? 'save' : 'add' }}</mat-icon>
         {{ data.agent ? 'Actualizar' : 'Crear Agente' }}
@@ -136,23 +162,49 @@ export interface AgentDialogData {
     </mat-dialog-actions>
   `
 })
-export class AgentFormDialogComponent {
+export class AgentFormDialogComponent implements OnInit {
     agentForm: FormGroup;
+    roles: Role[] = [];
+    isLoading = false;
 
     constructor(
         private fb: FormBuilder,
         public dialogRef: MatDialogRef<AgentFormDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: AgentDialogData
+        @Inject(MAT_DIALOG_DATA) public data: AgentDialogData,
+        private _rbacService: RbacService,
+        private _permissionService: PermissionService
     ) {
         this.agentForm = this.fb.group({
             firstName: [data.agent?.firstName || '', [Validators.required, Validators.minLength(2)]],
             lastName: [data.agent?.lastName || '', [Validators.required, Validators.minLength(2)]],
             email: [data.agent?.email || '', [Validators.required, Validators.email]],
             phone: [data.agent?.phone || '', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+            roleId: [data.agent?.roleId || null],
             password: [
                 '',
                 data.agent ? [Validators.minLength(6)] : [Validators.required, Validators.minLength(6)]
             ]
+        });
+    }
+
+    ngOnInit(): void {
+        // Solo cargar roles si tiene permiso
+        if (this._permissionService.hasPermission('admin:read:all:get:admin.rbac.roles')) {
+            this.loadRoles();
+        }
+    }
+
+    loadRoles(): void {
+        this.isLoading = true;
+        this._rbacService.getRoles().subscribe({
+            next: (roles) => {
+                this.roles = roles;
+                this.isLoading = false;
+            },
+            error: (err) => {
+                console.error('Error loading roles:', err);
+                this.isLoading = false;
+            }
         });
     }
 
@@ -163,6 +215,11 @@ export class AgentFormDialogComponent {
             // Si es edición y no se cambió la contraseña, no la enviamos
             if (this.data.agent && !formValue.password) {
                 delete formValue.password;
+            }
+
+            // Si roleId es null o vacío, no lo enviamos
+            if (!formValue.roleId) {
+                delete formValue.roleId;
             }
 
             this.dialogRef.close({

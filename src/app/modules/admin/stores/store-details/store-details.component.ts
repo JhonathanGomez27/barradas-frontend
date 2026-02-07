@@ -24,6 +24,8 @@ import { environment } from 'environment/environment';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { HttpParams } from '@angular/common/http';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
     selector: 'app-store-details',
     standalone: true,
@@ -96,8 +98,13 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _permissionService: PermissionService
     ) { }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
+    }
 
     ngOnInit(): void {
         const storeId = this.route.snapshot.params['id'];

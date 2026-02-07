@@ -8,4 +8,6 @@ export interface User {
     storeId?: string;
     avatar?: string;
     status?: string;
+    permissions?: string[];
+    roleId?: string;
 }

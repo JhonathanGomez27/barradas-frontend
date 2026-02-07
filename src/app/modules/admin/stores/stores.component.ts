@@ -19,6 +19,8 @@ import { environment } from 'environment/environment';
 import { StoreFormDialogComponent } from './store-form-dialog/store-form-dialog.component';
 import { Router } from '@angular/router';
 
+import { PermissionService } from 'app/shared/services/permission.service';
+
 @Component({
   selector: 'app-stores',
   standalone: true,
@@ -66,8 +68,13 @@ export class StoresComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private _changeDetectorRef: ChangeDetectorRef,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private _permissionService: PermissionService
   ) {}
+
+  hasPermission(permission: string): boolean {
+    return this._permissionService.hasPermission(permission);
+  }
 
   ngOnInit(): void {
     this.storesService.stores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {

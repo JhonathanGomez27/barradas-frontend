@@ -57,7 +57,7 @@ import {
     takeUntil,
 } from 'rxjs';
 import { _VisuallyHiddenLoader } from "@angular/cdk/private";
-import { ShowForRolesDirective } from 'app/core/directives/show-for-roles.directive';
+import { ShowForPermissionsDirective } from 'app/core/directives/show-for-roles.directive';
 
 @Component({
     selector: 'fuse-vertical-navigation',
@@ -76,7 +76,7 @@ import { ShowForRolesDirective } from 'app/core/directives/show-for-roles.direct
         FuseVerticalNavigationGroupItemComponent,
         FuseVerticalNavigationSpacerItemComponent,
         // _VisuallyHiddenLoader,
-        ShowForRolesDirective
+        ShowForPermissionsDirective
     ],
 })
 export class FuseVerticalNavigationComponent
@@ -233,7 +233,7 @@ export class FuseVerticalNavigationComponent
      * @private
      */
     @HostListener('mouseenter')
-    private _onMouseenter(): void {
+    onMouseenter(): void {
         // Enable the animations
         this._enableAnimations();
 
@@ -247,7 +247,7 @@ export class FuseVerticalNavigationComponent
      * @private
      */
     @HostListener('mouseleave')
-    private _onMouseleave(): void {
+    onMouseleave(): void {
         // Enable the animations
         this._enableAnimations();
 
@@ -382,7 +382,7 @@ export class FuseVerticalNavigationComponent
             this._changeDetectorRef.markForCheck();
         });
 
-        console.log(this.navigation)
+        // console.log(this.navigation)
     }
 
     /**
