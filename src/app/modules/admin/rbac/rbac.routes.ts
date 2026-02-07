@@ -13,10 +13,6 @@ export default [
         component: RolesListComponent
     },
     {
-        path: 'roles/new',
-        component: RolePermissionsComponent
-    },
-    {
         path: 'roles/:id',
         component: RolePermissionsComponent
     }

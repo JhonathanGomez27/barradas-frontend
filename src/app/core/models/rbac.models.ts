@@ -8,6 +8,9 @@ export interface Permission {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     isPublic: boolean;
     isSystem: boolean;
+    moduleTag?: string;
+    description?: string;
+    summary?: string;
 }
 
 export interface PermissionGroup {

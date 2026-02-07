@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,25 +11,25 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RbacService } from '../rbac.service';
 import { Permission, PermissionGroup, Role } from 'app/core/models/rbac.models';
-import { forkJoin, of, switchMap } from 'rxjs';
+import { forkJoin, of, switchMap, Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-role-permissions',
     standalone: true,
     imports: [
-        CommonModule,
+        CommonModule, 
         ReactiveFormsModule,
-        MatExpansionModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
+        MatExpansionModule, 
+        MatCheckboxModule, 
+        MatButtonModule, 
+        MatIconModule, 
         MatFormFieldModule,
         MatInputModule,
         MatSnackBarModule
     ],
     templateUrl: './role-permissions.component.html'
 })
-export class RolePermissionsComponent implements OnInit {
+export class RolePermissionsComponent implements OnInit, OnDestroy {
     roleId: string = '';
     role?: Role;
     permissionGroups: PermissionGroup = {};
@@ -37,6 +37,7 @@ export class RolePermissionsComponent implements OnInit {
     isLoading = false;
     roleForm: FormGroup;
     mode: 'create' | 'edit' = 'create';
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     private _rbacService = inject(RbacService);
     private _route = inject(ActivatedRoute);
@@ -46,7 +47,7 @@ export class RolePermissionsComponent implements OnInit {
 
     constructor() {
         this.roleForm = this._fb.group({
-            name: ['', [Validators.required, Validators.pattern('^[a-z0-9_]+$')]],
+            name: ['', [Validators.required]],
             displayName: ['', Validators.required],
             description: ['']
         });
@@ -54,15 +55,41 @@ export class RolePermissionsComponent implements OnInit {
 
     ngOnInit(): void {
         this.roleId = this._route.snapshot.paramMap.get('id') || '';
+        
+        // Auto-generate snake_case name from displayName in create mode
+        this.roleForm.get('displayName')?.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(value => {
+                if (this.mode === 'create' && value) {
+                    const snakeCaseName = this.toSnakeCase(value);
+                    this.roleForm.get('name')?.setValue(snakeCaseName, { emitEvent: false });
+                }
+            });
 
         if (this.roleId === 'new') {
             this.mode = 'create';
             this.loadPermissionsOnly();
         } else {
             this.mode = 'edit';
+            // In edit mode, name is fixed
             this.roleForm.get('name')?.disable();
             this.loadData();
         }
+    }
+
+    ngOnDestroy(): void {
+        this._unsubscribeAll.next(null);
+        this._unsubscribeAll.complete();
+    }
+
+    toSnakeCase(str: string): string {
+        return str
+            .toLowerCase()
+            .trim()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+            .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+            .replace(/\s+/g, '_') // Replace spaces with underscore
+            .replace(/-+/g, '_'); // Replace hyphens with underscore
     }
 
     loadPermissionsOnly(): void {
@@ -70,6 +97,37 @@ export class RolePermissionsComponent implements OnInit {
         this._rbacService.getPermissions().subscribe({
             next: (permissions) => {
                 this.permissionGroups = permissions;
+                
+                // Transform permissionGroups to use moduleTag as key and sort by moduleTag
+                const groupedByTag: PermissionGroup = {};
+                const sortedModules = Object.keys(this.permissionGroups).sort((a, b) => {
+                    // Get representative permissions for each module
+                    const permA = this.permissionGroups[a][0];
+                    const permB = this.permissionGroups[b][0];
+                    
+                    // Use moduleTag if available, otherwise use module name
+                    const tagA = permA?.moduleTag || a;
+                    const tagB = permB?.moduleTag || b;
+                    
+                    // Case insensitive comparison for proper sorting
+                    return tagA.toLowerCase().localeCompare(tagB.toLowerCase());
+                });
+                
+                // Rebuild the permission groups with moduleTag keys
+                sortedModules.forEach(key => {
+                    const perms = this.permissionGroups[key];
+                    const representativePerm = perms[0];
+                    const moduleTag = representativePerm?.moduleTag || key;
+                    
+                    // If moduleTag exists and is different from key, use moduleTag as key
+                    if (representativePerm?.moduleTag && representativePerm.moduleTag !== key) {
+                        groupedByTag[representativePerm.moduleTag] = perms;
+                    } else {
+                        groupedByTag[key] = perms;
+                    }
+                });
+                
+                this.permissionGroups = groupedByTag;
                 this.isLoading = false;
             },
             error: (err) => {
@@ -88,7 +146,38 @@ export class RolePermissionsComponent implements OnInit {
             next: (result) => {
                 this.role = result.role;
                 this.permissionGroups = result.permissions;
-
+                
+                // Apply same transformation as in loadPermissionsOnly
+                const groupedByTag: PermissionGroup = {};
+                const sortedModules = Object.keys(this.permissionGroups).sort((a, b) => {
+                    // Get representative permissions for each module
+                    const permA = this.permissionGroups[a][0];
+                    const permB = this.permissionGroups[b][0];
+                    
+                    // Use moduleTag if available, otherwise use module name
+                    const tagA = permA?.moduleTag || a;
+                    const tagB = permB?.moduleTag || b;
+                    
+                    // Case insensitive comparison for proper sorting
+                    return tagA.toLowerCase().localeCompare(tagB.toLowerCase());
+                });
+                
+                // Rebuild the permission groups with moduleTag keys
+                sortedModules.forEach(key => {
+                    const perms = this.permissionGroups[key];
+                    const representativePerm = perms[0];
+                    const moduleTag = representativePerm?.moduleTag || key;
+                    
+                    // If moduleTag exists and is different from key, show both names
+                    if (representativePerm?.moduleTag && representativePerm.moduleTag !== key) {
+                        groupedByTag[representativePerm.moduleTag] = perms;
+                    } else {
+                        groupedByTag[key] = perms;
+                    }
+                });
+                
+                this.permissionGroups = groupedByTag;
+                
                 // Patch form
                 this.roleForm.patchValue({
                     name: this.role.name,
@@ -140,9 +229,14 @@ export class RolePermissionsComponent implements OnInit {
                     return this._rbacService.assignPermissions(newRole.id, { permissionIds });
                 })
             ).subscribe({
-                next: () => {
+                next: (newRole) => {
                     this._snackBar.open('Rol creado correctamente', 'Cerrar', { duration: 3000 });
-                    this.goBack();
+                    this.roleId = newRole.id;
+                    this.mode = 'edit';
+                    this.role = newRole;
+                    this.roleForm.get('name')?.disable();
+                    this._router.navigate(['../', newRole.id], { relativeTo: this._route, replaceUrl: true });
+                    this.isLoading = false;
                 },
                 error: (err) => {
                     console.error(err);
