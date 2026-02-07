@@ -32,7 +32,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:building-office',
         link: '/stores',
-        roles: ['admin']
+        roles: ['admin'],
+        permissions: ['stores:read:store:get:stores']
     },
     {
         id: 'rbac',

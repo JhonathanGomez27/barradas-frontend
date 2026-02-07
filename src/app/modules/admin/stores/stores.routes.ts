@@ -6,6 +6,7 @@ import { environment } from 'environment/environment';
 import { StoreDetailsComponent } from './store-details/store-details.component';
 import { AgentsService } from './agents.service';
 import { HttpParams } from '@angular/common/http';
+import { hasPermissionGuard } from 'app/core/auth/guards/has-permission.guard';
 
 const StoresResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _storesService = inject(StoresService);
@@ -49,6 +50,11 @@ const StoreUsersResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state
 export default [
     {
         path: '',
+        canActivate: [hasPermissionGuard],
+        data: {
+            expectedRole: ['admin'],
+            expectedPermission: ['stores:read:store:get:stores']
+        },
         component: StoresComponent,
         resolve: {
             stores: StoresResolver,
@@ -57,6 +63,11 @@ export default [
     },
     {
         path: ':id',
+        canActivate: [hasPermissionGuard],
+        data: {
+            expectedRole: ['admin'],
+            expectedPermission: ['stores:read:store:get:stores.id']
+        },
         component: StoreDetailsComponent,
         resolve: {
             agents: AgentsResolver,

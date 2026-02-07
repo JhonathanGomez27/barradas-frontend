@@ -108,6 +108,7 @@
                             </mat-form-field>
 
                             <button mat-raised-button (click)="openAgentDialog()"
+                                *ngIf="hasPermission('agents:create:all:post:agents')"
                                 class="w-full sm:w-auto bg-barradas-900 text-white">
                                 <mat-icon class="mr-2">add</mat-icon>
                                 Nuevo Agente
@@ -173,10 +174,12 @@
                                     <td mat-cell *matCellDef="let agent" class="px-4 py-4 text-center">
                                         <div class="flex items-center justify-center gap-1">
                                             <button mat-icon-button class="text-barradas-600 hover:bg-barradas-50"
+                                                *ngIf="hasPermission('agents:update:all:put:agents.id')"
                                                 (click)="openAgentDialog(agent)" matTooltip="Editar agente">
                                                 <mat-icon>edit</mat-icon>
                                             </button>
                                             <button mat-icon-button color="warn" (click)="deleteAgent(agent)"
+                                                *ngIf="hasPermission('agents:delete:all:delete:agents.id')"
                                                 matTooltip="Eliminar agente">
                                                 <mat-icon>delete</mat-icon>
                                             </button>
@@ -204,7 +207,7 @@
                             <mat-icon class="text-6xl text-gray-300 mb-4">people_outline</mat-icon>
                             <p class="text-gray-500 text-lg mb-2">No hay agentes registrados</p>
                             <p class="text-gray-400 text-sm mb-4">Crea el primer agente para esta tienda</p>
-                            <button mat-raised-button class="bg-barradas-900 text-white" (click)="openAgentDialog()">
+                            <button mat-raised-button class="bg-barradas-900 text-white" (click)="openAgentDialog()" *ngIf="hasPermission('agents:create:all:post:agents')">
                                 <mat-icon class="mr-2">add</mat-icon>
                                 Crear Agente
                             </button>
