@@ -62,7 +62,8 @@ export class InviteComponent implements OnInit {
     fileUploads: { [key: string]: FileUpload } = {
         INE_FRONT: { file: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
         INE_BACK: { file: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
-        QUOTE: { file: null, name: 'QUOTE', label: 'Cotización', required: true }
+        QUOTE: { file: null, name: 'QUOTE', label: 'Cotización', required: true },
+        INITIAL_PAYMENT: { file: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
     };
 
     // Días de la semana para el selector
@@ -379,7 +380,7 @@ export class InviteComponent implements OnInit {
         Object.keys(this.fileUploads).forEach(docType => {
             const fileUpload = this.fileUploads[docType];
             if (fileUpload.file) {
-                if (docType === 'QUOTE' && creditId) {
+                if ((docType === 'QUOTE' || docType === 'INITIAL_PAYMENT') && creditId) {
                     uploadObservables.push(
                         this._clientsService.uploadFileToClient(
                             client_id,

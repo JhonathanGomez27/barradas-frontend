@@ -335,6 +335,39 @@
             </div>
           </div>
         </div>
+
+        <!-- Pago inicial -->
+        <div class="w-full">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-600">{{ fileUploads['INITIAL_PAYMENT'].label }}</label>
+            <span class="text-xs text-red-500" *ngIf="fileUploads['INITIAL_PAYMENT'].required">*Requerido</span>
+          </div>
+          <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
+            <div *ngIf="!fileUploads['INITIAL_PAYMENT'].file" class="flex items-center justify-center h-full">
+              <label class="flex items-center cursor-pointer text-barradas-700 hover:text-barradas-900">
+                <mat-icon class="mr-2">upload</mat-icon>
+                <span class="text-sm font-medium">Seleccionar archivo</span>
+                <input type="file" class="hidden" accept="image/*,.pdf"
+                  (change)="onDocumentFileSelected($event, 'INITIAL_PAYMENT')">
+              </label>
+            </div>
+            <div *ngIf="fileUploads['INITIAL_PAYMENT'].file" class="flex items-center justify-between gap-2 w-full">
+              <div class="flex items-center flex-1 min-w-0 overflow-hidden">
+                <mat-icon class="text-green-500 mr-2 flex-shrink-0">check_circle</mat-icon>
+                <div class="flex-1 min-w-0 overflow-hidden">
+                  <p class="text-sm font-medium text-gray-700 truncate" [title]="getFileName('INITIAL_PAYMENT')">
+                    {{ getFileName('INITIAL_PAYMENT') }}
+                  </p>
+                  <p class="text-xs text-gray-500">{{ getFileSize('INITIAL_PAYMENT') }}</p>
+                </div>
+              </div>
+              <button mat-icon-button color="warn" (click)="removeDocumentFile('INITIAL_PAYMENT')" type="button"
+                class="flex-shrink-0">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </form>

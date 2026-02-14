@@ -58,8 +58,8 @@ export class CompleteProfileComponent implements OnInit, OnDestroy {
         PROOF_ADDRESS_OWNER: { file: null, preview: null, name: 'PROOF_ADDRESS_OWNER', label: 'Comprobante del propietario', required: false },
         FACADE: { file: null, preview: null, name: 'FACADE', label: 'Fachada', required: true },
         // CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true },
-        QUOTE: { file: null, preview: null, name: 'QUOTE', label: 'Cotización', required: true },
-        INITIAL_PAYMENT: { file: null, preview: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
+        // QUOTE: { file: null, preview: null, name: 'QUOTE', label: 'Cotización', required: true },
+        // INITIAL_PAYMENT: { file: null, preview: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
     };
 
     profileCompleted: boolean = false;
