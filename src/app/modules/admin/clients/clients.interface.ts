@@ -16,20 +16,40 @@ export interface Client {
     updatedAt: string;
 }
 
+export interface CreditInstallment {
+    id: string;
+    creditId: string;
+    number: number;
+    dueDate: string;
+    expectedAmount: string;
+    paidAmount: string;
+    lateFeeAccrued: string;
+    status: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 export interface Credit {
     id: string;
     clientId: string;
-    initalPayment: number | null;
-    initialPaymentRate: string;
+    /** @deprecated use initialPaymentAmount */
+    initalPayment?: number | null;
+    initialPaymentAmount?: string;
+    initialPaymentRate?: string;
     totalAmount: string;
+    financedAmount?: string;
+    outstandingPrincipal?: string;
+    lateFeeRate?: string;
     paymentType: 'WEEKLY' | 'DAILY';
     selectedTerm: number;
     repaymentDay: string | null;
+    startDate?: string;
     status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE' | 'CLOSED' | 'DEFAULTED';
     createdAt: string;
     updatedAt: string;
     documents?: CreditDocument[];
     signatures?: CreditSignature[];
+    installments?: CreditInstallment[];
 }
 
 export interface CreditDocument {
@@ -37,14 +57,15 @@ export interface CreditDocument {
     clientId: string;
     docType: string;
     title: string;
-    provider: string;
-    key: string;
-    originalName: string;
-    storageUrl: string;
+    provider?: string;
+    key?: string;
+    originalName?: string;
+    storageUrl?: string;
     mimeType: string;
-    sizeBytes: string;
+    sizeBytes?: string;
     uploadedAt: string;
     creditId: string;
+    paymentId?: string | null;
 }
 
 export interface CreditSignature {

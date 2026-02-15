@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
-import { ReplaySubject, Subject, takeUntil } from 'rxjs';
+import { ReplaySubject, Subject, takeUntil, switchMap, of, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,7 +23,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
-import { Credit } from '../../clients.interface';
+import { Credit, CreditInstallment } from '../../clients.interface';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Agent, AgentsService } from 'app/modules/admin/stores/agents.service';
@@ -118,7 +118,14 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         'CLOSED': 'Pagado',
         'DEFAULTED': 'En Mora',
         'CANCELLED': 'Cancelado'
-    }
+    };
+
+    statusMapperInstallment: { [key: string]: string } = {
+        'PENDING': 'Pendiente',
+        'PAID': 'Pagado',
+        'OVERDUE': 'Vencido',
+        'PARTIAL': 'Parcial'
+    };
 
     weekDayCtrl: UntypedFormControl = new UntypedFormControl('');
 
@@ -172,6 +179,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     newCreditForm: FormGroup;
     showCreateCreditForm: boolean = false;
     newCreditQuoteFile: File | null = null;
+    newCreditInitialPaymentFile: File | null = null;
 
     // Archivos de contrato por crédito (creditId -> File)
     contractFilesByCreditId: { [creditId: string]: File } = {};
@@ -358,6 +366,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     getCreditDocuments(credit: Credit): any[] {
         return credit.documents || [];
+    }
+
+    getCreditInstallments(credit: Credit): CreditInstallment[] {
+        return credit.installments || [];
     }
 
     hasCreditSignatures(credit: Credit): boolean {
@@ -619,6 +631,13 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         }
     }
 
+    onInitialPaymentFileSelectedForNewCredit(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.newCreditInitialPaymentFile = file;
+        }
+    }
+
     createNewCredit(): void {
         if (!this.newCreditForm.valid) {
             this._alertsService.showAlertMessage({
@@ -651,51 +670,51 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         };
 
         this.clientesService.createCredit(creditData)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: (response) => {
-                    // Subir el archivo QUOTE asociado al crédito recién creado
-                    this.uploadQuoteForCredit(response.id);
-                },
-                error: (error) => {
-                    console.error('Error al crear el crédito:', error);
-                    this._alertsService.showAlertMessage({
-                        type: 'error',
-                        text: 'Error al crear el crédito.',
-                        title: 'Error'
+            .pipe(
+                takeUntil(this._unsubscribeAll),
+                switchMap((response) => {
+                    const creditId = response.id;
+                    const quoteUpload$ = this.clientesService.uploadFileToClient(
+                        this.clientDetails.id,
+                        this.newCreditQuoteFile!,
+                        'QUOTE',
+                        creditId
+                    );
+                    const initialPaymentUpload$ = this.newCreditInitialPaymentFile
+                        ? this.clientesService.uploadFileToClient(
+                              this.clientDetails.id,
+                              this.newCreditInitialPaymentFile,
+                              'INITIAL_PAYMENT',
+                              creditId
+                          )
+                        : of(null);
+
+                    return forkJoin({
+                        quote: quoteUpload$,
+                        initialPayment: initialPaymentUpload$
                     });
-                }
-            });
-    }
-
-    uploadQuoteForCredit(creditId: string): void {
-        if (!this.newCreditQuoteFile) return;
-
-        this.clientesService.uploadFileToClient(
-            this.clientDetails.id,
-            this.newCreditQuoteFile,
-            'QUOTE',
-            creditId
-        ).pipe(takeUntil(this._unsubscribeAll))
+                })
+            )
             .subscribe({
-                next: (response) => {
+                next: () => {
+                    const message = this.newCreditInitialPaymentFile
+                        ? 'Crédito creado exitosamente con cotización y pago inicial.'
+                        : 'Crédito creado exitosamente con su cotización.';
                     this._alertsService.showAlertMessage({
                         type: 'success',
-                        text: 'Crédito creado exitosamente con su cotización.',
+                        text: message,
                         title: 'Éxito'
                     });
                     this.reloadClientCredits();
                     this.toggleCreateCreditForm();
                 },
                 error: (error) => {
-                    console.error('Error al subir la cotización:', error);
+                    console.error('Error al crear el crédito o subir archivos:', error);
                     this._alertsService.showAlertMessage({
                         type: 'error',
-                        text: 'El crédito fue creado pero hubo un error al subir la cotización.',
+                        text: error?.error?.message || 'Error al crear el crédito o subir los archivos.',
                         title: 'Error'
                     });
-                    this.reloadClientCredits();
-                    this.toggleCreateCreditForm();
                 }
             });
     }
