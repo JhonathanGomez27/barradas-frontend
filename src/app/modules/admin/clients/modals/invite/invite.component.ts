@@ -15,8 +15,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { forkJoin, Observable, ReplaySubject, Subject, takeUntil } from 'rxjs';
+import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { ClientsService } from '../../clients.service';
+import {
+    CreateInvitationFiles,
+    CreateInvitationPayload,
+    CreateInvitationResponse,
+} from '../../invitation.types';
 import Swal from 'sweetalert2';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Store, StoresService } from 'app/modules/admin/stores/stores.service';
@@ -54,7 +59,6 @@ export class InviteComponent implements OnInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     inviteForm: FormGroup;
-    contractFile: File | null = null;
     isLoading: boolean = false;
 
     // Archivos para subir
@@ -251,19 +255,6 @@ export class InviteComponent implements OnInit {
         }).format(value);
     }
 
-    onFileChange(event: any): void {
-        const file = event.target.files[0];
-        this.contractFile = file || null;
-
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                // Puedes usar esto para mostrar una vista previa si es necesario
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
     onDocumentFileSelected(event: any, docType: string): void {
         const file = event.target.files[0];
         if (file) {
@@ -312,135 +303,62 @@ export class InviteComponent implements OnInit {
             return;
         }
 
-        if (this.inviteForm.valid) {
-            this.inviteForm.disable({ emitEvent: false });
-            this.isLoading = true;
+        this.inviteForm.disable({ emitEvent: false });
+        this.isLoading = true;
 
-            const formValue = this.inviteForm.getRawValue();
-            const clientData = {
-                name: formValue.name,
-                last_name: formValue.last_name,
-                email: formValue.email,
-                phone: formValue.phone,
-                locationAddress: formValue.locationAddress,
-                storeId: formValue.storeId,
-                agentId: formValue.agentId
-            };
+        const formValue = this.inviteForm.getRawValue();
+        const payload: CreateInvitationPayload = {
+            email: formValue.email,
+            name: formValue.name,
+            last_name: formValue.last_name,
+            phone: formValue.phone,
+            locationAddress: formValue.locationAddress,
+            storeId: formValue.storeId ?? undefined,
+            agentId: formValue.agentId ?? undefined,
+            initialPayment: formValue.initialPayment,
+            initialPaymentRate: formValue.initialPaymentRate != null ? parseFloat(formValue.initialPaymentRate) : undefined,
+            totalAmount: formValue.totalAmount,
+            paymentType: formValue.paymentType,
+            selectedTerm: formValue.selectedTerm,
+            repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : undefined,
+        };
 
-            const creditData = {
-                initialPayment: formValue.initialPayment,
-                initialPaymentRate: parseFloat(formValue.initialPaymentRate),
-                totalAmount: formValue.totalAmount,
-                paymentType: formValue.paymentType,
-                selectedTerm: formValue.selectedTerm,
-                repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
-                status: 'PENDING'
-            }
+        const files: CreateInvitationFiles = {};
+        if (this.fileUploads['INE_FRONT'].file) files.INE_FRONT = this.fileUploads['INE_FRONT'].file;
+        if (this.fileUploads['INE_BACK'].file) files.INE_BACK = this.fileUploads['INE_BACK'].file;
+        if (this.fileUploads['QUOTE'].file) files.QUOTE = this.fileUploads['QUOTE'].file;
+        if (this.fileUploads['INITIAL_PAYMENT'].file) files.INITIAL_PAYMENT = this.fileUploads['INITIAL_PAYMENT'].file;
 
-            console.log(creditData);
-
-            // return;
-
-            this._clientsService.inviteClient(clientData).pipe(takeUntil(this._unsubscribeAll)).subscribe({
-                next: (response: any) => {
-                    console.log('Cliente invitado exitosamente:', response);
+        this._clientsService
+            .createInvitation(payload, files)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response: CreateInvitationResponse) => {
                     if (response.link) {
                         this.copyToClipboard(response.link);
                     }
-                    this.createCreditForClient(response.clientId, creditData);
+                    this.isLoading = false;
+                    this.Toast.fire({
+                        icon: 'success',
+                        title: 'Cliente invitado exitosamente',
+                        text: 'Invitación creada con cliente, crédito y documentos.',
+                    });
+                    this.dialogRef.close({
+                        success: true,
+                        clientId: response.clientId,
+                        creditId: response.creditId,
+                    });
                 },
                 error: (error) => {
-                    console.error('Error al invitar al cliente:', error);
+                    console.error('Error al crear la invitación:', error);
                     this.Toast.fire({
                         icon: 'error',
-                        title: 'Error al invitar al cliente.'
+                        title: 'Error al invitar al cliente.',
                     });
                     this.inviteForm.enable({ emitEvent: false });
                     this.isLoading = false;
                 },
             });
-        }
-    }
-
-    createCreditForClient(clientId: string, creditData: any) {
-        this._clientsService.createCredit({ clientId: clientId, ...creditData }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
-            next: (response: any) => {
-                console.log('Crédito creado exitosamente:', response);
-
-                this.uploadDocumentsToClient(clientId, response.id);
-            }, error: (error) => {
-
-            }
-        });
-    }
-
-    uploadDocumentsToClient(client_id: string, creditId: string | null = null): void {
-        const uploadObservables: Observable<unknown>[] = [];
-
-        Object.keys(this.fileUploads).forEach(docType => {
-            const fileUpload = this.fileUploads[docType];
-            if (fileUpload.file) {
-                if ((docType === 'QUOTE' || docType === 'INITIAL_PAYMENT') && creditId) {
-                    uploadObservables.push(
-                        this._clientsService.uploadFileToClient(
-                            client_id,
-                            fileUpload.file,
-                            docType,
-                            creditId
-                        )
-                    );
-                } else {
-                    uploadObservables.push(
-                        this._clientsService.uploadFileToClient(
-                            client_id,
-                            fileUpload.file,
-                            docType
-                        )
-                    );
-                }
-
-            }
-        });
-
-        if (uploadObservables.length > 0) {
-            const handleUploadSuccess = (responses: unknown[]) => {
-                console.log('Archivos subidos exitosamente:', responses);
-                this.isLoading = false;
-                this.Toast.fire({
-                    icon: 'success',
-                    title: 'Cliente invitado exitosamente',
-                    text: 'Se han subido todos los documentos correctamente.'
-                });
-                this.dialogRef.close({
-                    success: true,
-                    clientId: client_id
-                });
-            };
-
-            const handleUploadError = (error: unknown) => {
-                console.error('Error al subir los archivos:', error);
-                this.isLoading = false;
-                this.Toast.fire({
-                    icon: 'error',
-                    title: 'Error al subir los archivos',
-                    text: 'El cliente fue creado pero hubo un error al subir los documentos.'
-                });
-                this.inviteForm.enable();
-            };
-
-            forkJoin(uploadObservables)
-                .pipe(takeUntil(this._unsubscribeAll))
-                .subscribe({
-                    next: handleUploadSuccess,
-                    error: handleUploadError
-                });
-        } else {
-            this.isLoading = false;
-            this.dialogRef.close({
-                success: true,
-                clientId: client_id
-            });
-        }
     }
 
     getCreditTerms(): void {

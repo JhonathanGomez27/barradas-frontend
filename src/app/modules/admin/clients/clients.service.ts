@@ -2,6 +2,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
 import { BehaviorSubject, tap, Observable, catchError, throwError, map } from 'rxjs';
+import {
+    CreateInvitationFiles,
+    CreateInvitationPayload,
+    CreateInvitationResponse,
+} from './invitation.types';
 
 @Injectable({
   providedIn: 'root'
@@ -87,6 +92,33 @@ export class ClientsService {
 
     inviteClient(data: any): Observable<any> {
         return this.httpClient.post(`${this._url}/invitations`, data);
+    }
+
+    /**
+     * Crea una invitación unificada (cliente + crédito + archivos) en una sola petición.
+     * Envía FormData al endpoint /invitations.
+     */
+    createInvitation(
+        payload: CreateInvitationPayload,
+        files: CreateInvitationFiles = {}
+    ): Observable<CreateInvitationResponse> {
+        const formData = new FormData();
+
+        Object.entries(payload).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                formData.append(key, String(value));
+            }
+        });
+
+        if (files.INE_FRONT) formData.append('INE_FRONT', files.INE_FRONT);
+        if (files.INE_BACK) formData.append('INE_BACK', files.INE_BACK);
+        if (files.QUOTE) formData.append('QUOTE', files.QUOTE);
+        if (files.INITIAL_PAYMENT) formData.append('INITIAL_PAYMENT', files.INITIAL_PAYMENT);
+
+        return this.httpClient.post<CreateInvitationResponse>(
+            `${this._url}/invitations`,
+            formData
+        );
     }
 
     deleteClient(id: string): Observable<any> {
