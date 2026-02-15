@@ -300,9 +300,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
                     });
 
                     // Cargar agentes de la tienda asociada
-                    if( this.clientDetails.store?.id ) {
-                        this.loadAgentsByStore(this.clientDetails.store?.id);
-                    }
+                    // if( this.clientDetails.store?.id ) {
+                    //     this.loadAgentsByStore(this.clientDetails.store?.id);
+                    // }
 
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
