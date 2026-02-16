@@ -30,6 +30,16 @@ export interface CreditInstallment {
     updatedAt?: string;
 }
 
+export type InstallmentStatus = 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE';
+
+export interface PaginatedInstallmentsResponse {
+    data: CreditInstallment[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export interface Credit {
     id: string;
     clientId: string;
@@ -118,18 +128,22 @@ export interface RegisterPaymentDto {
 
 export interface PaymentResponse {
     id: string;
-    creditId: string;
+    creditId?: string;
     installmentId: string;
     amount: string;
     paidAt: string;
     method: PaymentMethod;
-    reference: string;
+    reference?: string;
     appliedToPrincipal: string;
     appliedToLateFee: string;
     createdAt: string;
     updatedAt: string;
-    installment: CreditInstallment;
+    installment?: CreditInstallment;
     document?: CreditDocument;
+}
+
+export interface InstallmentPaymentsDialogData {
+    installment: CreditInstallment;
 }
 
 export interface PaymentDialogData {

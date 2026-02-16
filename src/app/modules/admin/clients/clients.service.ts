@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
 import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
-import { PaymentResponse, RegisterPaymentDto } from './clients.interface';
+import { PaginatedInstallmentsResponse, PaymentResponse, RegisterPaymentDto } from './clients.interface';
 import { CreateInvitationFiles, CreateInvitationPayload, CreateInvitationResponse } from './invitation.types';
 
 @Injectable({
@@ -152,5 +152,13 @@ export class ClientsService {
 
     registerPayment(payload: RegisterPaymentDto): Observable<PaymentResponse> {
         return this.httpClient.post<PaymentResponse>(`${this._url}/payments`, payload);
+    }
+
+    getCreditInstallmentsPaginated(creditId: string, params: HttpParams): Observable<PaginatedInstallmentsResponse> {
+        return this.httpClient.get<PaginatedInstallmentsResponse>(`${this._url}/installments/credit/${creditId}/paginated`, { params });
+    }
+
+    getInstallmentPayments(installmentId: string): Observable<PaymentResponse[]> {
+        return this.httpClient.get<PaymentResponse[]>(`${this._url}/payments/installment/${installmentId}`);
     }
 }

@@ -11,6 +11,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -25,8 +26,9 @@ import { AlertsService } from 'app/shared/services/alerts.service';
 import { environment } from 'environment/environment';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { forkJoin, of, ReplaySubject, Subject, switchMap, takeUntil } from 'rxjs';
-import { Credit, CreditInstallment } from '../../clients.interface';
+import { Credit, CreditInstallment, InstallmentStatus } from '../../clients.interface';
 import { ClientsService } from '../../clients.service';
+import { InstallmentPaymentsDialogComponent } from '../installment-payments/installment-payments-dialog.component';
 import { RegisterPaymentDialogComponent } from '../register-payment/register-payment-dialog.component';
 
 interface FileUpload {
@@ -52,6 +54,7 @@ import { PermissionService } from 'app/shared/services/permission.service';
         ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
+        MatPaginatorModule,
         MatProgressSpinnerModule,
         CdkScrollable,
         NgxMatSelectSearchModule,
@@ -163,9 +166,21 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     contractElectronicSignature: any = null;
 
     credits: Credit[] = [];
+    creditsTotal: number = 0;
+    creditsPageIndex: number = 0;
+    creditsPageSize: number = Number(environment.pagination) || 10;
+    readonly creditsPageSizeOptions: number[] = [5, 10, 20, 50];
     selectedCredit: Credit | null = null;
     creditActive: Credit | null = null;
     expandedCreditId: string | null = null;
+    installments: CreditInstallment[] = [];
+    installmentsLoading: boolean = false;
+    installmentsTotal: number = 0;
+    installmentsPageIndex: number = 0;
+    installmentsPageSize: number = 20;
+    readonly installmentsPageSizeOptions: number[] = [10, 20, 50, 100];
+    installmentsStatusFilter: InstallmentStatus | '' = '';
+    installmentsOrderBy: 'asc' | 'desc' = 'asc';
 
     showElectronicSignatureDetails: boolean = false;
 
@@ -247,12 +262,22 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         // Los créditos ya vienen del resolver
         this.clientesService.credits$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
             this.credits = response.data || [];
+            this.creditsTotal = response.total || 0;
 
-            // Seleccionar el primer crédito activo o pendiente automáticamente
+            if (this.selectedCredit && !this.credits.some((credit) => credit.id === this.selectedCredit.id)) {
+                this.selectedCredit = null;
+                this.expandedCreditId = null;
+                this.installments = [];
+                this.installmentsTotal = 0;
+            }
+
             if (this.credits.length > 0 && !this.selectedCredit) {
                 this.creditActive = this.credits.find((credit) => credit.status === 'ACTIVE' || credit.status === 'PENDING') || this.credits[0];
 
                 this.selectedCredit = this.creditActive;
+                this.expandedCreditId = this.creditActive.id;
+                this.installmentsPageIndex = 0;
+                this.loadCreditInstallments();
             }
 
             this._changeDetectorRef.markForCheck();
@@ -332,17 +357,11 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     onCreditSelect(credit: Credit): void {
-        // Toggle del crédito expandido
-        if (this.expandedCreditId === credit.id) {
-            this.expandedCreditId = null;
-            this.selectedCredit = null;
-            // Limpiar el archivo de contrato del crédito que se está colapsando
-            delete this.contractFilesByCreditId[credit.id];
-        } else {
-            this.expandedCreditId = credit.id;
-            this.selectedCredit = credit;
-            this.creditActive = credit;
-        }
+        this.expandedCreditId = credit.id;
+        this.selectedCredit = credit;
+        this.creditActive = credit;
+        this.installmentsPageIndex = 0;
+        this.loadCreditInstallments();
         this._changeDetectorRef.markForCheck();
     }
 
@@ -368,7 +387,25 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     getCreditInstallments(credit: Credit): CreditInstallment[] {
-        return credit.installments || [];
+        return this.selectedCredit?.id === credit.id ? this.installments : [];
+    }
+
+    onInstallmentsPageChange(event: PageEvent): void {
+        this.installmentsPageIndex = event.pageIndex;
+        this.installmentsPageSize = event.pageSize;
+        this.loadCreditInstallments();
+    }
+
+    onInstallmentsStatusFilterChange(status: InstallmentStatus | ''): void {
+        this.installmentsStatusFilter = status;
+        this.installmentsPageIndex = 0;
+        this.loadCreditInstallments();
+    }
+
+    onInstallmentsOrderChange(order: 'asc' | 'desc'): void {
+        this.installmentsOrderBy = order;
+        this.installmentsPageIndex = 0;
+        this.loadCreditInstallments();
     }
 
     openPaymentDialog(credit: Credit, installment: CreditInstallment): void {
@@ -390,6 +427,16 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                     this.reloadClientCredits();
                 }
             });
+    }
+
+    openInstallmentPaymentsDialog(installment: CreditInstallment): void {
+        this.dialog.open(InstallmentPaymentsDialogComponent, {
+            width: '760px',
+            maxWidth: '96vw',
+            data: {
+                installment,
+            },
+        });
     }
 
     hasCreditSignatures(credit: Credit): boolean {
@@ -1161,10 +1208,60 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     reloadClientCredits(): void {
-        // Recargar los créditos del cliente desde el servicio
+        const params = new HttpParams().set('limit', String(this.creditsPageSize)).set('page', String(this.creditsPageIndex + 1));
+
+        this.clientesService.getClientCredits(this.clientDetails.id, params).subscribe();
+        this.loadCreditInstallments();
+    }
+
+    onCreditsPageChange(event: PageEvent): void {
+        this.creditsPageIndex = event.pageIndex;
+        this.creditsPageSize = event.pageSize;
+        this.reloadClientCredits();
+    }
+
+    private loadCreditInstallments(): void {
+        if (!this.selectedCredit?.id) {
+            this.installments = [];
+            this.installmentsTotal = 0;
+            return;
+        }
+
+        let params = new HttpParams().set('page', String(this.installmentsPageIndex + 1)).set('limit', String(this.installmentsPageSize));
+
+        if (this.installmentsStatusFilter) {
+            params = params.set('status', this.installmentsStatusFilter);
+        }
+
+        params = params.set('orderBy', this.installmentsOrderBy);
+
+        this.installmentsLoading = true;
+
         this.clientesService
-            .getClientCredits(this.clientDetails.id, new HttpParams().set('limit', environment.pagination).set('page', '1'))
-            .subscribe();
+            .getCreditInstallmentsPaginated(this.selectedCredit.id, params)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    this.installments = response.data || [];
+                    this.installmentsTotal = response.total || 0;
+                    this.installmentsPageIndex = Math.max((response.page || 1) - 1, 0);
+                    this.installmentsPageSize = response.limit || this.installmentsPageSize;
+                    this.installmentsLoading = false;
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: (error) => {
+                    console.error('Error al cargar cuotas paginadas del crédito:', error);
+                    this.installments = [];
+                    this.installmentsTotal = 0;
+                    this.installmentsLoading = false;
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al cargar las cuotas del crédito',
+                        title: 'Error',
+                    });
+                    this._changeDetectorRef.markForCheck();
+                },
+            });
     }
 
     // Método para filtrar tiendas en el select con búsqueda
