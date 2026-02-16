@@ -83,6 +83,10 @@ export class StoresService {
         );
     }
 
+    setStores(stores: Store[]): void {
+        this._allStores.next(stores);
+    }
+
     /**
      * Get all stores
      */

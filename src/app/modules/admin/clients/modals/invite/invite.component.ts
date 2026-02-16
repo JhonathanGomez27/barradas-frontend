@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import {
     FormBuilder,
     FormControl,
@@ -57,6 +57,7 @@ interface FileUpload {
 })
 export class InviteComponent implements OnInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+    readonly data = inject<{ storeId: string; rol: string; agentId: string | null }>(MAT_DIALOG_DATA);
 
     inviteForm: FormGroup;
     isLoading: boolean = false;
@@ -64,10 +65,10 @@ export class InviteComponent implements OnInit {
     // Archivos para subir
     documentFiles: { [key: string]: File | null } = {};
     fileUploads: { [key: string]: FileUpload } = {
-        INE_FRONT: { file: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
-        INE_BACK: { file: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
-        QUOTE: { file: null, name: 'QUOTE', label: 'Cotización', required: true },
-        INITIAL_PAYMENT: { file: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
+        INE_FRONT: { file: null, name: 'INE_FRONT', label: 'INE (Frente)', required: false },
+        INE_BACK: { file: null, name: 'INE_BACK', label: 'INE (Reverso)', required: false },
+        QUOTE: { file: null, name: 'QUOTE', label: 'Cotización', required: false },
+        INITIAL_PAYMENT: { file: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: false }
     };
 
     // Días de la semana para el selector
@@ -105,7 +106,6 @@ export class InviteComponent implements OnInit {
     constructor(
         private _formBuilder: FormBuilder,
         public dialogRef: MatDialogRef<InviteComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { storeId: string, rol: string , agentId: string | null},
         private _clientsService: ClientsService,
         private _storesService: StoresService,
         private _changeDetectorRef: ChangeDetectorRef,
@@ -120,14 +120,14 @@ export class InviteComponent implements OnInit {
             phone: ['', [Validators.required]],
             locationAddress: ['', [Validators.required]],
             storeId: [null, [Validators.required]],
-            agentId: new FormControl({ value: this.data.agentId, disabled: true }),
+            agentId: new FormControl({ value: this.data.agentId, disabled: true }, [Validators.required]),
             // Información del crédito
-            totalAmount: [null, [Validators.required, Validators.min(1)]],
-            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            totalAmount: [null, [Validators.min(1)]],
+            initialPayment: [null, [Validators.min(0)]],
             initialPaymentRate: [{ value: null, disabled: true }],
-            paymentType: ['WEEKLY', [Validators.required]],
-            selectedTerm: [null, [Validators.required, Validators.min(1)]],
-            repaymentDay: ['MONDAY', [Validators.required]],
+            paymentType: ['WEEKLY'],
+            selectedTerm: [null, [Validators.min(1)]],
+            repaymentDay: ['MONDAY'],
         });
 
         this.Toast = Swal.mixin({
@@ -175,6 +175,10 @@ export class InviteComponent implements OnInit {
         });
 
         this.inviteForm.get('storeId')?.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((storeId) => {
+            if (this.rol === 'admin') {
+                this.inviteForm.get('agentId')?.setValue(null, { emitEvent: false });
+            }
+
             if (storeId === null || storeId === '') {
                 this.inviteForm.get('agentId')?.disable({ emitEvent: false });
                 return;
@@ -205,7 +209,7 @@ export class InviteComponent implements OnInit {
         this.inviteForm.get('paymentType')?.valueChanges.subscribe((paymentType) => {
             this.updateAvailableTerms(paymentType);
             // Resetear el término seleccionado
-            this.inviteForm.patchValue({ selectedTerm: 0 });
+            this.inviteForm.patchValue({ selectedTerm: null });
         });
     }
 
@@ -226,7 +230,7 @@ export class InviteComponent implements OnInit {
         const initialPayment = this.inviteForm.get('initialPayment')?.value || 0;
         const initialPaymentControl = this.inviteForm.get('initialPayment');
 
-        if (initialPayment > totalAmount) {
+        if (totalAmount > 0 && initialPayment > totalAmount) {
             initialPaymentControl?.setErrors({ exceedsTotal: true });
         } else {
             // Limpiar el error personalizado si existe, pero mantener otros errores
@@ -288,6 +292,15 @@ export class InviteComponent implements OnInit {
             return;
         }
 
+        const formValue = this.inviteForm.getRawValue();
+        if (!formValue.agentId) {
+            this.Toast.fire({
+                icon: 'error',
+                title: 'El agente es obligatorio.'
+            });
+            return;
+        }
+
         // Validar archivos requeridos
         const missingFiles = Object.keys(this.fileUploads).filter(
             key => this.fileUploads[key].required && !this.fileUploads[key].file
@@ -306,7 +319,10 @@ export class InviteComponent implements OnInit {
         this.inviteForm.disable({ emitEvent: false });
         this.isLoading = true;
 
-        const formValue = this.inviteForm.getRawValue();
+        const hasCreditData =
+            formValue.totalAmount != null &&
+            formValue.selectedTerm != null;
+
         const payload: CreateInvitationPayload = {
             email: formValue.email,
             name: formValue.name,
@@ -314,13 +330,19 @@ export class InviteComponent implements OnInit {
             phone: formValue.phone,
             locationAddress: formValue.locationAddress,
             storeId: formValue.storeId ?? undefined,
-            agentId: formValue.agentId ?? undefined,
-            initialPayment: formValue.initialPayment,
-            initialPaymentRate: formValue.initialPaymentRate != null ? parseFloat(formValue.initialPaymentRate) : undefined,
-            totalAmount: formValue.totalAmount,
-            paymentType: formValue.paymentType,
-            selectedTerm: formValue.selectedTerm,
-            repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : undefined,
+            agentId: formValue.agentId,
+            initialPayment: hasCreditData ? formValue.initialPayment ?? undefined : undefined,
+            initialPaymentRate:
+                hasCreditData && formValue.initialPaymentRate != null
+                    ? parseFloat(formValue.initialPaymentRate)
+                    : undefined,
+            totalAmount: hasCreditData ? formValue.totalAmount ?? undefined : undefined,
+            paymentType: hasCreditData ? formValue.paymentType : undefined,
+            selectedTerm: hasCreditData ? formValue.selectedTerm ?? undefined : undefined,
+            repaymentDay:
+                hasCreditData && formValue.paymentType === 'WEEKLY'
+                    ? formValue.repaymentDay
+                    : undefined,
         };
 
         const files: CreateInvitationFiles = {};

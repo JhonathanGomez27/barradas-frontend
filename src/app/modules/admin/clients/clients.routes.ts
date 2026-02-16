@@ -41,8 +41,7 @@ export default [
             expectedPermission: ['users:read:all:get:users']
         },
         resolve: {
-            clients: ClientsResolver,
-            stores: StoresAllResolver
+            clients: ClientsResolver
         }
     },
     {
@@ -54,7 +53,6 @@ export default [
             expectedPermission: ['users:read:all:get:users.id']
         },
         resolve: {
-            stores: StoresAllResolver,
             credits: CreditsResolver
         }
     }

@@ -2,7 +2,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { HttpParams } from '@angular/common/http';
-import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -75,7 +75,7 @@ import { PermissionService } from 'app/shared/services/permission.service';
         ]),
     ],
 })
-export class ClientDetailsComponent implements OnInit, OnDestroy {
+export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     clientDetails: any = null;
 
@@ -316,6 +316,12 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         // Obtener términos de crédito
         this.getCreditTerms();
         this.setupNewCreditFormListeners();
+    }
+
+    ngAfterViewInit(): void {
+        if (this.hasPermission('stores:read:store:get:stores.all')) {
+            this._storesService.getAllStoresNoPagination().pipe(takeUntil(this._unsubscribeAll)).subscribe();
+        }
     }
 
     loadClientDetails(clientId: string): void {
@@ -1315,6 +1321,10 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     loadAgentsByStore(storeId: string): void {
+        if (!this.hasPermission('agents:read:all:get:agents')) {
+            return;
+        }
+
         if (storeId === null || storeId === '') {
             this.editClientForm.get('agentId')?.disable({ emitEvent: false });
             return;

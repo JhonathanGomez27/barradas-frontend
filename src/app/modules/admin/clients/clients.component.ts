@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { ClientsService } from './clients.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -47,7 +47,7 @@ import { PermissionService } from 'app/shared/services/permission.service';
     ],
     templateUrl: './clients.component.html'
 })
-export class ClientsComponent implements OnInit, OnDestroy {
+export class ClientsComponent implements OnInit, OnDestroy, AfterViewInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     clients: any = [];
     totalClients: number = 0;
@@ -164,6 +164,13 @@ export class ClientsComponent implements OnInit, OnDestroy {
             this.onClick({ id: client });
         }
 
+
+    }
+
+    ngAfterViewInit(): void {
+        if (this.hasPermission('stores:read:store:get:stores.all')) {
+            this._storesService.getAllStoresNoPagination().pipe(takeUntil(this._unsubscribeAll)).subscribe();
+        }
     }
 
     loadClients(): void {

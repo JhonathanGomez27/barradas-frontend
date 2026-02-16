@@ -5,6 +5,7 @@ import { UserService } from 'app/core/user/user.service';
 import { environment } from 'environment/environment';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { StoresService } from 'app/modules/admin/stores/stores.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
     private _router = inject(Router);
+    private _storesService = inject(StoresService);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -98,6 +100,14 @@ export class AuthService {
                     roleId: decodedToken?.roleId
                 };
 
+                if (rol !== 'admin') this._storesService.setStores([{
+                    id: response.agent.storeId,
+                    name: response.agent.store.name,
+                    address: response.agent.store.address,
+                    cityId: response.agent.store.cityId,
+                    city: response.agent.store.city.name
+                }]);
+
                 // Return a new observable with the response
                 return of(response);
             })
@@ -151,23 +161,32 @@ export class AuthService {
                         roleId: decodedToken?.roleId
                     };
 
-                    if (response.role === 'admin') {
-                        const redirectURL = '/signed-in-redirect';
+                    const redirectURL = '/signed-in-redirect';
 
-                        if (location.pathname === '/sign-in' || location.pathname === '/') {
-                            // Navigate to the redirect url
-                            this._router.navigateByUrl(redirectURL);
-                        }
+                    if (location.pathname === '/sign-in' || location.pathname === '/') {
+                        // Navigate to the redirect url
+                        this._router.navigateByUrl(redirectURL);
                     }
+                    // if (response.role === 'admin') {
+                    // }
 
-                    if (response.role === 'agent') {
-                        const redirectURL = '/clients-store';
+                    // if (response.role === 'agent') {
+                    //     const redirectURL = '/clients-store';
 
-                        if (location.pathname === '/sign-in' || location.pathname === '/') {
-                            // Navigate to the redirect url
-                            this._router.navigateByUrl(redirectURL);
-                        }
-                    }
+                    //     if (location.pathname === '/sign-in' || location.pathname === '/') {
+                    //         // Navigate to the redirect url
+                    //         this._router.navigateByUrl(redirectURL);
+                    //     }
+                    // }
+
+                    if (response.role !== 'admin') this._storesService.setStores([{
+                        id: response.agent.storeId,
+                        name: response.agent.store.name,
+                        address: response.agent.store.address,
+                        cityId: response.agent.store.cityId,
+                        city: response.agent.store.city.name
+                    }]);
+
 
                     // Return true
                     return of(true);

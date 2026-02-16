@@ -136,43 +136,46 @@
                     </mat-form-field>
 
                     <!-- Filtro de Tienda -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                        <mat-label>Tienda</mat-label>
-                        <mat-select [(ngModel)]="storeFilter" (selectionChange)="onFilterChange()">
-                            <mat-option>
-                                <ngx-mat-select-search
-                                    [formControl]="storeFilterCtrl"
-                                    placeholderLabel="Buscar tienda..."
-                                    noEntriesFoundLabel="No se encontraron tiendas">
-                                </ngx-mat-select-search>
-                            </mat-option>
-                            <mat-option value="">
-                                <span class="flex items-center">
-                                    <mat-icon svgIcon="mat_outline:all_inclusive" class="mr-2 text-gray-400 scale-75"></mat-icon>
-                                    Todas las tiendas
-                                </span>
-                            </mat-option>
-                            <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
-                                <span class="flex items-center">
-                                    <mat-icon svgIcon="mat_outline:store" class="mr-2 text-barradas-500 scale-75"></mat-icon>
-                                    {{ store.name }}
-                                </span>
-                            </mat-option>
-                        </mat-select>
-                        <mat-icon matPrefix class="text-gray-400">storefront</mat-icon>
-                    </mat-form-field>
+                    @if(hasPermission('stores:read:store:get:stores.all')) {
 
-                    <!-- Rango de Fechas -->
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                        <mat-label>Rango de Fechas</mat-label>
-                        <mat-date-range-input [rangePicker]="picker" [max]="today">
-                            <input matStartDate placeholder="Fecha inicio" [(ngModel)]="start" name="start">
-                            <input matEndDate placeholder="Fecha fin" [(ngModel)]="end" name="end">
-                        </mat-date-range-input>
-                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                        <mat-date-range-picker #picker></mat-date-range-picker>
-                        <mat-icon matPrefix class="text-gray-400">date_range</mat-icon>
-                    </mat-form-field>
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Tienda</mat-label>
+                            <mat-select [(ngModel)]="storeFilter" (selectionChange)="onFilterChange()">
+                                <mat-option>
+                                    <ngx-mat-select-search
+                                        [formControl]="storeFilterCtrl"
+                                        placeholderLabel="Buscar tienda..."
+                                        noEntriesFoundLabel="No se encontraron tiendas">
+                                    </ngx-mat-select-search>
+                                </mat-option>
+                                <mat-option value="">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:all_inclusive" class="mr-2 text-gray-400 scale-75"></mat-icon>
+                                        Todas las tiendas
+                                    </span>
+                                </mat-option>
+                                <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:store" class="mr-2 text-barradas-500 scale-75"></mat-icon>
+                                        {{ store.name }}
+                                    </span>
+                                </mat-option>
+                            </mat-select>
+                            <mat-icon matPrefix class="text-gray-400">storefront</mat-icon>
+                        </mat-form-field>
+                    }
+                        <!-- Rango de Fechas -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Rango de Fechas</mat-label>
+                            <mat-date-range-input [rangePicker]="picker" [max]="today">
+                                <input matStartDate placeholder="Fecha inicio" [(ngModel)]="start" name="start">
+                                <input matEndDate placeholder="Fecha fin" [(ngModel)]="end" name="end">
+                            </mat-date-range-input>
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-date-range-picker #picker></mat-date-range-picker>
+                            <mat-icon matPrefix class="text-gray-400">date_range</mat-icon>
+                        </mat-form-field>
+
                 </div>
 
                 <!-- Botón de Aplicar Filtros -->

@@ -97,19 +97,19 @@ export class AuthSignInComponent implements OnInit {
         this._authService.signIn(this.signInForm.value).subscribe({
             next: (response: any) => {
 
-                if (response.role === 'admin') {
-                    const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
+                const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
 
-                    // Navigate to the redirect url
-                    this._router.navigateByUrl(redirectURL);
-                }
+                // Navigate to the redirect url
+                this._router.navigateByUrl(redirectURL);
+                // if (response.role === 'admin') {
+                // }
 
-                if (response.role === 'agent') {
-                    const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/clients-store';
+                // if (response.role === 'agent') {
+                //     const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/clients-store';
 
-                    // Navigate to the redirect url
-                    this._router.navigateByUrl(redirectURL);
-                }
+                //     // Navigate to the redirect url
+                //     this._router.navigateByUrl(redirectURL);
+                // }
 
             },
             error: (error) => {

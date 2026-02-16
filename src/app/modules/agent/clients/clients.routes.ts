@@ -31,16 +31,6 @@ const _permissionService = inject(PermissionService);
     return _ClientsService.getClients(params);
 }
 
-const StoresAllResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-    const _StoresAllService = inject(StoresService);
-const _permissionService = inject(PermissionService);
-
-    if (!_permissionService.hasPermission('stores:read:store:get:stores')) {
-        return of(null);
-    }
-    return _StoresAllService.getAllStoresNoPagination();
-}
-
 const CreditsResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const _CreditsService = inject(ClientsService);
 const _permissionService = inject(PermissionService);
@@ -61,8 +51,7 @@ export default [
             expectedPermission: ['agents:read:own:get:agents.me.users']
         },
         resolve: {
-            clients: ClientsResolver,
-            stores: StoresAllResolver
+            clients: ClientsResolver
         }
     },
     {
@@ -74,7 +63,6 @@ export default [
             expectedPermission: ['users:read:all:get:users.id']
         },
         resolve: {
-            stores: StoresAllResolver,
             credits: CreditsResolver
         }
     }
