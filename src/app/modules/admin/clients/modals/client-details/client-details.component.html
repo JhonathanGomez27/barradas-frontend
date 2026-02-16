@@ -1,24 +1,29 @@
 <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto bg-barradas-50" cdkScrollable>
     <!-- Header -->
     <div class="bg-gradient-to-r from-barradas-900 to-barradas-700 shadow-lg">
-        <div class="flex items-center justify-between text-white py-3 px-4 md:py-4 md:px-6">
-            <div class="flex items-center min-w-0 flex-1">
-                <button mat-icon-button (click)="back()" matTooltip="Volver a clientes"
-                    class="hover:bg-white/20 transition-colors duration-200 mr-2">
+        <div class="flex items-center justify-between px-4 py-3 text-white md:px-6 md:py-4">
+            <div class="flex min-w-0 flex-1 items-center">
+                <button mat-icon-button (click)="back()" matTooltip="Volver a clientes" class="mr-2 transition-colors duration-200 hover:bg-white/20">
                     <mat-icon class="text-white">arrow_back</mat-icon>
                 </button>
-                <div class="bg-white/20 p-2 rounded-full mr-2 md:mr-3 flex-shrink-0">
-                    <mat-icon class="text-white text-xl">person</mat-icon>
+                <div class="mr-2 flex-shrink-0 rounded-full bg-white/20 p-2 md:mr-3">
+                    <mat-icon class="text-xl text-white">person</mat-icon>
                 </div>
                 <div class="min-w-0 flex-1">
-                    <div class="text-base md:text-xl font-semibold truncate">Detalles del cliente</div>
-                    <div class="text-xs md:text-sm opacity-90 truncate" *ngIf="clientDetails">{{ clientDetails.firstName
-                        }} {{ clientDetails.lastName }}</div>
+                    <div class="truncate text-base font-semibold md:text-xl">Detalles del cliente</div>
+                    <div class="truncate text-xs opacity-90 md:text-sm" *ngIf="clientDetails">
+                        {{ clientDetails.firstName }} {{ clientDetails.lastName }}
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-                <button mat-icon-button (click)="updateClientData()" matTooltip="Actualizar información del cliente"
-                    [tabIndex]="-1" class="hover:bg-white/20 transition-colors duration-200">
+            <div class="ml-2 flex flex-shrink-0 items-center gap-1">
+                <button
+                    mat-icon-button
+                    (click)="updateClientData()"
+                    matTooltip="Actualizar información del cliente"
+                    [tabIndex]="-1"
+                    class="transition-colors duration-200 hover:bg-white/20"
+                >
                     <mat-icon class="text-white">refresh</mat-icon>
                 </button>
             </div>
@@ -32,978 +37,1095 @@
 
     <!-- Main Content -->
     <div class="flex-auto p-4 sm:p-6 md:p-10" *ngIf="!isLoading && clientDetails" [formGroup]="editClientForm">
-        <!-- Contenido del cliente -->
-        <!-- Botón para alternar entre vista y edición -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
-            <div class="flex items-center flex-wrap gap-2">
-                <span class="px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium transition-all duration-300"
-                    [ngClass]="{
-                        'bg-green-100 text-green-800': clientDetails.status === 'COMPLETED',
-                        'bg-blue-100 text-blue-800': clientDetails.status === 'INVITED',
-                        'bg-yellow-100 text-yellow-800': clientDetails.status === 'IN_PROGRESS',
-                        'bg-violet-100 text-bg-violet-800': clientDetails.status === 'NO_CONTRACT_SENDED',
-                        'bg-orange-100 text-orange-800': clientDetails.status === 'CONTRACT_SENDED',
-                        'bg-gray-100 text-gray-800': clientDetails.status === 'CREATED'
-                    }">
-                    <mat-icon class="mr-1 text-xs md:text-sm" style="font-size: 16px; width: 16px; height: 16px;">{{
-                        getStatusIcon(clientDetails.status) }}</mat-icon>
-                    {{ statusMapper[clientDetails.status] || clientDetails.status }}
-                </span>
-            </div>
-            <button mat-raised-button [color]="isEditMode ? 'warn' : 'primary'" (click)="toggleEditMode()"
-                *ngIf="hasPermission('users:update:all:patch:users.id')"
-                class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
-                <mat-icon class="mr-2">{{ isEditMode ? 'close' : 'edit' }}</mat-icon>
-                {{ isEditMode ? 'Cancelar Edición' : 'Editar Cliente' }}
-            </button>
-        </div>
-
-        <!-- Información personal editable -->
-        <div
-            class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
-            <div class="bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4 border-b border-gray-200">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center gap-2 flex-1">
-                        <div class="bg-barradas-300/20 p-2 rounded-lg flex-shrink-0">
-                            <mat-icon class="text-barradas-700 text-xl">account_circle</mat-icon>
-                        </div>
-                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Información Personal</h3>
-                        <span *ngIf="isEditMode"
-                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <mat-icon class="mr-1" style="font-size: 14px; width: 14px; height: 14px;">edit</mat-icon>
-                            Modo Edición
-                        </span>
-                    </div>
-                    <div *ngIf="isEditMode" class="flex gap-2 w-full sm:w-auto">
-                        <button mat-stroked-button color="warn" (click)="toggleEditMode()"
-                            class="transition-all duration-300 flex-1 sm:flex-none">
-                            <mat-icon class="mr-1">close</mat-icon>
-                            Cancelar
-                        </button>
-                        <button mat-raised-button color="primary" (click)="updateClient()"
-                            [disabled]="editClientForm.invalid || isLoading"
-                            class="transition-all duration-300 shadow-md hover:shadow-lg flex-1 sm:flex-none">
-                            <mat-icon class="mr-1" *ngIf="!isLoading">save</mat-icon>
-                            <mat-icon class="mr-1 animate-spin" *ngIf="isLoading">refresh</mat-icon>
-                            {{ isLoading ? 'Guardando...' : 'Guardar' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">person</mat-icon>
-                        <label for="firstName" class="text-sm font-medium text-gray-600">Nombre</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else firstNameView" class="w-full">
-                        <mat-label>Nombre</mat-label>
-                        <input matInput id="firstName" formControlName="firstName" placeholder="Ingrese el nombre" />
-                        <mat-icon matSuffix class="text-gray-400">person</mat-icon>
-                        <mat-error *ngIf="editClientForm.get('firstName')?.hasError('required')">El nombre es
-                            obligatorio</mat-error>
-                    </mat-form-field>
-                    <ng-template #firstNameView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800">{{ clientDetails.firstName || 'No especificado'
-                                }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">person_outline</mat-icon>
-                        <label for="lastName" class="text-sm font-medium text-gray-600">Apellido</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else lastNameView" class="w-full">
-                        <mat-label>Apellido</mat-label>
-                        <input matInput id="lastName" formControlName="lastName" placeholder="Ingrese el apellido" />
-                        <mat-icon matSuffix class="text-gray-400">person_outline</mat-icon>
-                        <mat-error *ngIf="editClientForm.get('lastName')?.hasError('required')">El apellido es
-                            obligatorio</mat-error>
-                    </mat-form-field>
-                    <ng-template #lastNameView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800">{{ clientDetails.lastName || 'No especificado'
-                                }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">email</mat-icon>
-                        <label for="email" class="text-sm font-medium text-gray-600">Email</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else emailView" class="w-full">
-                        <mat-label>Email</mat-label>
-                        <input matInput id="email" formControlName="email" placeholder="Ingrese el email"
-                            type="email" />
-                        <mat-icon matSuffix class="text-gray-400">email</mat-icon>
-                        <mat-error *ngIf="editClientForm.get('email')?.hasError('required')">El email es
-                            obligatorio</mat-error>
-                        <mat-error *ngIf="editClientForm.get('email')?.hasError('email')">Ingrese un email
-                            válido</mat-error>
-                    </mat-form-field>
-                    <ng-template #emailView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800 break-all">{{ clientDetails.email || 'No especificado' }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">phone</mat-icon>
-                        <label for="phone" class="text-sm font-medium text-gray-600">Teléfono</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else phoneView" class="w-full">
-                        <mat-label>Teléfono</mat-label>
-                        <input matInput id="phone" formControlName="phone" placeholder="Ingrese el teléfono"
-                            type="tel" />
-                        <mat-icon matSuffix class="text-gray-400">phone</mat-icon>
-                        <mat-error *ngIf="editClientForm.get('phone')?.hasError('required')">El teléfono es
-                            obligatorio</mat-error>
-                    </mat-form-field>
-                    <ng-template #phoneView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800">{{ clientDetails.phone || 'No disponible' }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">location_on</mat-icon>
-                        <label for="locationAddress" class="text-sm font-medium text-gray-600">Dirección</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else locationAddressView" class="w-full">
-                        <mat-label>Dirección</mat-label>
-                        <input matInput id="locationAddress" formControlName="locationAddress"
-                            placeholder="Ingrese la dirección" />
-                        <mat-icon matSuffix class="text-gray-400">location_on</mat-icon>
-                    </mat-form-field>
-                    <ng-template #locationAddressView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800">{{ clientDetails.locationAddress || 'No disponible'
-                                }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-                <!-- Store field -->
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">store</mat-icon>
-                        <label for="storeId" class="text-sm font-medium text-gray-600">Tienda</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else storeView" class="w-full">
-                        <mat-label>Tienda</mat-label>
-                        <mat-select formControlName="storeId" placeholder="Seleccionar tienda">
-                            <mat-option>
-                                <ngx-mat-select-search [formControl]="storeFilterCtrl"
-                                    placeholderLabel="Buscar tienda..." noEntriesFoundLabel="No se encontraron tiendas">
-                                </ngx-mat-select-search>
-                            </mat-option>
-                            <mat-option value="">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-2 text-gray-400 scale-75"
-                                        svgIcon="mat_outline:storefront"></mat-icon>
-                                    Sin tienda asignada
-                                </span>
-                            </mat-option>
-                            <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-2 text-barradas-500 scale-75"
-                                        svgIcon="mat_outline:storefront"></mat-icon>
-                                    {{ store.name }}
-                                </span>
-                            </mat-option>
-                        </mat-select>
-                        <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
-                    </mat-form-field>
-                    <ng-template #storeView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800">{{ clientDetails.store?.name || 'Sin tienda asignada' }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-                <!-- Agent field -->
-                <div class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">supervised_user_circle</mat-icon>
-                        <label for="agentId" class="text-sm font-medium text-gray-600">Agente</label>
-                    </div>
-                    <mat-form-field appearance="outline" *ngIf="isEditMode; else agentView" class="w-full">
-                        <mat-label>Agente</mat-label>
-                        <mat-select formControlName="agentId" placeholder="Seleccionar agente">
-                            <mat-option>
-                                <ngx-mat-select-search [formControl]="agentFilterCtrl"
-                                    placeholderLabel="Buscar agente..." noEntriesFoundLabel="No se encontraron agentes">
-                                </ngx-mat-select-search>
-                            </mat-option>
-                            <mat-option [value]="null">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-2 text-gray-400 scale-75"
-                                        svgIcon="mat_outline:person"></mat-icon>
-                                    Sin agente asignado
-                                </span>
-                            </mat-option>
-                            <mat-option *ngFor="let agent of filteredAgents | async" [value]="agent.id">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-2 text-gray-400 scale-75"
-                                        svgIcon="mat_outline:person"></mat-icon>
-                                    {{ agent.firstName }} {{ agent.lastName }}
-                                </span>
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                    <ng-template #agentView>
-                        <div
-                            class="bg-gray-50 p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:bg-gray-100">
-                            <span class="font-medium text-gray-800">{{ clientDetails.agentId ?
-                                clientDetails.agent.firstName + ' ' + clientDetails.agent.lastName : 'No asignado'
-                                }}</span>
-                        </div>
-                    </ng-template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Documentos existentes -->
-        <div
-            class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
-            <div class="bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4 border-b border-gray-200">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center">
-                        <div class="bg-blue-100 p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
-                            <mat-icon class="text-blue-600 text-xl">folder</mat-icon>
-                        </div>
-                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Documentos</h3>
-                    </div>
-                    <div class="flex items-center">
+        <mat-tab-group dynamicHeight class="client-details-tabs">
+            <mat-tab label="Información">
+                <!-- Contenido del cliente -->
+                <!-- Botón para alternar entre vista y edición -->
+                <div class="mb-4 mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center md:mb-6">
+                    <div class="flex flex-wrap items-center gap-2">
                         <span
-                            class="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-barradas-300/20 text-barradas-900">
-                            <mat-icon class="mr-1"
-                                style="font-size: 16px; width: 16px; height: 16px;">description</mat-icon>
-                            {{ clientDetails.documents?.length || 0 }}
+                            class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-300 md:px-3 md:text-sm"
+                            [ngClass]="{
+                                'bg-green-100 text-green-800': clientDetails.status === 'COMPLETED',
+                                'bg-blue-100 text-blue-800': clientDetails.status === 'INVITED',
+                                'bg-yellow-100 text-yellow-800': clientDetails.status === 'IN_PROGRESS',
+                                'text-bg-violet-800 bg-violet-100': clientDetails.status === 'NO_CONTRACT_SENDED',
+                                'bg-orange-100 text-orange-800': clientDetails.status === 'CONTRACT_SENDED',
+                                'bg-gray-100 text-gray-800': clientDetails.status === 'CREATED',
+                            }"
+                        >
+                            <mat-icon class="mr-1 text-xs md:text-sm" style="font-size: 16px; width: 16px; height: 16px">{{
+                                getStatusIcon(clientDetails.status)
+                            }}</mat-icon>
+                            {{ statusMapper[clientDetails.status] || clientDetails.status }}
                         </span>
                     </div>
+                    <button
+                        mat-raised-button
+                        [color]="isEditMode ? 'warn' : 'primary'"
+                        (click)="toggleEditMode()"
+                        *ngIf="hasPermission('users:update:all:patch:users.id')"
+                        class="w-full shadow-md transition-all duration-300 hover:shadow-lg sm:w-auto"
+                    >
+                        <mat-icon class="mr-2">{{ isEditMode ? 'close' : 'edit' }}</mat-icon>
+                        {{ isEditMode ? 'Cancelar Edición' : 'Editar Cliente' }}
+                    </button>
                 </div>
-            </div>
-            <!-- Vista de tabla para desktop -->
-            <div class="hidden md:block overflow-x-auto overflow-y-auto"
-                [ngClass]="{'max-h-72': clientDetails.documents.length > 4}">
-                <table class="w-full divide-y divide-gray-200 table-fixed">
-                    <thead class="bg-barradas-50 sticky top-0 z-10">
-                        <tr>
-                            <th
-                                class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tipo</th>
-                            <th
-                                class="w-2/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Nombre</th>
-                            <th
-                                class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tamaño</th>
-                            <th
-                                class="w-1/6 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Fecha</th>
-                            <th
-                                class="w-1/4 px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr *ngFor="let doc of clientDetails.documents" class="group hover:bg-gray-50">
-                            <td class="px-3 py-3">
-                                <span
-                                    class="px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 inline-block">
-                                    {{ docTypeMapper[doc.docType] || doc.docType }}
-                                </span>
-                            </td>
-                            <td class="px-3 py-3">
-                                <div class="flex items-center overflow-hidden">
-                                    <mat-icon class="flex-shrink-0 text-gray-400 mr-2">{{ getFileIcon(doc.mimeType)
-                                        }}</mat-icon>
-                                    <span class="text-sm text-gray-900 truncate" matTooltip="{{ doc.title }}">{{
-                                        doc.title }}</span>
-                                </div>
-                            </td>
-                            <td class="px-3 py-3 text-sm text-gray-500">
-                                {{ getFileSize(doc.sizeBytes) }}
-                            </td>
-                            <td class="px-3 py-3 text-sm text-gray-500">
-                                {{ formatDate(doc.uploadedAt) }}
-                            </td>
-                            <td class="px-3 py-3 text-right text-sm font-medium">
-                                <div class="flex justify-end">
-                                    <!-- Botón previsualizar (solo para PDF e imágenes) -->
-                                    <button *ngIf="canPreview(doc.mimeType)" mat-icon-button color="primary"
-                                        (click)="previewFile(doc.id, doc.title, doc.mimeType)" matTooltip="Visualizar">
-                                        <mat-icon>visibility</mat-icon>
-                                    </button>
 
-                                    <!-- Botón descargar -->
-                                    <button mat-icon-button color="accent" (click)="downloadFile(doc.id, doc.title)"
-                                        matTooltip="Descargar">
-                                        <mat-icon>download</mat-icon>
-                                    </button>
+                <!-- Información personal editable -->
+                <div
+                    class="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:shadow-lg md:mb-6 md:rounded-xl"
+                >
+                    <div class="border-b border-gray-200 bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex flex-1 items-center gap-2">
+                                <div class="flex-shrink-0 rounded-lg bg-barradas-300/20 p-2">
+                                    <mat-icon class="text-xl text-barradas-700">account_circle</mat-icon>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Vista de tarjetas para móviles -->
-            <div class="md:hidden divide-y divide-gray-200 max-h-96 overflow-y-auto">
-                <div *ngFor="let doc of clientDetails.documents" class="p-4 hover:bg-gray-50 transition-colors">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center space-x-2 flex-1 min-w-0">
-                            <mat-icon class="flex-shrink-0 text-gray-400 text-lg">{{ getFileIcon(doc.mimeType)
-                                }}</mat-icon>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium text-gray-900 truncate">{{ doc.title }}</p>
+                                <h3 class="text-base font-semibold text-gray-800 md:text-lg">Información Personal</h3>
                                 <span
-                                    class="inline-block px-2 py-0.5 mt-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700">
-                                    {{ docTypeMapper[doc.docType] || doc.docType }}
+                                    *ngIf="isEditMode"
+                                    class="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800"
+                                >
+                                    <mat-icon class="mr-1" style="font-size: 14px; width: 14px; height: 14px">edit</mat-icon>
+                                    Modo Edición
                                 </span>
+                            </div>
+                            <div *ngIf="isEditMode" class="flex w-full gap-2 sm:w-auto">
+                                <button
+                                    mat-stroked-button
+                                    color="warn"
+                                    (click)="toggleEditMode()"
+                                    class="flex-1 transition-all duration-300 sm:flex-none"
+                                >
+                                    <mat-icon class="mr-1">close</mat-icon>
+                                    Cancelar
+                                </button>
+                                <button
+                                    mat-raised-button
+                                    color="primary"
+                                    (click)="updateClient()"
+                                    [disabled]="editClientForm.invalid || isLoading"
+                                    class="flex-1 shadow-md transition-all duration-300 hover:shadow-lg sm:flex-none"
+                                >
+                                    <mat-icon class="mr-1" *ngIf="!isLoading">save</mat-icon>
+                                    <mat-icon class="mr-1 animate-spin" *ngIf="isLoading">refresh</mat-icon>
+                                    {{ isLoading ? 'Guardando...' : 'Guardar' }}
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
-                        <span>{{ getFileSize(doc.sizeBytes) }}</span>
-                        <span>{{ formatDate(doc.uploadedAt) }}</span>
-                    </div>
-                    <div class="flex justify-end space-x-2">
-                        <button *ngIf="canPreview(doc.mimeType)" mat-icon-button color="primary"
-                            (click)="previewFile(doc.id, doc.title, doc.mimeType)" matTooltip="Visualizar">
-                            <mat-icon>visibility</mat-icon>
-                        </button>
-                        <button mat-icon-button color="accent" (click)="downloadFile(doc.id, doc.title)"
-                            matTooltip="Descargar">
-                            <mat-icon>download</mat-icon>
-                        </button>
-                    </div>
-                </div>
-                <div *ngIf="!clientDetails.documents || clientDetails.documents.length === 0" class="p-8 text-center">
-                    <mat-icon class="text-gray-300 text-5xl mb-2">folder_open</mat-icon>
-                    <p class="text-sm text-gray-500">No hay documentos</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Subir documentos -->
-        <div class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg"
-            *ngIf="isEditMode">
-            <div class="bg-gradient-to-r from-green-50 to-green-100 p-3 md:p-4 border-b border-gray-200">
-                <div class="flex items-start gap-2 md:gap-3">
-                    <div class="bg-green-100 p-2 rounded-lg flex-shrink-0">
-                        <mat-icon class="text-green-600 text-xl">cloud_upload</mat-icon>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Subir Documentos</h3>
-                        <p class="text-xs md:text-sm text-gray-600 mt-1">Seleccione los archivos que desea actualizar o
-                            agregar</p>
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <div *ngFor="let docType of fileUploads | keyvalue" class="flex flex-col group">
-                    <div class="flex items-center mb-2">
-                        <mat-icon class="text-gray-400 mr-2 text-sm">{{ getDocumentIcon(docType.key) }}</mat-icon>
-                        <label [for]="docType.key" class="text-sm font-medium text-gray-600">{{ docType.value.label
-                            }}</label>
-                        <span *ngIf="docType.value.required" class="text-red-500 ml-1">*</span>
-                    </div>
-                    <div class="relative">
-                        <input [id]="docType.key" type="file" (change)="onFileSelected($event, docType.key)"
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-barradas-50 file:text-barradas-700 hover:file:bg-barradas-300/20 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-2 transition-all duration-200 hover:border-barradas-300 focus:border-barradas-500 focus:ring-2 focus:ring-barradas-300/50"
-                            accept="image/*,.pdf" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @if(hasPermission('credits:read:all:get:credits.list.clientId')){
-        <!-- Sección de Créditos -->
-        <div
-            class="bg-white rounded-lg md:rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4 md:mb-6 transition-all duration-300 hover:shadow-lg">
-            <div class="bg-gradient-to-r from-barradas-50 to-barradas-300/30 p-3 md:p-4 border-b border-gray-200">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <div class="flex items-center">
-                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-2 md:mr-3 flex-shrink-0">
-                            <mat-icon class="text-barradas-700 text-xl">account_balance_wallet</mat-icon>
-                        </div>
-                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Créditos del Cliente</h3>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-barradas-300/20 text-barradas-900">
-                            <mat-icon class="mr-1"
-                                style="font-size: 16px; width: 16px; height: 16px;">numbers</mat-icon>
-                            {{ credits.length }} crédito{{ credits.length !== 1 ? 's' : '' }}
-                        </span>
-                        <button mat-raised-button *ngIf="hasPermission('credits:create:all:post:credits')"
-                            class="text-xs bg-barradas-900 text-white" (click)="toggleCreateCreditForm()">
-                            <mat-icon class="mr-1" style="font-size: 16px;">add</mat-icon>
-                            Nuevo Crédito
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-4 md:p-6">
-                <!-- Formulario para crear nuevo crédito -->
-                <div *ngIf="showCreateCreditForm" class="mb-6 p-4 border border-white rounded-lg bg-white" [@slideDown]>
-                    <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-sm font-semibold text-gray-700">Crear Nuevo Crédito</h4>
-                        <button mat-icon-button (click)="toggleCreateCreditForm()">
-                            <mat-icon class="text-gray-500">close</mat-icon>
-                        </button>
-                    </div>
-
-                    <form [formGroup]="newCreditForm" (ngSubmit)="createNewCredit()">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Monto Total -->
-                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-                                <mat-label>Monto Total del Crédito</mat-label>
-                                <input matInput formControlName="totalAmount" type="number" min="1" required />
-                                <span matTextSuffix>&nbsp;MXN</span>
-                                <mat-icon matPrefix class="mr-2">attach_money</mat-icon>
-                                <mat-error *ngIf="newCreditForm.get('totalAmount')?.hasError('required')">El monto total
-                                    es obligatorio</mat-error>
-                                <mat-error *ngIf="newCreditForm.get('totalAmount')?.hasError('min')">El monto debe ser
-                                    mayor a 0</mat-error>
-                            </mat-form-field>
-
-                            <!-- Pago Inicial -->
-                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-                                <mat-label>Pago Inicial</mat-label>
-                                <input matInput formControlName="initialPayment" type="number" min="0" required />
-                                <span matTextSuffix>&nbsp;MXN</span>
-                                <mat-icon matPrefix class="mr-2">payment</mat-icon>
-                                <mat-hint>{{ newCreditForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
-                                <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('required')">El pago
-                                    inicial es obligatorio</mat-error>
-                                <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('exceedsTotal')">El pago
-                                    inicial no puede superar el monto total</mat-error>
-                            </mat-form-field>
-
-                            <!-- Tipo de Pago -->
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="text-sm font-medium text-gray-700 mb-2 block">Tipo de Pago</label>
-                                <mat-button-toggle-group formControlName="paymentType" class="w-full">
-                                    <mat-button-toggle value="WEEKLY" class="flex-1">
-                                        <mat-icon class="mr-2">event</mat-icon>
-                                        Semanal
-                                    </mat-button-toggle>
-                                    <mat-button-toggle value="DAILY" class="flex-1">
-                                        <mat-icon class="mr-2">today</mat-icon>
-                                        Diario
-                                    </mat-button-toggle>
-                                </mat-button-toggle-group>
+                    <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-6 md:p-6">
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">person</mat-icon>
+                                <label for="firstName" class="text-sm font-medium text-gray-600">Nombre</label>
                             </div>
-
-                            <!-- Plazo -->
-                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-                                <mat-label>Plazo</mat-label>
-                                <mat-select formControlName="selectedTerm" required>
-                                    <mat-option *ngFor="let term of availableTerms" [value]="term">
-                                        {{ getTermLabel(term, newCreditForm.get('paymentType')?.value) }}
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else firstNameView" class="w-full">
+                                <mat-label>Nombre</mat-label>
+                                <input matInput id="firstName" formControlName="firstName" placeholder="Ingrese el nombre" />
+                                <mat-icon matSuffix class="text-gray-400">person</mat-icon>
+                                <mat-error *ngIf="editClientForm.get('firstName')?.hasError('required')">El nombre es obligatorio</mat-error>
+                            </mat-form-field>
+                            <ng-template #firstNameView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="font-medium text-gray-800">{{ clientDetails.firstName || 'No especificado' }}</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">person_outline</mat-icon>
+                                <label for="lastName" class="text-sm font-medium text-gray-600">Apellido</label>
+                            </div>
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else lastNameView" class="w-full">
+                                <mat-label>Apellido</mat-label>
+                                <input matInput id="lastName" formControlName="lastName" placeholder="Ingrese el apellido" />
+                                <mat-icon matSuffix class="text-gray-400">person_outline</mat-icon>
+                                <mat-error *ngIf="editClientForm.get('lastName')?.hasError('required')">El apellido es obligatorio</mat-error>
+                            </mat-form-field>
+                            <ng-template #lastNameView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="font-medium text-gray-800">{{ clientDetails.lastName || 'No especificado' }}</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">email</mat-icon>
+                                <label for="email" class="text-sm font-medium text-gray-600">Email</label>
+                            </div>
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else emailView" class="w-full">
+                                <mat-label>Email</mat-label>
+                                <input matInput id="email" formControlName="email" placeholder="Ingrese el email" type="email" />
+                                <mat-icon matSuffix class="text-gray-400">email</mat-icon>
+                                <mat-error *ngIf="editClientForm.get('email')?.hasError('required')">El email es obligatorio</mat-error>
+                                <mat-error *ngIf="editClientForm.get('email')?.hasError('email')">Ingrese un email válido</mat-error>
+                            </mat-form-field>
+                            <ng-template #emailView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="break-all font-medium text-gray-800">{{ clientDetails.email || 'No especificado' }}</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">phone</mat-icon>
+                                <label for="phone" class="text-sm font-medium text-gray-600">Teléfono</label>
+                            </div>
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else phoneView" class="w-full">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput id="phone" formControlName="phone" placeholder="Ingrese el teléfono" type="tel" />
+                                <mat-icon matSuffix class="text-gray-400">phone</mat-icon>
+                                <mat-error *ngIf="editClientForm.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
+                            </mat-form-field>
+                            <ng-template #phoneView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="font-medium text-gray-800">{{ clientDetails.phone || 'No disponible' }}</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">location_on</mat-icon>
+                                <label for="locationAddress" class="text-sm font-medium text-gray-600">Dirección</label>
+                            </div>
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else locationAddressView" class="w-full">
+                                <mat-label>Dirección</mat-label>
+                                <input matInput id="locationAddress" formControlName="locationAddress" placeholder="Ingrese la dirección" />
+                                <mat-icon matSuffix class="text-gray-400">location_on</mat-icon>
+                            </mat-form-field>
+                            <ng-template #locationAddressView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="font-medium text-gray-800">{{ clientDetails.locationAddress || 'No disponible' }}</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <!-- Store field -->
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">store</mat-icon>
+                                <label for="storeId" class="text-sm font-medium text-gray-600">Tienda</label>
+                            </div>
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else storeView" class="w-full">
+                                <mat-label>Tienda</mat-label>
+                                <mat-select formControlName="storeId" placeholder="Seleccionar tienda">
+                                    <mat-option>
+                                        <ngx-mat-select-search
+                                            [formControl]="storeFilterCtrl"
+                                            placeholderLabel="Buscar tienda..."
+                                            noEntriesFoundLabel="No se encontraron tiendas"
+                                        >
+                                        </ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option value="">
+                                        <span class="flex items-center">
+                                            <mat-icon class="mr-2 scale-75 text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
+                                            Sin tienda asignada
+                                        </span>
+                                    </mat-option>
+                                    <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+                                        <span class="flex items-center">
+                                            <mat-icon class="mr-2 scale-75 text-barradas-500" svgIcon="mat_outline:storefront"></mat-icon>
+                                            {{ store.name }}
+                                        </span>
                                     </mat-option>
                                 </mat-select>
-                                <mat-icon matPrefix class="mr-2">schedule</mat-icon>
-                                <mat-error *ngIf="newCreditForm.get('selectedTerm')?.hasError('required')">El plazo es
-                                    obligatorio</mat-error>
+                                <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
                             </mat-form-field>
-
-                            <!-- Día de Pago (solo para semanal) -->
-                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed"
-                                *ngIf="newCreditForm.get('paymentType')?.value === 'WEEKLY'">
-                                <mat-label>Día de Pago Semanal</mat-label>
-                                <mat-select formControlName="repaymentDay" required>
-                                    <mat-option *ngFor="let day of weekDays" [value]="day.value">
-                                        {{ day.fullName }}
+                            <ng-template #storeView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="font-medium text-gray-800">{{ clientDetails.store?.name || 'Sin tienda asignada' }}</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <!-- Agent field -->
+                        <div class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">supervised_user_circle</mat-icon>
+                                <label for="agentId" class="text-sm font-medium text-gray-600">Agente</label>
+                            </div>
+                            <mat-form-field appearance="outline" *ngIf="isEditMode; else agentView" class="w-full">
+                                <mat-label>Agente</mat-label>
+                                <mat-select formControlName="agentId" placeholder="Seleccionar agente">
+                                    <mat-option>
+                                        <ngx-mat-select-search
+                                            [formControl]="agentFilterCtrl"
+                                            placeholderLabel="Buscar agente..."
+                                            noEntriesFoundLabel="No se encontraron agentes"
+                                        >
+                                        </ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option [value]="null">
+                                        <span class="flex items-center">
+                                            <mat-icon class="mr-2 scale-75 text-gray-400" svgIcon="mat_outline:person"></mat-icon>
+                                            Sin agente asignado
+                                        </span>
+                                    </mat-option>
+                                    <mat-option *ngFor="let agent of filteredAgents | async" [value]="agent.id">
+                                        <span class="flex items-center">
+                                            <mat-icon class="mr-2 scale-75 text-gray-400" svgIcon="mat_outline:person"></mat-icon>
+                                            {{ agent.firstName }} {{ agent.lastName }}
+                                        </span>
                                     </mat-option>
                                 </mat-select>
-                                <mat-icon matPrefix class="mr-2">calendar_today</mat-icon>
-                                <mat-error *ngIf="newCreditForm.get('repaymentDay')?.hasError('required')">El día de
-                                    pago es obligatorio</mat-error>
                             </mat-form-field>
-
-                            <!-- Archivo de Cotización (QUOTE) -->
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    <mat-icon class="align-middle mr-1" style="font-size: 16px;">receipt</mat-icon>
-                                    Cotización <span class="text-red-500">*</span>
-                                </label>
-                                <div class="flex items-center gap-2">
-                                    <input type="file" #quoteFileInput
-                                        (change)="onQuoteFileSelectedForNewCredit($event)" class="block w-full text-sm text-gray-500
-                                                    file:mr-3 file:py-2 file:px-4
-                                                    file:rounded-lg file:border-0
-                                                    file:text-sm file:font-medium
-                                                    file:bg-barradas-50 file:text-barradas-700
-                                                    hover:file:bg-barradas-100
-                                                    file:cursor-pointer
-                                                    cursor-pointer
-                                                    border border-gray-300 rounded-lg p-2"
-                                        accept=".pdf,.jpg,.jpeg,.png" />
+                            <ng-template #agentView>
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-all duration-200 hover:bg-gray-100">
+                                    <span class="font-medium text-gray-800">{{
+                                        clientDetails.agentId ? clientDetails.agent.firstName + ' ' + clientDetails.agent.lastName : 'No asignado'
+                                    }}</span>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1" *ngIf="newCreditQuoteFile">
-                                    Archivo seleccionado: <span class="font-medium">{{ newCreditQuoteFile.name }}</span>
-                                </p>
-                            </div>
-
-                            <!-- Archivo de Pago Inicial (INITIAL_PAYMENT) -->
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    <mat-icon class="align-middle mr-1" style="font-size: 16px;">receipt</mat-icon>
-                                    Pago Inicial <span class="text-red-500">*</span>
-                                </label>
-                                <div class="flex items-center gap-2">
-                                    <input type="file" #initialPaymentFileInput
-                                        (change)="onInitialPaymentFileSelectedForNewCredit($event)" class="block w-full text-sm text-gray-500
-                                                    file:mr-3 file:py-2 file:px-4
-                                                    file:rounded-lg file:border-0
-                                                    file:text-sm file:font-medium
-                                                    file:bg-barradas-50 file:text-barradas-700
-                                                    hover:file:bg-barradas-100
-                                                    file:cursor-pointer
-                                                    cursor-pointer
-                                                    border border-gray-300 rounded-lg p-2"
-                                        accept=".pdf,.jpg,.jpeg,.png" />
-                                </div>
-                                <p class="text-xs text-gray-500 mt-1" *ngIf="newCreditInitialPaymentFile">
-                                    Archivo seleccionado: <span class="font-medium">{{ newCreditInitialPaymentFile.name }}</span>
-                                </p>
-                            </div>
+                            </ng-template>
                         </div>
-
-                        <div class="flex justify-end gap-2 mt-4">
-                            <button mat-stroked-button type="button" (click)="toggleCreateCreditForm()">
-                                Cancelar
-                            </button>
-                            <button mat-raised-button class="bg-barradas-900 text-white" type="submit"
-                                [disabled]="!newCreditForm.valid || !newCreditQuoteFile || !newCreditInitialPaymentFile">
-                                <mat-icon class="mr-1">add</mat-icon>
-                                Crear Crédito
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
-                <!-- Lista de créditos -->
-                <div class="space-y-4" *ngIf="credits.length > 0; else noCredits">
-                    <div *ngFor="let credit of credits; let i = index"
-                        class="border rounded-lg transition-all duration-200 bg-white" [ngClass]="{
-                                'border-barradas-500 shadow-md ring-1 ring-barradas-500/20': isCreditExpanded(credit.id),
-                                'border-gray-200 hover:border-barradas-300 hover:shadow-sm': !isCreditExpanded(credit.id)
-                            }">
-
-                        <!-- Header del Crédito (Siempre visible) -->
-                        <div class="p-4 cursor-pointer" (click)="onCreditSelect(credit)">
-                            <div class="flex flex-col gap-4">
-                                <!-- Top Row: ID, Status, Date (Right aligned) -->
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center w-8 h-8 rounded-full bg-barradas-100 text-barradas-700 font-bold text-sm">
-                                            {{ i + 1 }}
-                                        </div>
-                                        <span class="text-base font-bold text-gray-800">Crédito</span>
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                            [ngClass]="{
-                                                    'bg-green-100 text-green-800': credit.status === 'ACTIVE',
-                                                    'bg-blue-100 text-blue-800': credit.status === 'PENDING',
-                                                    'bg-purple-100 text-purple-800': credit.status === 'CLOSED',
-                                                    'bg-red-100 text-red-800': credit.status === 'DEFAULTED',
-                                                    'bg-gray-100 text-gray-800': credit.status === 'CANCELLED'
-                                                }">
-                                            {{ statusMapperCredit[credit.status] || credit.status }}
-                                        </span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs text-gray-500 flex items-center"
-                                            *ngIf="credit.repaymentDay">
-                                            <mat-icon class="mr-1 text-barradas-500"
-                                                style="font-size: 16px; width: 16px; height: 16px;">event</mat-icon>
-                                            {{ getWeekDayName(credit.repaymentDay) }}
-                                        </span>
-                                        <mat-icon class="text-gray-400 transition-transform duration-200"
-                                            [class.rotate-180]="isCreditExpanded(credit.id)">
-                                            expand_more
-                                        </mat-icon>
-                                    </div>
+                <!-- Documentos existentes -->
+                <div
+                    class="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:shadow-lg md:mb-6 md:rounded-xl"
+                >
+                    <div class="border-b border-gray-200 bg-gradient-to-r from-barradas-50 to-white p-3 md:p-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center">
+                                <div class="mr-2 flex-shrink-0 rounded-lg bg-blue-100 p-2 md:mr-3">
+                                    <mat-icon class="text-xl text-blue-600">folder</mat-icon>
                                 </div>
-
-                                <!-- Info Grid -->
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div
-                                        class="flex flex-col p-3 rounded-lg bg-barradas-50/50 border border-barradas-100">
-                                        <span
-                                            class="text-xs text-barradas-600 uppercase tracking-wider font-medium mb-1">Monto
-                                            Total</span>
-                                        <span class="text-lg font-bold text-barradas-900">{{
-                                            formatCurrency(credit.totalAmount) }}</span>
-                                    </div>
-                                    <div class="flex flex-col p-3 rounded-lg bg-gray-50 border border-gray-100"
-                                        *ngIf="(credit.initialPaymentAmount ?? credit.initalPayment)">
-                                        <span
-                                            class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Pago
-                                            Inicial</span>
-                                        <span class="text-base font-semibold text-gray-700">{{
-                                            formatCurrency(credit.initialPaymentAmount ?? credit.initalPayment) }}</span>
-                                    </div>
-                                    <div class="flex flex-col p-3 rounded-lg bg-amber-50/80 border border-amber-100"
-                                        *ngIf="credit.outstandingPrincipal != null">
-                                        <span
-                                            class="text-xs text-amber-700 uppercase tracking-wider font-medium mb-1">Pago
-                                            restante</span>
-                                        <span class="text-base font-semibold text-amber-900">{{
-                                            formatCurrency(credit.outstandingPrincipal) }}</span>
-                                    </div>
-                                    <div class="flex flex-col p-3">
-                                        <span
-                                            class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Esquema</span>
-                                        <span class="text-sm font-medium text-gray-700 flex items-center">
-                                            <mat-icon class="text-barradas-400 mr-1"
-                                                style="font-size: 16px; width: 16px; height: 16px;">schedule</mat-icon>
-                                            {{ getPaymentTypeLabel(credit.paymentType) }}
-                                        </span>
-                                        <span class="text-xs text-gray-500 mt-1 ml-5">{{
-                                            getTermLabel(credit.selectedTerm, credit.paymentType) }}</span>
-                                    </div>
-                                    <div class="flex flex-col p-3 items-start md:items-end justify-center">
-                                        <div class="flex items-center gap-2 mb-1"
-                                            *ngIf="hasContractDocuments(credit); else noDocsWarning">
-                                            <mat-icon class="text-green-500"
-                                                style="font-size: 20px; width: 20px; height: 20px;">check_circle</mat-icon>
-                                            <span class="text-xs text-green-700 font-medium">Documentación
-                                                Completa</span>
-                                        </div>
-                                        <ng-template #noDocsWarning>
-                                            <div class="flex items-center gap-2 mb-1">
-                                                <mat-icon class="text-amber-500"
-                                                    style="font-size: 20px; width: 20px; height: 20px;">warning</mat-icon>
-                                                <span class="text-xs text-amber-700 font-medium">Falta
-                                                    Documentación</span>
-                                            </div>
-                                        </ng-template>
-                                        <span class="text-xs text-gray-400">Creado: {{ formatDate(credit.createdAt)
-                                            }}</span>
-                                    </div>
-                                </div>
+                                <h3 class="text-base font-semibold text-gray-800 md:text-lg">Documentos</h3>
+                            </div>
+                            <div class="flex items-center">
+                                <span
+                                    class="inline-flex items-center rounded-full bg-barradas-300/20 px-2 py-1 text-xs font-medium text-barradas-900 md:px-3 md:text-sm"
+                                >
+                                    <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px">description</mat-icon>
+                                    {{ clientDetails.documents?.length || 0 }}
+                                </span>
                             </div>
                         </div>
-
-                        <!-- Detalles Expandibles del Crédito -->
-                        <div *ngIf="isCreditExpanded(credit.id)" class="border-t border-barradas-100 bg-barradas-50/30"
-                            [@slideDown]>
-
-                            <!-- Documentos del Crédito -->
-                            <div class="p-4 border-b border-barradas-100" *ngIf="getCreditDocuments(credit).length > 0">
-                                <div class="flex items-center mb-3">
-                                    <mat-icon class="text-barradas-600 mr-2">folder</mat-icon>
-                                    <h4 class="font-semibold text-barradas-800 text-sm">Documentos</h4>
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div *ngFor="let doc of getCreditDocuments(credit)"
-                                        class="bg-white rounded-lg p-3 border border-barradas-100 flex items-center justify-between hover:shadow-sm transition-shadow">
-                                        <div class="flex items-center flex-1 min-w-0 mr-2">
-                                            <mat-icon class="text-barradas-500 mr-2 flex-shrink-0"
-                                                style="font-size: 20px;">
-                                                {{ getDocumentIcon(doc.docType) }}
-                                            </mat-icon>
-                                            <div class="min-w-0 flex-1">
-                                                <p class="text-xs font-medium text-gray-700">{{
-                                                    docTypeMapper[doc.docType] || doc.docType }}</p>
-                                                <p class="text-xs text-gray-500 truncate">{{ doc.title }}</p>
-                                            </div>
+                    </div>
+                    <!-- Vista de tabla para desktop -->
+                    <div class="hidden overflow-x-auto overflow-y-auto md:block" [ngClass]="{ 'max-h-72': clientDetails.documents.length > 4 }">
+                        <table class="w-full table-fixed divide-y divide-gray-200">
+                            <thead class="sticky top-0 z-10 bg-barradas-50">
+                                <tr>
+                                    <th class="w-1/6 px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tipo</th>
+                                    <th class="w-2/6 px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Nombre</th>
+                                    <th class="w-1/6 px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tamaño</th>
+                                    <th class="w-1/6 px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Fecha</th>
+                                    <th class="w-1/4 px-3 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <tr *ngFor="let doc of clientDetails.documents" class="group hover:bg-gray-50">
+                                    <td class="px-3 py-3">
+                                        <span class="inline-block rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                                            {{ docTypeMapper[doc.docType] || doc.docType }}
+                                        </span>
+                                    </td>
+                                    <td class="px-3 py-3">
+                                        <div class="flex items-center overflow-hidden">
+                                            <mat-icon class="mr-2 flex-shrink-0 text-gray-400">{{ getFileIcon(doc.mimeType) }}</mat-icon>
+                                            <span class="truncate text-sm text-gray-900" matTooltip="{{ doc.title }}">{{ doc.title }}</span>
                                         </div>
-                                        <div class="flex gap-1 flex-shrink-0">
-                                            <button mat-icon-button
-                                                class="text-barradas-600 hover:bg-barradas-50 scale-90"
-                                                (click)="previewFile(doc.id, doc.title, doc.mimeType)" matTooltip="Ver">
-                                                <mat-icon style="font-size: 20px;">visibility</mat-icon>
-                                            </button>
-                                            <button mat-icon-button
-                                                class="text-barradas-600 hover:bg-barradas-50 scale-90"
-                                                (click)="downloadFile(doc.id, doc.title)" matTooltip="Descargar">
-                                                <mat-icon style="font-size: 20px;">download</mat-icon>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Cuotas del Crédito -->
-                            <div class="p-4 border-b border-barradas-100" *ngIf="getCreditInstallments(credit).length > 0">
-                                <div class="flex items-center mb-3">
-                                    <mat-icon class="text-barradas-600 mr-2">calendar_view_month</mat-icon>
-                                    <h4 class="font-semibold text-barradas-800 text-sm">Cuotas</h4>
-                                </div>
-                                <div class="overflow-x-auto rounded-lg border border-barradas-100">
-                                    <table class="min-w-full text-sm">
-                                        <thead class="bg-barradas-50 text-left text-xs text-barradas-700 uppercase">
-                                            <tr>
-                                                <th class="px-3 py-2 font-medium">#</th>
-                                                <th class="px-3 py-2 font-medium">Vencimiento</th>
-                                                <th class="px-3 py-2 font-medium">Monto esperado</th>
-                                                <th class="px-3 py-2 font-medium">Pagado</th>
-                                                <th class="px-3 py-2 font-medium">Mora</th>
-                                                <th class="px-3 py-2 font-medium">Estado</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-barradas-100 bg-white">
-                                            <tr *ngFor="let inst of getCreditInstallments(credit)"
-                                                class="hover:bg-barradas-50/50">
-                                                <td class="px-3 py-2 font-medium text-gray-800">{{ inst.number }}</td>
-                                                <td class="px-3 py-2 text-gray-600">{{ inst.dueDate | date:'dd/MM/yyyy' }}</td>
-                                                <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.expectedAmount) }}</td>
-                                                <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.paidAmount) }}</td>
-                                                <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.lateFeeAccrued) }}</td>
-                                                <td class="px-3 py-2">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                                                        [ngClass]="{
-                                                            'bg-blue-100 text-blue-800': inst.status === 'PENDING',
-                                                            'bg-green-100 text-green-800': inst.status === 'PAID',
-                                                            'bg-red-100 text-red-800': inst.status === 'OVERDUE',
-                                                            'bg-amber-100 text-amber-800': inst.status === 'PARTIAL',
-                                                            'bg-gray-100 text-gray-800': !['PENDING','PAID','OVERDUE','PARTIAL'].includes(inst.status)
-                                                        }">
-                                                        {{ statusMapperInstallment[inst.status] || inst.status }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Gestión del Estado del Crédito -->
-                            @if(hasPermission('credits:update:all:patch:credits.creditId.status')){
-
-                            <div class="p-4 border-b border-barradas-100"
-                                *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'">
-                                <div class="flex items-center mb-3">
-                                    <mat-icon class="text-green-600 mr-2">settings</mat-icon>
-                                    <h4 class="font-semibold text-gray-700 text-sm">Cambiar Estado del Crédito</h4>
-                                </div>
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <button mat-raised-button
-                                        *ngIf="hasPermission('credits:update:all:patch:credits.creditId.status')"
-                                        class="flex-1 text-sm bg-barradas-900 text-white"
-                                        (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')">
-                                        <mat-icon class="mr-1" style="font-size: 18px;">paid</mat-icon>
-                                        Marcar como Pagado
-                                    </button>
-                                    <button mat-stroked-button
-                                        *ngIf="hasPermission('credits:update:all:patch:credits.creditId.status')"
-                                        color="warn"
-                                        (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CANCELLED')"
-                                        class="flex-1 text-sm">
-                                        <mat-icon class="mr-1" style="font-size: 18px;">cancel</mat-icon>
-                                        Cancelar Crédito
-                                    </button>
-                                </div>
-                            </div>
-                            }
-
-                            <!-- Firma Electrónica del Crédito -->
-                            @if(hasPermission('docuseal:read:all:get:docuseal.electronic-signatures')){
-                            <div class="p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div class="flex items-center">
-                                        <mat-icon class="text-barradas-700 mr-2">draw</mat-icon>
-                                        <h4 class="font-semibold text-gray-700 text-sm">Firma Electrónica</h4>
-                                    </div>
-                                    <span *ngIf="getCreditSignature(credit)"
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                        [ngClass]="{
-                                                    'bg-green-100 text-green-800': getCreditSignature(credit).status === 'SIGNED',
-                                                    'bg-blue-100 text-blue-800': getCreditSignature(credit).status === 'PENDING',
-                                                    'bg-yellow-100 text-yellow-800': getCreditSignature(credit).status === 'CREATED',
-                                                    'bg-red-100 text-red-800': getCreditSignature(credit).status === 'EXPIRED',
-                                                    'bg-gray-100 text-gray-800': getCreditSignature(credit).status === 'CANCELLED'
-                                                }">
-                                        {{ statusMapperSignature[getCreditSignature(credit).status] ||
-                                        getCreditSignature(credit).status }}
-                                    </span>
-                                </div>
-
-                                <!-- Si tiene firma electrónica -->
-                                <div *ngIf="getCreditSignature(credit); else noSignature">
-                                    <div class="space-y-3">
-                                        <!-- Botón para eliminar firma -->
+                                    </td>
+                                    <td class="px-3 py-3 text-sm text-gray-500">
+                                        {{ getFileSize(doc.sizeBytes) }}
+                                    </td>
+                                    <td class="px-3 py-3 text-sm text-gray-500">
+                                        {{ formatDate(doc.uploadedAt) }}
+                                    </td>
+                                    <td class="px-3 py-3 text-right text-sm font-medium">
                                         <div class="flex justify-end">
-                                            <button mat-stroked-button
-                                                *ngIf="hasPermission('docuseal:delete:all:delete:docuseal.electronic-signatures.id')"
-                                                color="warn"
-                                                (click)="$event.stopPropagation(); deleteElectronicSignatureProcessForCredit(credit)"
-                                                class="text-xs">
-                                                <mat-icon class="mr-1" style="font-size: 16px;">delete</mat-icon>
-                                                Eliminar Firma
+                                            <!-- Botón previsualizar (solo para PDF e imágenes) -->
+                                            <button
+                                                *ngIf="canPreview(doc.mimeType)"
+                                                mat-icon-button
+                                                color="primary"
+                                                (click)="previewFile(doc.id, doc.title, doc.mimeType)"
+                                                matTooltip="Visualizar"
+                                            >
+                                                <mat-icon>visibility</mat-icon>
+                                            </button>
+
+                                            <!-- Botón descargar -->
+                                            <button mat-icon-button color="accent" (click)="downloadFile(doc.id, doc.title)" matTooltip="Descargar">
+                                                <mat-icon>download</mat-icon>
                                             </button>
                                         </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                                        <!-- Call to Action: Configurar firma -->
-                                        <div *ngIf="getCreditSignature(credit).status === 'CREATED'"
-                                            class="bg-gradient-to-br from-barradas-50 to-white rounded-lg p-4 border border-barradas-200">
-                                            <div class="flex items-center justify-between gap-3">
-                                                <div class="flex-1">
-                                                    <p class="text-sm font-medium text-barradas-900 mb-1">Configure los
-                                                        Campos de Firma</p>
-                                                    <p class="text-xs text-barradas-600">Use el constructor visual para
-                                                        posicionar los campos</p>
-                                                </div>
-                                                <button mat-raised-button
-                                                    *ngIf="hasPermission('docuseal:create:all:post:docuseal.create-signed-token')"
-                                                    class="text-xs whitespace-nowrap bg-barradas-900 text-white"
-                                                    (click)="$event.stopPropagation(); initiateSignatureProcessForCredit(credit)">
-                                                    <mat-icon class="mr-1" style="font-size: 16px;">draw</mat-icon>
-                                                    Configurar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Documentos -->
-                                        <div class="bg-white rounded-lg p-3 border border-gray-200">
-                                            <p class="text-xs font-medium text-gray-700 mb-2">Documentos</p>
-                                            <div class="space-y-2">
-                                                <!-- Documento Original -->
-                                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                                    <div class="flex items-center flex-1 min-w-0 mr-2">
-                                                        <mat-icon class="text-barradas-500 mr-2 flex-shrink-0"
-                                                            style="font-size: 18px;">picture_as_pdf</mat-icon>
-                                                        <span class="text-xs text-gray-700 truncate">Contrato
-                                                            Original</span>
-                                                    </div>
-                                                    @if(hasPermission('documents:read:all:get:documents.docId.download')){
-                                                    <button mat-icon-button color="primary"
-                                                        (click)="$event.stopPropagation(); downloadFile(getCreditSignature(credit).originalDocId, 'contrato.pdf')"
-                                                        matTooltip="Descargar" class="scale-75">
-                                                        <mat-icon style="font-size: 18px;">download</mat-icon>
-                                                    </button>
-                                                    }
-                                                </div>
-
-                                                <!-- Documento Firmado -->
-                                                <div *ngIf="getCreditSignature(credit).signedDocId"
-                                                    class="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
-                                                    <div class="flex items-center flex-1 min-w-0 mr-2">
-                                                        <mat-icon class="text-green-500 mr-2 flex-shrink-0"
-                                                            style="font-size: 18px;">verified</mat-icon>
-                                                        <span class="text-xs text-gray-700 truncate">Documento
-                                                            Firmado</span>
-                                                    </div>
-                                                    <div class="flex gap-1">
-                                                        <button mat-icon-button color="primary"
-                                                            (click)="$event.stopPropagation(); previewFile(getCreditSignature(credit).signedDocId, 'firmado.pdf', 'application/pdf')"
-                                                            matTooltip="Ver" class="scale-75">
-                                                            <mat-icon style="font-size: 18px;">visibility</mat-icon>
-                                                        </button>
-                                                        <button mat-icon-button color="accent"
-                                                            (click)="$event.stopPropagation(); downloadFile(getCreditSignature(credit).signedDocId, 'firmado.pdf')"
-                                                            matTooltip="Descargar" class="scale-75">
-                                                            <mat-icon style="font-size: 18px;">download</mat-icon>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- URL de Firma -->
-                                        <div *ngIf="getCreditSignature(credit).signatureUrl && getCreditSignature(credit).status === 'PENDING'"
-                                            class="bg-green-50 rounded-lg p-3 border border-green-200">
-                                            <p class="text-xs font-medium text-gray-700 mb-2">Enlace de Firma</p>
-                                            <div class="flex gap-2">
-                                                <input type="text"
-                                                    [value]="getCreditSignature(credit).extra?.signAppUrl || getCreditSignature(credit).signatureUrl"
-                                                    readonly
-                                                    class="flex-1 px-2 py-1.5 bg-white border border-gray-300 rounded text-xs">
-                                                <button mat-icon-button color="primary"
-                                                    (click)="$event.stopPropagation(); copySignatureUrlForCredit(getCreditSignature(credit).extra?.signAppUrl || getCreditSignature(credit).signatureUrl)"
-                                                    matTooltip="Copiar" class="flex-shrink-0">
-                                                    <mat-icon style="font-size: 18px;">content_copy</mat-icon>
-                                                </button>
-                                                <a mat-icon-button color="accent"
-                                                    [href]="getCreditSignature(credit).extra?.signAppUrl || getCreditSignature(credit).signatureUrl"
-                                                    target="_blank" matTooltip="Abrir" class="flex-shrink-0">
-                                                    <mat-icon style="font-size: 18px;">open_in_new</mat-icon>
-                                                </a>
-                                            </div>
-                                        </div>
+                    <!-- Vista de tarjetas para móviles -->
+                    <div class="max-h-96 divide-y divide-gray-200 overflow-y-auto md:hidden">
+                        <div *ngFor="let doc of clientDetails.documents" class="p-4 transition-colors hover:bg-gray-50">
+                            <div class="mb-3 flex items-start justify-between">
+                                <div class="flex min-w-0 flex-1 items-center space-x-2">
+                                    <mat-icon class="flex-shrink-0 text-lg text-gray-400">{{ getFileIcon(doc.mimeType) }}</mat-icon>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-sm font-medium text-gray-900">{{ doc.title }}</p>
+                                        <span class="mt-1 inline-block rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                                            {{ docTypeMapper[doc.docType] || doc.docType }}
+                                        </span>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="mb-3 flex items-center justify-between text-xs text-gray-500">
+                                <span>{{ getFileSize(doc.sizeBytes) }}</span>
+                                <span>{{ formatDate(doc.uploadedAt) }}</span>
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button
+                                    *ngIf="canPreview(doc.mimeType)"
+                                    mat-icon-button
+                                    color="primary"
+                                    (click)="previewFile(doc.id, doc.title, doc.mimeType)"
+                                    matTooltip="Visualizar"
+                                >
+                                    <mat-icon>visibility</mat-icon>
+                                </button>
+                                <button mat-icon-button color="accent" (click)="downloadFile(doc.id, doc.title)" matTooltip="Descargar">
+                                    <mat-icon>download</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="!clientDetails.documents || clientDetails.documents.length === 0" class="p-8 text-center">
+                            <mat-icon class="mb-2 text-5xl text-gray-300">folder_open</mat-icon>
+                            <p class="text-sm text-gray-500">No hay documentos</p>
+                        </div>
+                    </div>
+                </div>
 
-                                <!-- Si NO tiene firma electrónica -->
-                                <ng-template #noSignature>
-                                    @if(hasPermission('docuseal:create:all:post:docuseal.create-signed-token')){
-                                    <div class="bg-white rounded-lg p-4 border border-dashed border-gray-300">
-                                        <div class="text-center mb-4">
-                                            <mat-icon class="text-gray-400 text-4xl mb-2">edit_document</mat-icon>
-                                            <p class="text-sm text-gray-600">No hay proceso de firma iniciado</p>
+                <!-- Subir documentos -->
+                <div
+                    class="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:shadow-lg md:mb-6 md:rounded-xl"
+                    *ngIf="isEditMode"
+                >
+                    <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100 p-3 md:p-4">
+                        <div class="flex items-start gap-2 md:gap-3">
+                            <div class="flex-shrink-0 rounded-lg bg-green-100 p-2">
+                                <mat-icon class="text-xl text-green-600">cloud_upload</mat-icon>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-base font-semibold text-gray-800 md:text-lg">Subir Documentos</h3>
+                                <p class="mt-1 text-xs text-gray-600 md:text-sm">Seleccione los archivos que desea actualizar o agregar</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:gap-6 md:p-6 lg:grid-cols-3">
+                        <div *ngFor="let docType of fileUploads | keyvalue" class="group flex flex-col">
+                            <div class="mb-2 flex items-center">
+                                <mat-icon class="mr-2 text-sm text-gray-400">{{ getDocumentIcon(docType.key) }}</mat-icon>
+                                <label [for]="docType.key" class="text-sm font-medium text-gray-600">{{ docType.value.label }}</label>
+                                <span *ngIf="docType.value.required" class="ml-1 text-red-500">*</span>
+                            </div>
+                            <div class="relative">
+                                <input
+                                    [id]="docType.key"
+                                    type="file"
+                                    (change)="onFileSelected($event, docType.key)"
+                                    class="block w-full cursor-pointer rounded-lg border border-gray-300 p-2 text-sm text-gray-500 transition-all duration-200 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-barradas-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-barradas-700 hover:border-barradas-300 hover:file:bg-barradas-300/20 focus:border-barradas-500 focus:ring-2 focus:ring-barradas-300/50"
+                                    accept="image/*,.pdf"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <mat-tab label="Créditos y Pagos">
+                @if (hasPermission('credits:read:all:get:credits.list.clientId')) {
+                    <!-- Sección de Créditos -->
+                    <div
+                        class="mb-4 mt-4 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:shadow-lg md:mb-6 md:rounded-xl"
+                    >
+                        <div class="border-b border-gray-200 bg-gradient-to-r from-barradas-50 to-barradas-300/30 p-3 md:p-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center">
+                                    <div class="mr-2 flex-shrink-0 rounded-lg bg-barradas-300/20 p-2 md:mr-3">
+                                        <mat-icon class="text-xl text-barradas-700">account_balance_wallet</mat-icon>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-gray-800 md:text-lg">Créditos del Cliente</h3>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="inline-flex items-center rounded-full bg-barradas-300/20 px-3 py-1 text-xs font-medium text-barradas-900 md:text-sm"
+                                    >
+                                        <mat-icon class="mr-1" style="font-size: 16px; width: 16px; height: 16px">numbers</mat-icon>
+                                        {{ credits.length }} crédito{{ credits.length !== 1 ? 's' : '' }}
+                                    </span>
+                                    <button
+                                        mat-raised-button
+                                        *ngIf="hasPermission('credits:create:all:post:credits')"
+                                        class="bg-barradas-900 text-xs text-white"
+                                        (click)="toggleCreateCreditForm()"
+                                    >
+                                        <mat-icon class="mr-1" style="font-size: 16px">add</mat-icon>
+                                        Nuevo Crédito
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 md:p-6">
+                            <!-- Formulario para crear nuevo crédito -->
+                            <div *ngIf="showCreateCreditForm" class="mb-6 rounded-lg border border-white bg-white p-4" [@slideDown]>
+                                <div class="mb-4 flex items-center justify-between">
+                                    <h4 class="text-sm font-semibold text-gray-700">Crear Nuevo Crédito</h4>
+                                    <button mat-icon-button (click)="toggleCreateCreditForm()">
+                                        <mat-icon class="text-gray-500">close</mat-icon>
+                                    </button>
+                                </div>
+
+                                <form [formGroup]="newCreditForm" (ngSubmit)="createNewCredit()">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <!-- Monto Total -->
+                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+                                            <mat-label>Monto Total del Crédito</mat-label>
+                                            <input matInput formControlName="totalAmount" type="number" min="1" required />
+                                            <span matTextSuffix>&nbsp;MXN</span>
+                                            <mat-icon matPrefix class="mr-2">attach_money</mat-icon>
+                                            <mat-error *ngIf="newCreditForm.get('totalAmount')?.hasError('required')"
+                                                >El monto total es obligatorio</mat-error
+                                            >
+                                            <mat-error *ngIf="newCreditForm.get('totalAmount')?.hasError('min')"
+                                                >El monto debe ser mayor a 0</mat-error
+                                            >
+                                        </mat-form-field>
+
+                                        <!-- Pago Inicial -->
+                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+                                            <mat-label>Pago Inicial</mat-label>
+                                            <input matInput formControlName="initialPayment" type="number" min="0" required />
+                                            <span matTextSuffix>&nbsp;MXN</span>
+                                            <mat-icon matPrefix class="mr-2">payment</mat-icon>
+                                            <mat-hint>{{ newCreditForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
+                                            <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('required')"
+                                                >El pago inicial es obligatorio</mat-error
+                                            >
+                                            <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('exceedsTotal')"
+                                                >El pago inicial no puede superar el monto total</mat-error
+                                            >
+                                        </mat-form-field>
+
+                                        <!-- Tipo de Pago -->
+                                        <div class="col-span-1 md:col-span-2">
+                                            <label class="mb-2 block text-sm font-medium text-gray-700">Tipo de Pago</label>
+                                            <mat-button-toggle-group formControlName="paymentType" class="w-full">
+                                                <mat-button-toggle value="WEEKLY" class="flex-1">
+                                                    <mat-icon class="mr-2">event</mat-icon>
+                                                    Semanal
+                                                </mat-button-toggle>
+                                                <mat-button-toggle value="DAILY" class="flex-1">
+                                                    <mat-icon class="mr-2">today</mat-icon>
+                                                    Diario
+                                                </mat-button-toggle>
+                                            </mat-button-toggle-group>
                                         </div>
 
-                                        <!-- Selector de archivo -->
-                                        <div class="mb-3">
-                                            <label class="block text-xs font-medium text-gray-700 mb-2">
-                                                <mat-icon class="align-middle mr-1"
-                                                    style="font-size: 14px;">cloud_upload</mat-icon>
-                                                Contrato Original (PDF)
+                                        <!-- Plazo -->
+                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+                                            <mat-label>Plazo</mat-label>
+                                            <mat-select formControlName="selectedTerm" required>
+                                                <mat-option *ngFor="let term of availableTerms" [value]="term">
+                                                    {{ getTermLabel(term, newCreditForm.get('paymentType')?.value) }}
+                                                </mat-option>
+                                            </mat-select>
+                                            <mat-icon matPrefix class="mr-2">schedule</mat-icon>
+                                            <mat-error *ngIf="newCreditForm.get('selectedTerm')?.hasError('required')"
+                                                >El plazo es obligatorio</mat-error
+                                            >
+                                        </mat-form-field>
+
+                                        <!-- Día de Pago (solo para semanal) -->
+                                        <mat-form-field
+                                            appearance="outline"
+                                            class="w-full"
+                                            subscriptSizing="fixed"
+                                            *ngIf="newCreditForm.get('paymentType')?.value === 'WEEKLY'"
+                                        >
+                                            <mat-label>Día de Pago Semanal</mat-label>
+                                            <mat-select formControlName="repaymentDay" required>
+                                                <mat-option *ngFor="let day of weekDays" [value]="day.value">
+                                                    {{ day.fullName }}
+                                                </mat-option>
+                                            </mat-select>
+                                            <mat-icon matPrefix class="mr-2">calendar_today</mat-icon>
+                                            <mat-error *ngIf="newCreditForm.get('repaymentDay')?.hasError('required')"
+                                                >El día de pago es obligatorio</mat-error
+                                            >
+                                        </mat-form-field>
+
+                                        <!-- Archivo de Cotización (QUOTE) -->
+                                        <div class="col-span-1 md:col-span-2">
+                                            <label class="mb-2 block text-sm font-medium text-gray-700">
+                                                <mat-icon class="align-middle mr-1" style="font-size: 16px">receipt</mat-icon>
+                                                Cotización <span class="text-red-500">*</span>
                                             </label>
-                                            <input type="file" #contractFileInput
-                                                (change)="onFileSelectedForCredit($event, 'CONTRACT_ORIGINAL', credit)"
-                                                class="block w-full text-xs text-gray-500
-                                                                    file:mr-3 file:py-2 file:px-4
-                                                                    file:rounded-lg file:border-0
-                                                                    file:text-xs file:font-medium
-                                                                    file:bg-barradas-50 file:text-barradas-700
-                                                                    hover:file:bg-barradas-100
-                                                                    file:cursor-pointer
-                                                                    cursor-pointer
-                                                                    border border-gray-300 rounded-lg p-2"
-                                                accept=".pdf" />
-                                            <p class="text-xs text-gray-500 mt-1"
-                                                *ngIf="getContractFileForCredit(credit.id)">
-                                                Archivo seleccionado: <span class="font-medium">{{
-                                                    getContractFileNameForCredit(credit.id) }}</span>
+                                            <div class="flex items-center gap-2">
+                                                <input
+                                                    type="file"
+                                                    #quoteFileInput
+                                                    (change)="onQuoteFileSelectedForNewCredit($event)"
+                                                    class="hover:file:bg-barradas-100 block w-full cursor-pointer rounded-lg border border-gray-300 p-2 text-sm text-gray-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-barradas-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-barradas-700"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                />
+                                            </div>
+                                            <p class="mt-1 text-xs text-gray-500" *ngIf="newCreditQuoteFile">
+                                                Archivo seleccionado: <span class="font-medium">{{ newCreditQuoteFile.name }}</span>
                                             </p>
                                         </div>
 
-                                        <button mat-raised-button
-                                            *ngIf="hasPermission('docuseal:create:all:post:docuseal.create-signed-token')"
-                                            color="primary"
-                                            (click)="$event.stopPropagation(); createSignatureProcessForCredit(credit)"
-                                            [disabled]="!getContractFileForCredit(credit.id)" class="w-full text-sm">
-                                            <mat-icon class="mr-1" style="font-size: 18px;">upload_file</mat-icon>
-                                            Iniciar Proceso de Firma
+                                        <!-- Archivo de Pago Inicial (INITIAL_PAYMENT) -->
+                                        <div class="col-span-1 md:col-span-2">
+                                            <label class="mb-2 block text-sm font-medium text-gray-700">
+                                                <mat-icon class="align-middle mr-1" style="font-size: 16px">receipt</mat-icon>
+                                                Pago Inicial <span class="text-red-500">*</span>
+                                            </label>
+                                            <div class="flex items-center gap-2">
+                                                <input
+                                                    type="file"
+                                                    #initialPaymentFileInput
+                                                    (change)="onInitialPaymentFileSelectedForNewCredit($event)"
+                                                    class="hover:file:bg-barradas-100 block w-full cursor-pointer rounded-lg border border-gray-300 p-2 text-sm text-gray-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-barradas-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-barradas-700"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                />
+                                            </div>
+                                            <p class="mt-1 text-xs text-gray-500" *ngIf="newCreditInitialPaymentFile">
+                                                Archivo seleccionado: <span class="font-medium">{{ newCreditInitialPaymentFile.name }}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 flex justify-end gap-2">
+                                        <button mat-stroked-button type="button" (click)="toggleCreateCreditForm()">Cancelar</button>
+                                        <button
+                                            mat-raised-button
+                                            class="bg-barradas-900 text-white"
+                                            type="submit"
+                                            [disabled]="!newCreditForm.valid || !newCreditQuoteFile || !newCreditInitialPaymentFile"
+                                        >
+                                            <mat-icon class="mr-1">add</mat-icon>
+                                            Crear Crédito
                                         </button>
                                     </div>
-                                    }
-                                </ng-template>
+                                </form>
                             </div>
-                            }
+
+                            <!-- Lista de créditos -->
+                            <div class="space-y-4" *ngIf="credits.length > 0; else noCredits">
+                                <div
+                                    *ngFor="let credit of credits; let i = index"
+                                    class="rounded-lg border bg-white transition-all duration-200"
+                                    [ngClass]="{
+                                        'border-barradas-500 shadow-md ring-1 ring-barradas-500/20': isCreditExpanded(credit.id),
+                                        'border-gray-200 hover:border-barradas-300 hover:shadow-sm': !isCreditExpanded(credit.id),
+                                    }"
+                                >
+                                    <!-- Header del Crédito (Siempre visible) -->
+                                    <div class="cursor-pointer p-4" (click)="onCreditSelect(credit)">
+                                        <div class="flex flex-col gap-4">
+                                            <!-- Top Row: ID, Status, Date (Right aligned) -->
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="bg-barradas-100 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-barradas-700"
+                                                    >
+                                                        {{ i + 1 }}
+                                                    </div>
+                                                    <span class="text-base font-bold text-gray-800">Crédito</span>
+                                                    <span
+                                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                                        [ngClass]="{
+                                                            'bg-green-100 text-green-800': credit.status === 'ACTIVE',
+                                                            'bg-blue-100 text-blue-800': credit.status === 'PENDING',
+                                                            'bg-purple-100 text-purple-800': credit.status === 'CLOSED',
+                                                            'bg-red-100 text-red-800': credit.status === 'DEFAULTED',
+                                                            'bg-gray-100 text-gray-800': credit.status === 'CANCELLED',
+                                                        }"
+                                                    >
+                                                        {{ statusMapperCredit[credit.status] || credit.status }}
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="flex items-center text-xs text-gray-500" *ngIf="credit.repaymentDay">
+                                                        <mat-icon class="mr-1 text-barradas-500" style="font-size: 16px; width: 16px; height: 16px"
+                                                            >event</mat-icon
+                                                        >
+                                                        {{ getWeekDayName(credit.repaymentDay) }}
+                                                    </span>
+                                                    <mat-icon
+                                                        class="text-gray-400 transition-transform duration-200"
+                                                        [class.rotate-180]="isCreditExpanded(credit.id)"
+                                                    >
+                                                        expand_more
+                                                    </mat-icon>
+                                                </div>
+                                            </div>
+
+                                            <!-- Info Grid -->
+                                            <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                                <div class="border-barradas-100 flex flex-col rounded-lg border bg-barradas-50/50 p-3">
+                                                    <span class="text-barradas-600 mb-1 text-xs font-medium uppercase tracking-wider"
+                                                        >Monto Total</span
+                                                    >
+                                                    <span class="text-lg font-bold text-barradas-900">{{ formatCurrency(credit.totalAmount) }}</span>
+                                                </div>
+                                                <div
+                                                    class="flex flex-col rounded-lg border border-gray-100 bg-gray-50 p-3"
+                                                    *ngIf="credit.initialPaymentAmount ?? credit.initalPayment"
+                                                >
+                                                    <span class="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">Pago Inicial</span>
+                                                    <span class="text-base font-semibold text-gray-700">{{
+                                                        formatCurrency(credit.initialPaymentAmount ?? credit.initalPayment)
+                                                    }}</span>
+                                                </div>
+                                                <div
+                                                    class="flex flex-col rounded-lg border border-amber-100 bg-amber-50/80 p-3"
+                                                    *ngIf="credit.outstandingPrincipal != null"
+                                                >
+                                                    <span class="mb-1 text-xs font-medium uppercase tracking-wider text-amber-700"
+                                                        >Pago restante</span
+                                                    >
+                                                    <span class="text-base font-semibold text-amber-900">{{
+                                                        formatCurrency(credit.outstandingPrincipal)
+                                                    }}</span>
+                                                </div>
+                                                <div class="flex flex-col p-3">
+                                                    <span class="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">Esquema</span>
+                                                    <span class="flex items-center text-sm font-medium text-gray-700">
+                                                        <mat-icon class="text-barradas-400 mr-1" style="font-size: 16px; width: 16px; height: 16px"
+                                                            >schedule</mat-icon
+                                                        >
+                                                        {{ getPaymentTypeLabel(credit.paymentType) }}
+                                                    </span>
+                                                    <span class="ml-5 mt-1 text-xs text-gray-500">{{
+                                                        getTermLabel(credit.selectedTerm, credit.paymentType)
+                                                    }}</span>
+                                                </div>
+                                                <div class="flex flex-col items-start justify-center p-3 md:items-end">
+                                                    <div
+                                                        class="mb-1 flex items-center gap-2"
+                                                        *ngIf="hasContractDocuments(credit); else noDocsWarning"
+                                                    >
+                                                        <mat-icon class="text-green-500" style="font-size: 20px; width: 20px; height: 20px"
+                                                            >check_circle</mat-icon
+                                                        >
+                                                        <span class="text-xs font-medium text-green-700">Documentación Completa</span>
+                                                    </div>
+                                                    <ng-template #noDocsWarning>
+                                                        <div class="mb-1 flex items-center gap-2">
+                                                            <mat-icon class="text-amber-500" style="font-size: 20px; width: 20px; height: 20px"
+                                                                >warning</mat-icon
+                                                            >
+                                                            <span class="text-xs font-medium text-amber-700">Falta Documentación</span>
+                                                        </div>
+                                                    </ng-template>
+                                                    <span class="text-xs text-gray-400">Creado: {{ formatDate(credit.createdAt) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Detalles Expandibles del Crédito -->
+                                    <div *ngIf="isCreditExpanded(credit.id)" class="border-barradas-100 border-t bg-barradas-50/30" [@slideDown]>
+                                        <!-- Documentos del Crédito -->
+                                        <div class="border-barradas-100 border-b p-4" *ngIf="getCreditDocuments(credit).length > 0">
+                                            <div class="mb-3 flex items-center">
+                                                <mat-icon class="text-barradas-600 mr-2">folder</mat-icon>
+                                                <h4 class="text-barradas-800 text-sm font-semibold">Documentos</h4>
+                                            </div>
+                                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                <div
+                                                    *ngFor="let doc of getCreditDocuments(credit)"
+                                                    class="border-barradas-100 flex items-center justify-between rounded-lg border bg-white p-3 transition-shadow hover:shadow-sm"
+                                                >
+                                                    <div class="mr-2 flex min-w-0 flex-1 items-center">
+                                                        <mat-icon class="mr-2 flex-shrink-0 text-barradas-500" style="font-size: 20px">
+                                                            {{ getDocumentIcon(doc.docType) }}
+                                                        </mat-icon>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-xs font-medium text-gray-700">
+                                                                {{ docTypeMapper[doc.docType] || doc.docType }}
+                                                            </p>
+                                                            <p class="truncate text-xs text-gray-500">{{ doc.title }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-shrink-0 gap-1">
+                                                        <button
+                                                            mat-icon-button
+                                                            class="text-barradas-600 scale-90 hover:bg-barradas-50"
+                                                            (click)="previewFile(doc.id, doc.title, doc.mimeType)"
+                                                            matTooltip="Ver"
+                                                        >
+                                                            <mat-icon style="font-size: 20px">visibility</mat-icon>
+                                                        </button>
+                                                        <button
+                                                            mat-icon-button
+                                                            class="text-barradas-600 scale-90 hover:bg-barradas-50"
+                                                            (click)="downloadFile(doc.id, doc.title)"
+                                                            matTooltip="Descargar"
+                                                        >
+                                                            <mat-icon style="font-size: 20px">download</mat-icon>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cuotas del Crédito -->
+                                        <div class="border-barradas-100 border-b p-4" *ngIf="getCreditInstallments(credit).length > 0">
+                                            <div class="mb-3 flex items-center">
+                                                <mat-icon class="text-barradas-600 mr-2">calendar_view_month</mat-icon>
+                                                <h4 class="text-barradas-800 text-sm font-semibold">Cuotas</h4>
+                                            </div>
+                                            <div class="border-barradas-100 overflow-x-auto rounded-lg border">
+                                                <table class="min-w-full text-sm">
+                                                    <thead class="bg-barradas-50 text-left text-xs uppercase text-barradas-700">
+                                                        <tr>
+                                                            <th class="px-3 py-2 font-medium">#</th>
+                                                            <th class="px-3 py-2 font-medium">Vencimiento</th>
+                                                            <th class="px-3 py-2 font-medium">Monto esperado</th>
+                                                            <th class="px-3 py-2 font-medium">Pagado</th>
+                                                            <th class="px-3 py-2 font-medium">Días de mora</th>
+                                                            <th class="px-3 py-2 font-medium">Estado</th>
+                                                            <th class="px-3 py-2 text-right font-medium">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-barradas-100 divide-y bg-white">
+                                                        <tr *ngFor="let inst of getCreditInstallments(credit)" class="hover:bg-barradas-50/50">
+                                                            <td class="px-3 py-2 font-medium text-gray-800">{{ inst.number }}</td>
+                                                            <td class="px-3 py-2 text-gray-600">{{ inst.dueDate | date: 'dd/MM/yyyy' }}</td>
+                                                            <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.expectedAmount) }}</td>
+                                                            <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.paidAmount) }}</td>
+                                                            <td class="px-3 py-2 text-gray-700">{{ inst.daysOverdue || 0 }}</td>
+                                                            <td class="px-3 py-2">
+                                                                <span
+                                                                    class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
+                                                                    [ngClass]="{
+                                                                        'bg-blue-100 text-blue-800': inst.status === 'PENDING',
+                                                                        'bg-green-100 text-green-800': inst.status === 'PAID',
+                                                                        'bg-red-100 text-red-800': inst.status === 'OVERDUE',
+                                                                        'bg-amber-100 text-amber-800': inst.status === 'PARTIAL',
+                                                                        'bg-gray-100 text-gray-800': ![
+                                                                            'PENDING',
+                                                                            'PAID',
+                                                                            'OVERDUE',
+                                                                            'PARTIAL',
+                                                                        ].includes(inst.status),
+                                                                    }"
+                                                                >
+                                                                    {{ statusMapperInstallment[inst.status] || inst.status }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="px-3 py-2 text-right">
+                                                                <button
+                                                                    *ngIf="inst.status !== 'PAID'"
+                                                                    mat-icon-button
+                                                                    color="primary"
+                                                                    matTooltip="Registrar pago"
+                                                                    (click)="$event.stopPropagation(); openPaymentDialog(credit, inst)"
+                                                                    class="scale-90"
+                                                                >
+                                                                    <mat-icon style="font-size: 20px">payments</mat-icon>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Gestión del Estado del Crédito -->
+                                        @if (hasPermission('credits:update:all:patch:credits.creditId.status')) {
+                                            <div
+                                                class="border-barradas-100 border-b p-4"
+                                                *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'"
+                                            >
+                                                <div class="mb-3 flex items-center">
+                                                    <mat-icon class="mr-2 text-green-600">settings</mat-icon>
+                                                    <h4 class="text-sm font-semibold text-gray-700">Cambiar Estado del Crédito</h4>
+                                                </div>
+                                                <div class="flex flex-col gap-2 sm:flex-row">
+                                                    <button
+                                                        mat-raised-button
+                                                        *ngIf="hasPermission('credits:update:all:patch:credits.creditId.status')"
+                                                        class="flex-1 bg-barradas-900 text-sm text-white"
+                                                        (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')"
+                                                    >
+                                                        <mat-icon class="mr-1" style="font-size: 18px">paid</mat-icon>
+                                                        Marcar como Pagado
+                                                    </button>
+                                                    <button
+                                                        mat-stroked-button
+                                                        *ngIf="hasPermission('credits:update:all:patch:credits.creditId.status')"
+                                                        color="warn"
+                                                        (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CANCELLED')"
+                                                        class="flex-1 text-sm"
+                                                    >
+                                                        <mat-icon class="mr-1" style="font-size: 18px">cancel</mat-icon>
+                                                        Cancelar Crédito
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Firma Electrónica del Crédito -->
+                                        @if (hasPermission('docuseal:read:all:get:docuseal.electronic-signatures')) {
+                                            <div class="p-4">
+                                                <div class="mb-3 flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <mat-icon class="mr-2 text-barradas-700">draw</mat-icon>
+                                                        <h4 class="text-sm font-semibold text-gray-700">Firma Electrónica</h4>
+                                                    </div>
+                                                    <span
+                                                        *ngIf="getCreditSignature(credit)"
+                                                        class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium"
+                                                        [ngClass]="{
+                                                            'bg-green-100 text-green-800': getCreditSignature(credit).status === 'SIGNED',
+                                                            'bg-blue-100 text-blue-800': getCreditSignature(credit).status === 'PENDING',
+                                                            'bg-yellow-100 text-yellow-800': getCreditSignature(credit).status === 'CREATED',
+                                                            'bg-red-100 text-red-800': getCreditSignature(credit).status === 'EXPIRED',
+                                                            'bg-gray-100 text-gray-800': getCreditSignature(credit).status === 'CANCELLED',
+                                                        }"
+                                                    >
+                                                        {{
+                                                            statusMapperSignature[getCreditSignature(credit).status] ||
+                                                                getCreditSignature(credit).status
+                                                        }}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Si tiene firma electrónica -->
+                                                <div *ngIf="getCreditSignature(credit); else noSignature">
+                                                    <div class="space-y-3">
+                                                        <!-- Botón para eliminar firma -->
+                                                        <div class="flex justify-end">
+                                                            <button
+                                                                mat-stroked-button
+                                                                *ngIf="hasPermission('docuseal:delete:all:delete:docuseal.electronic-signatures.id')"
+                                                                color="warn"
+                                                                (click)="$event.stopPropagation(); deleteElectronicSignatureProcessForCredit(credit)"
+                                                                class="text-xs"
+                                                            >
+                                                                <mat-icon class="mr-1" style="font-size: 16px">delete</mat-icon>
+                                                                Eliminar Firma
+                                                            </button>
+                                                        </div>
+
+                                                        <!-- Call to Action: Configurar firma -->
+                                                        <div
+                                                            *ngIf="getCreditSignature(credit).status === 'CREATED'"
+                                                            class="border-barradas-200 rounded-lg border bg-gradient-to-br from-barradas-50 to-white p-4"
+                                                        >
+                                                            <div class="flex items-center justify-between gap-3">
+                                                                <div class="flex-1">
+                                                                    <p class="mb-1 text-sm font-medium text-barradas-900">
+                                                                        Configure los Campos de Firma
+                                                                    </p>
+                                                                    <p class="text-barradas-600 text-xs">
+                                                                        Use el constructor visual para posicionar los campos
+                                                                    </p>
+                                                                </div>
+                                                                <button
+                                                                    mat-raised-button
+                                                                    *ngIf="hasPermission('docuseal:create:all:post:docuseal.create-signed-token')"
+                                                                    class="whitespace-nowrap bg-barradas-900 text-xs text-white"
+                                                                    (click)="$event.stopPropagation(); initiateSignatureProcessForCredit(credit)"
+                                                                >
+                                                                    <mat-icon class="mr-1" style="font-size: 16px">draw</mat-icon>
+                                                                    Configurar
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Documentos -->
+                                                        <div class="rounded-lg border border-gray-200 bg-white p-3">
+                                                            <p class="mb-2 text-xs font-medium text-gray-700">Documentos</p>
+                                                            <div class="space-y-2">
+                                                                <!-- Documento Original -->
+                                                                <div class="flex items-center justify-between rounded bg-gray-50 p-2">
+                                                                    <div class="mr-2 flex min-w-0 flex-1 items-center">
+                                                                        <mat-icon class="mr-2 flex-shrink-0 text-barradas-500" style="font-size: 18px"
+                                                                            >picture_as_pdf</mat-icon
+                                                                        >
+                                                                        <span class="truncate text-xs text-gray-700">Contrato Original</span>
+                                                                    </div>
+                                                                    @if (hasPermission('documents:read:all:get:documents.docId.download')) {
+                                                                        <button
+                                                                            mat-icon-button
+                                                                            color="primary"
+                                                                            (click)="
+                                                                                $event.stopPropagation();
+                                                                                downloadFile(getCreditSignature(credit).originalDocId, 'contrato.pdf')
+                                                                            "
+                                                                            matTooltip="Descargar"
+                                                                            class="scale-75"
+                                                                        >
+                                                                            <mat-icon style="font-size: 18px">download</mat-icon>
+                                                                        </button>
+                                                                    }
+                                                                </div>
+
+                                                                <!-- Documento Firmado -->
+                                                                <div
+                                                                    *ngIf="getCreditSignature(credit).signedDocId"
+                                                                    class="flex items-center justify-between rounded border border-green-200 bg-green-50 p-2"
+                                                                >
+                                                                    <div class="mr-2 flex min-w-0 flex-1 items-center">
+                                                                        <mat-icon class="mr-2 flex-shrink-0 text-green-500" style="font-size: 18px"
+                                                                            >verified</mat-icon
+                                                                        >
+                                                                        <span class="truncate text-xs text-gray-700">Documento Firmado</span>
+                                                                    </div>
+                                                                    <div class="flex gap-1">
+                                                                        <button
+                                                                            mat-icon-button
+                                                                            color="primary"
+                                                                            (click)="
+                                                                                $event.stopPropagation();
+                                                                                previewFile(
+                                                                                    getCreditSignature(credit).signedDocId,
+                                                                                    'firmado.pdf',
+                                                                                    'application/pdf'
+                                                                                )
+                                                                            "
+                                                                            matTooltip="Ver"
+                                                                            class="scale-75"
+                                                                        >
+                                                                            <mat-icon style="font-size: 18px">visibility</mat-icon>
+                                                                        </button>
+                                                                        <button
+                                                                            mat-icon-button
+                                                                            color="accent"
+                                                                            (click)="
+                                                                                $event.stopPropagation();
+                                                                                downloadFile(getCreditSignature(credit).signedDocId, 'firmado.pdf')
+                                                                            "
+                                                                            matTooltip="Descargar"
+                                                                            class="scale-75"
+                                                                        >
+                                                                            <mat-icon style="font-size: 18px">download</mat-icon>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- URL de Firma -->
+                                                        <div
+                                                            *ngIf="
+                                                                getCreditSignature(credit).signatureUrl &&
+                                                                getCreditSignature(credit).status === 'PENDING'
+                                                            "
+                                                            class="rounded-lg border border-green-200 bg-green-50 p-3"
+                                                        >
+                                                            <p class="mb-2 text-xs font-medium text-gray-700">Enlace de Firma</p>
+                                                            <div class="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    [value]="
+                                                                        getCreditSignature(credit).extra?.signAppUrl ||
+                                                                        getCreditSignature(credit).signatureUrl
+                                                                    "
+                                                                    readonly
+                                                                    class="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-xs"
+                                                                />
+                                                                <button
+                                                                    mat-icon-button
+                                                                    color="primary"
+                                                                    (click)="
+                                                                        $event.stopPropagation();
+                                                                        copySignatureUrlForCredit(
+                                                                            getCreditSignature(credit).extra?.signAppUrl ||
+                                                                                getCreditSignature(credit).signatureUrl
+                                                                        )
+                                                                    "
+                                                                    matTooltip="Copiar"
+                                                                    class="flex-shrink-0"
+                                                                >
+                                                                    <mat-icon style="font-size: 18px">content_copy</mat-icon>
+                                                                </button>
+                                                                <a
+                                                                    mat-icon-button
+                                                                    color="accent"
+                                                                    [href]="
+                                                                        getCreditSignature(credit).extra?.signAppUrl ||
+                                                                        getCreditSignature(credit).signatureUrl
+                                                                    "
+                                                                    target="_blank"
+                                                                    matTooltip="Abrir"
+                                                                    class="flex-shrink-0"
+                                                                >
+                                                                    <mat-icon style="font-size: 18px">open_in_new</mat-icon>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Si NO tiene firma electrónica -->
+                                                <ng-template #noSignature>
+                                                    @if (hasPermission('docuseal:create:all:post:docuseal.create-signed-token')) {
+                                                        <div class="rounded-lg border border-dashed border-gray-300 bg-white p-4">
+                                                            <div class="mb-4 text-center">
+                                                                <mat-icon class="mb-2 text-4xl text-gray-400">edit_document</mat-icon>
+                                                                <p class="text-sm text-gray-600">No hay proceso de firma iniciado</p>
+                                                            </div>
+
+                                                            <!-- Selector de archivo -->
+                                                            <div class="mb-3">
+                                                                <label class="mb-2 block text-xs font-medium text-gray-700">
+                                                                    <mat-icon class="align-middle mr-1" style="font-size: 14px"
+                                                                        >cloud_upload</mat-icon
+                                                                    >
+                                                                    Contrato Original (PDF)
+                                                                </label>
+                                                                <input
+                                                                    type="file"
+                                                                    #contractFileInput
+                                                                    (change)="onFileSelectedForCredit($event, 'CONTRACT_ORIGINAL', credit)"
+                                                                    class="hover:file:bg-barradas-100 block w-full cursor-pointer rounded-lg border border-gray-300 p-2 text-xs text-gray-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-barradas-50 file:px-4 file:py-2 file:text-xs file:font-medium file:text-barradas-700"
+                                                                    accept=".pdf"
+                                                                />
+                                                                <p class="mt-1 text-xs text-gray-500" *ngIf="getContractFileForCredit(credit.id)">
+                                                                    Archivo seleccionado:
+                                                                    <span class="font-medium">{{ getContractFileNameForCredit(credit.id) }}</span>
+                                                                </p>
+                                                            </div>
+
+                                                            <button
+                                                                mat-raised-button
+                                                                *ngIf="hasPermission('docuseal:create:all:post:docuseal.create-signed-token')"
+                                                                color="primary"
+                                                                (click)="$event.stopPropagation(); createSignatureProcessForCredit(credit)"
+                                                                [disabled]="!getContractFileForCredit(credit.id)"
+                                                                class="w-full text-sm"
+                                                            >
+                                                                <mat-icon class="mr-1" style="font-size: 18px">upload_file</mat-icon>
+                                                                Iniciar Proceso de Firma
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                </ng-template>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ng-template #noCredits>
+                                <div class="py-8 text-center">
+                                    <mat-icon class="text-6xl text-gray-400">account_balance_wallet</mat-icon>
+                                    <p class="mt-4 text-gray-600">No hay créditos registrados para este cliente</p>
+                                </div>
+                            </ng-template>
                         </div>
                     </div>
-                </div>
-
-                <ng-template #noCredits>
-                    <div class="text-center py-8">
-                        <mat-icon class="text-gray-400 text-6xl">account_balance_wallet</mat-icon>
-                        <p class="mt-4 text-gray-600">No hay créditos registrados para este cliente</p>
-                    </div>
-                </ng-template>
-            </div>
-        </div>
-        }
-
-
+                }
+            </mat-tab>
+        </mat-tab-group>
     </div>
 </div>

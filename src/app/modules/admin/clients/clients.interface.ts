@@ -24,6 +24,7 @@ export interface CreditInstallment {
     expectedAmount: string;
     paidAmount: string;
     lateFeeAccrued: string;
+    daysOverdue?: number;
     status: string;
     createdAt?: string;
     updatedAt?: string;
@@ -101,4 +102,38 @@ export interface UpdateCreditDto {
 export interface CreditTerms {
     weeklyTerms: number[];
     dailyTerms: number[];
+}
+
+export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CARD' | 'OTHER';
+
+export interface RegisterPaymentDto {
+    creditId: string;
+    installmentId: string;
+    amount: number;
+    method: PaymentMethod;
+    reference?: string;
+    paidAt: string;
+    evidenceDocumentId?: string;
+}
+
+export interface PaymentResponse {
+    id: string;
+    creditId: string;
+    installmentId: string;
+    amount: string;
+    paidAt: string;
+    method: PaymentMethod;
+    reference: string;
+    appliedToPrincipal: string;
+    appliedToLateFee: string;
+    createdAt: string;
+    updatedAt: string;
+    installment: CreditInstallment;
+    document?: CreditDocument;
+}
+
+export interface PaymentDialogData {
+    clientId: string;
+    credit: Credit;
+    installment: CreditInstallment;
 }
