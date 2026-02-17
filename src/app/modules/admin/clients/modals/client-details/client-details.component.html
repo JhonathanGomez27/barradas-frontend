@@ -969,57 +969,6 @@
                                         </div>
                                     </div>
 
-                                    <div class="border-barradas-100 border-b p-4">
-                                        <div class="mb-3 flex items-center">
-                                            <mat-icon class="text-barradas-600 mr-2">history</mat-icon>
-                                            <h4 class="text-barradas-800 text-sm font-semibold">Historial de renegociaciones</h4>
-                                        </div>
-
-                                        <div class="border-barradas-100 overflow-x-auto rounded-lg border">
-                                            <table class="min-w-full text-sm">
-                                                <thead class="bg-barradas-50 text-left text-xs uppercase text-barradas-700">
-                                                    <tr>
-                                                        <th class="px-3 py-2 font-medium">Fecha</th>
-                                                        <th class="px-3 py-2 font-medium">Usuario</th>
-                                                        <th class="px-3 py-2 font-medium">Rol</th>
-                                                        <th class="px-3 py-2 font-medium">Motivo</th>
-                                                        <th class="px-3 py-2 font-medium">Total</th>
-                                                        <th class="px-3 py-2 font-medium">Saldo</th>
-                                                        <th class="px-3 py-2 font-medium">Cuota</th>
-                                                        <th class="px-3 py-2 text-right font-medium">Cuotas restantes</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="divide-barradas-100 divide-y bg-white">
-                                                    <tr *ngFor="let renegotiation of getCreditRenegotiations(credit)">
-                                                        <td class="px-3 py-2 text-gray-600">{{ renegotiation.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">{{ renegotiation.actorUserId || '-' }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">{{ renegotiation.actorRole || '-' }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">{{ renegotiation.reason }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">
-                                                            {{ formatCurrency(renegotiation.oldTotalAmount) }} ->
-                                                            {{ formatCurrency(renegotiation.newTotalAmount) }}
-                                                        </td>
-                                                        <td class="px-3 py-2 text-gray-700">
-                                                            {{ formatCurrency(renegotiation.oldOutstandingPrincipal) }} ->
-                                                            {{ formatCurrency(renegotiation.newOutstandingPrincipal) }}
-                                                        </td>
-                                                        <td class="px-3 py-2 text-gray-700">
-                                                            {{ formatCurrencyOrDash(renegotiation.oldInstallmentAmount) }} ->
-                                                            {{ formatCurrencyOrDash(renegotiation.newInstallmentAmount) }}
-                                                        </td>
-                                                        <td class="px-3 py-2 text-right text-gray-700">{{ renegotiation.remainingInstallments }}</td>
-                                                    </tr>
-
-                                                    <tr *ngIf="getCreditRenegotiations(credit).length === 0">
-                                                        <td colspan="8" class="px-3 py-6 text-center text-sm text-gray-500">
-                                                            No hay renegociaciones registradas
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
                                     <!-- Firma Electrónica del Crédito -->
                                     @if (hasPermission('docuseal:read:all:get:docuseal.electronic-signatures')) {
                                         <div class="p-4">

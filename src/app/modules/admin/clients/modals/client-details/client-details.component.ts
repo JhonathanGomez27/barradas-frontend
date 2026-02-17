@@ -28,16 +28,12 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { forkJoin, of, ReplaySubject, Subject, switchMap, takeUntil } from 'rxjs';
 import {
     Credit,
-    CreditInstallment,
     CreditLedgerCursor,
     CreditLedgerItemType,
     CreditLedgerRow,
-    CreditRenegotiation,
-    InstallmentStatus,
     PaymentMethod,
 } from '../../clients.interface';
 import { ClientsService } from '../../clients.service';
-import { InstallmentPaymentsDialogComponent } from '../installment-payments/installment-payments-dialog.component';
 import { RenegotiateCreditDialogComponent } from '../renegotiate-credit/renegotiate-credit-dialog.component';
 import { RegisterPaymentDialogComponent } from '../register-payment/register-payment-dialog.component';
 
@@ -134,14 +130,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         CANCELLED: 'Cancelado',
     };
 
-    statusMapperInstallment: { [key: string]: string } = {
-        PENDING: 'Pendiente',
-        PAID: 'Pagado',
-        OVERDUE: 'Vencido',
-        PARTIAL: 'Parcial',
-        MISSED: 'No pagado',
-    };
-
     paymentMethodMapper: Record<PaymentMethod, string> = {
         CASH: 'Efectivo',
         TRANSFER: 'Transferencia',
@@ -191,14 +179,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
     selectedCredit: Credit | null = null;
     creditActive: Credit | null = null;
     expandedCreditId: string | null = null;
-    installments: CreditInstallment[] = [];
-    installmentsLoading: boolean = false;
-    installmentsTotal: number = 0;
-    installmentsPageIndex: number = 0;
-    installmentsPageSize: number = 20;
-    readonly installmentsPageSizeOptions: number[] = [10, 20, 50, 100];
-    installmentsStatusFilter: InstallmentStatus | '' = '';
-    installmentsOrderBy: 'asc' | 'desc' = 'asc';
     ledgerRows: CreditLedgerRow[] = [];
     ledgerLoading: boolean = false;
     ledgerTypeFilter: 'ALL' | CreditLedgerItemType = 'ALL';
@@ -291,8 +271,20 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
             if (this.selectedCredit && !this.credits.some((credit) => credit.id === this.selectedCredit.id)) {
                 this.selectedCredit = null;
                 this.expandedCreditId = null;
-                this.installments = [];
-                this.installmentsTotal = 0;
+            }
+
+            if (this.selectedCredit) {
+                const updatedSelectedCredit = this.credits.find((credit) => credit.id === this.selectedCredit?.id) || null;
+                if (updatedSelectedCredit) {
+                    this.selectedCredit = updatedSelectedCredit;
+                }
+            }
+
+            if (this.creditActive) {
+                const updatedActiveCredit = this.credits.find((credit) => credit.id === this.creditActive?.id) || null;
+                if (updatedActiveCredit) {
+                    this.creditActive = updatedActiveCredit;
+                }
             }
 
             if (this.credits.length > 0 && !this.selectedCredit) {
@@ -300,6 +292,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
 
                 this.selectedCredit = this.creditActive;
                 this.expandedCreditId = this.creditActive.id;
+                this.loadCreditLedger(true);
             }
 
             this._changeDetectorRef.markForCheck();
@@ -413,28 +406,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         return credit.documents || [];
     }
 
-    getCreditInstallments(credit: Credit): CreditInstallment[] {
-        return this.selectedCredit?.id === credit.id ? this.installments : [];
-    }
-
-    onInstallmentsPageChange(event: PageEvent): void {
-        this.installmentsPageIndex = event.pageIndex;
-        this.installmentsPageSize = event.pageSize;
-        this.loadCreditInstallments();
-    }
-
-    onInstallmentsStatusFilterChange(status: InstallmentStatus | ''): void {
-        this.installmentsStatusFilter = status;
-        this.installmentsPageIndex = 0;
-        this.loadCreditInstallments();
-    }
-
-    onInstallmentsOrderChange(order: 'asc' | 'desc'): void {
-        this.installmentsOrderBy = order;
-        this.installmentsPageIndex = 0;
-        this.loadCreditInstallments();
-    }
-
     openPaymentDialog(credit: Credit): void {
         const dialogRef = this.dialog.open(RegisterPaymentDialogComponent, {
             width: '600px',
@@ -450,8 +421,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((result) => {
                 if (result) {
-                    this.refreshSelectedCredit(credit.id);
-                    this.loadCreditLedger(true);
+                    this.reloadClientCredits();
                 }
             });
     }
@@ -481,22 +451,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((result) => {
                 if (result) {
-                    this.refreshSelectedCredit(credit.id);
-                    this.loadCreditLedger(true);
+                    this.reloadClientCredits();
                 }
             });
-    }
-
-    getCreditRenegotiations(credit: Credit): CreditRenegotiation[] {
-        const renegotiations = credit.renegotiations || [];
-        return [...renegotiations].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-
-    formatCurrencyOrDash(value: string | number | null | undefined): string {
-        if (value === null || value === undefined || value === '') {
-            return '-';
-        }
-        return this.formatCurrency(value);
     }
 
     private getSuggestedRenegotiationMinimum(credit: Credit): number | null {
@@ -523,33 +480,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         }
 
         return parsed;
-    }
-
-    private refreshSelectedCredit(creditId: string): void {
-        this.clientesService
-            .getCreditById(creditId)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: (updatedCredit: Credit) => {
-                    const index = this.credits.findIndex((item) => item.id === creditId);
-                    if (index !== -1) {
-                        this.credits[index] = { ...this.credits[index], ...updatedCredit };
-                    }
-
-                    if (this.selectedCredit?.id === creditId) {
-                        this.selectedCredit = { ...this.selectedCredit, ...updatedCredit };
-                    }
-
-                    if (this.creditActive?.id === creditId) {
-                        this.creditActive = { ...this.creditActive, ...updatedCredit };
-                    }
-
-                    this._changeDetectorRef.markForCheck();
-                },
-                error: () => {
-                    this.reloadClientCredits();
-                },
-            });
     }
 
     onLedgerTypeFilterChange(type: 'ALL' | CreditLedgerItemType): void {
@@ -616,16 +546,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
                     this._changeDetectorRef.markForCheck();
                 },
             });
-    }
-
-    openInstallmentPaymentsDialog(installment: CreditInstallment): void {
-        this.dialog.open(InstallmentPaymentsDialogComponent, {
-            width: '760px',
-            maxWidth: '96vw',
-            data: {
-                installment,
-            },
-        });
     }
 
     hasCreditSignatures(credit: Credit): boolean {
@@ -812,11 +732,18 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         return this.paymentMethodMapper[method] || 'Sin metodo';
     }
 
-    getInstallmentStatusLabel(status: InstallmentStatus | null | undefined): string {
+    getInstallmentStatusLabel(status: string | null | undefined): string {
         if (!status) {
             return 'Sin estado';
         }
-        return this.statusMapperInstallment[status] || 'Sin estado';
+        const statusMapperInstallment: Record<string, string> = {
+            PENDING: 'Pendiente',
+            PAID: 'Pagado',
+            OVERDUE: 'Vencido',
+            PARTIAL: 'Parcial',
+            MISSED: 'No pagado',
+        };
+        return statusMapperInstallment[status] || 'Sin estado';
     }
 
     getTermLabel(term: number, paymentType: string): string {
@@ -1421,50 +1348,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         this.creditsPageIndex = event.pageIndex;
         this.creditsPageSize = event.pageSize;
         this.reloadClientCredits();
-    }
-
-    private loadCreditInstallments(): void {
-        if (!this.selectedCredit?.id) {
-            this.installments = [];
-            this.installmentsTotal = 0;
-            return;
-        }
-
-        let params = new HttpParams().set('page', String(this.installmentsPageIndex + 1)).set('limit', String(this.installmentsPageSize));
-
-        if (this.installmentsStatusFilter) {
-            params = params.set('status', this.installmentsStatusFilter);
-        }
-
-        params = params.set('orderBy', this.installmentsOrderBy);
-
-        this.installmentsLoading = true;
-
-        this.clientesService
-            .getCreditInstallmentsPaginated(this.selectedCredit.id, params)
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({
-                next: (response) => {
-                    this.installments = response.data || [];
-                    this.installmentsTotal = response.total || 0;
-                    this.installmentsPageIndex = Math.max((response.page || 1) - 1, 0);
-                    this.installmentsPageSize = response.limit || this.installmentsPageSize;
-                    this.installmentsLoading = false;
-                    this._changeDetectorRef.markForCheck();
-                },
-                error: (error) => {
-                    console.error('Error al cargar cuotas paginadas del crédito:', error);
-                    this.installments = [];
-                    this.installmentsTotal = 0;
-                    this.installmentsLoading = false;
-                    this._alertsService.showAlertMessage({
-                        type: 'error',
-                        text: 'Error al cargar las cuotas del crédito',
-                        title: 'Error',
-                    });
-                    this._changeDetectorRef.markForCheck();
-                },
-            });
     }
 
     // Método para filtrar tiendas en el select con búsqueda
