@@ -33,6 +33,7 @@ import {
     CreditLedgerItemType,
     CreditLedgerRow,
     InstallmentStatus,
+    PaymentMethod,
 } from '../../clients.interface';
 import { ClientsService } from '../../clients.service';
 import { InstallmentPaymentsDialogComponent } from '../installment-payments/installment-payments-dialog.component';
@@ -137,6 +138,13 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         OVERDUE: 'Vencido',
         PARTIAL: 'Parcial',
         MISSED: 'No pagado',
+    };
+
+    paymentMethodMapper: Record<PaymentMethod, string> = {
+        CASH: 'Efectivo',
+        TRANSFER: 'Transferencia',
+        CARD: 'Tarjeta',
+        OTHER: 'Otro',
     };
 
     weekDayCtrl: UntypedFormControl = new UntypedFormControl('');
@@ -699,6 +707,20 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
 
     getPaymentTypeLabel(paymentType: string): string {
         return paymentType === 'WEEKLY' ? 'Semanal' : 'Diario';
+    }
+
+    getPaymentMethodLabel(method: PaymentMethod | null | undefined): string {
+        if (!method) {
+            return 'Sin metodo';
+        }
+        return this.paymentMethodMapper[method] || 'Sin metodo';
+    }
+
+    getInstallmentStatusLabel(status: InstallmentStatus | null | undefined): string {
+        if (!status) {
+            return 'Sin estado';
+        }
+        return this.statusMapperInstallment[status] || 'Sin estado';
     }
 
     getTermLabel(term: number, paymentType: string): string {

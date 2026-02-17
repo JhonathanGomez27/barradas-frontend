@@ -50,6 +50,8 @@ export interface Credit {
     totalAmount: string;
     financedAmount?: string;
     outstandingPrincipal?: string;
+    missedPaymentsCount?: number;
+    remainingInstallments?: number;
     lateFeeRate?: string;
     paymentType: 'WEEKLY' | 'DAILY';
     selectedTerm: number;
