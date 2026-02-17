@@ -32,11 +32,13 @@ import {
     CreditLedgerCursor,
     CreditLedgerItemType,
     CreditLedgerRow,
+    CreditRenegotiation,
     InstallmentStatus,
     PaymentMethod,
 } from '../../clients.interface';
 import { ClientsService } from '../../clients.service';
 import { InstallmentPaymentsDialogComponent } from '../installment-payments/installment-payments-dialog.component';
+import { RenegotiateCreditDialogComponent } from '../renegotiate-credit/renegotiate-credit-dialog.component';
 import { RegisterPaymentDialogComponent } from '../register-payment/register-payment-dialog.component';
 
 interface FileUpload {
@@ -298,8 +300,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
 
                 this.selectedCredit = this.creditActive;
                 this.expandedCreditId = this.creditActive.id;
-                this.installmentsPageIndex = 0;
-                this.loadCreditInstallments();
             }
 
             this._changeDetectorRef.markForCheck();
@@ -450,9 +450,105 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((result) => {
                 if (result) {
-                    this.reloadClientCredits();
+                    this.refreshSelectedCredit(credit.id);
                     this.loadCreditLedger(true);
                 }
+            });
+    }
+
+    canRenegotiateCredit(credit: Credit): boolean {
+        return credit.status !== 'CANCELLED' && credit.status !== 'CLOSED';
+    }
+
+    openRenegotiationDialog(credit: Credit): void {
+        if (!this.canRenegotiateCredit(credit)) {
+            return;
+        }
+
+        const dialogRef = this.dialog.open(RenegotiateCreditDialogComponent, {
+            width: '620px',
+            maxWidth: '95vw',
+            data: {
+                creditId: credit.id,
+                currentTotalAmount: credit.totalAmount,
+                currentOutstandingPrincipal: credit.outstandingPrincipal || 0,
+                suggestedMinimumTotal: this.getSuggestedRenegotiationMinimum(credit),
+            },
+        });
+
+        dialogRef
+            .afterClosed()
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((result) => {
+                if (result) {
+                    this.refreshSelectedCredit(credit.id);
+                    this.loadCreditLedger(true);
+                }
+            });
+    }
+
+    getCreditRenegotiations(credit: Credit): CreditRenegotiation[] {
+        const renegotiations = credit.renegotiations || [];
+        return [...renegotiations].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    formatCurrencyOrDash(value: string | number | null | undefined): string {
+        if (value === null || value === undefined || value === '') {
+            return '-';
+        }
+        return this.formatCurrency(value);
+    }
+
+    private getSuggestedRenegotiationMinimum(credit: Credit): number | null {
+        const initialPayment = this.toNumber(credit.initialPaymentAmount ?? credit.initalPayment ?? 0);
+        const financedAmount = this.toNumber(credit.financedAmount);
+        const outstandingPrincipal = this.toNumber(credit.outstandingPrincipal);
+
+        if (financedAmount === null || outstandingPrincipal === null) {
+            return null;
+        }
+
+        const paidPrincipal = Math.max(financedAmount - outstandingPrincipal, 0);
+        return Math.round((initialPayment + paidPrincipal + Number.EPSILON) * 100) / 100;
+    }
+
+    private toNumber(value: string | number | null | undefined): number | null {
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+
+        const parsed = typeof value === 'string' ? Number(value) : value;
+        if (!Number.isFinite(parsed)) {
+            return null;
+        }
+
+        return parsed;
+    }
+
+    private refreshSelectedCredit(creditId: string): void {
+        this.clientesService
+            .getCreditById(creditId)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (updatedCredit: Credit) => {
+                    const index = this.credits.findIndex((item) => item.id === creditId);
+                    if (index !== -1) {
+                        this.credits[index] = { ...this.credits[index], ...updatedCredit };
+                    }
+
+                    if (this.selectedCredit?.id === creditId) {
+                        this.selectedCredit = { ...this.selectedCredit, ...updatedCredit };
+                    }
+
+                    if (this.creditActive?.id === creditId) {
+                        this.creditActive = { ...this.creditActive, ...updatedCredit };
+                    }
+
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: () => {
+                    this.reloadClientCredits();
+                },
             });
     }
 

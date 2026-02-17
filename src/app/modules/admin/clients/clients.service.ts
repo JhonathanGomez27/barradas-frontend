@@ -3,10 +3,12 @@ import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
 import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
 import {
+    Credit,
     CreditLedgerResponse,
     CreditProjectedScheduleResponse,
     PaginatedInstallmentsResponse,
     PaymentResponse,
+    RenegotiateCreditDto,
     RegisterPaymentDto,
 } from './clients.interface';
 import { CreateInvitationFiles, CreateInvitationPayload, CreateInvitationResponse } from './invitation.types';
@@ -148,6 +150,10 @@ export class ClientsService {
         );
     }
 
+    getCreditById(creditId: string): Observable<any> {
+        return this.httpClient.get<any>(`${this._url}/credits/${creditId}/by-id`);
+    }
+
     updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {
         return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
     }
@@ -158,6 +164,10 @@ export class ClientsService {
 
     registerPayment(payload: RegisterPaymentDto): Observable<PaymentResponse> {
         return this.httpClient.post<PaymentResponse>(`${this._url}/payments`, payload);
+    }
+
+    renegotiateCredit(creditId: string, payload: RenegotiateCreditDto): Observable<Credit> {
+        return this.httpClient.patch<Credit>(`${this._url}/credits/${creditId}/renegotiate`, payload);
     }
 
     getCreditInstallmentsPaginated(creditId: string, params: HttpParams): Observable<PaginatedInstallmentsResponse> {

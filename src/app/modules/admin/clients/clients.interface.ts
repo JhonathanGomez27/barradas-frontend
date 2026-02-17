@@ -49,6 +49,7 @@ export interface Credit {
     initialPaymentRate?: string;
     totalAmount: string;
     financedAmount?: string;
+    installmentAmount?: string | null;
     outstandingPrincipal?: string;
     missedPaymentsCount?: number;
     remainingInstallments?: number;
@@ -63,6 +64,30 @@ export interface Credit {
     documents?: CreditDocument[];
     signatures?: CreditSignature[];
     installments?: CreditInstallment[];
+    renegotiations?: CreditRenegotiation[];
+}
+
+export interface RenegotiateCreditDto {
+    newTotalAmount: number;
+    reason: string;
+}
+
+export interface CreditRenegotiation {
+    id: string;
+    creditId: string;
+    reason: string;
+    actorUserId: string;
+    actorRole: string;
+    oldTotalAmount: string;
+    newTotalAmount: string;
+    oldFinancedAmount: string;
+    newFinancedAmount: string;
+    oldOutstandingPrincipal: string;
+    newOutstandingPrincipal: string;
+    oldInstallmentAmount: string | null;
+    newInstallmentAmount: string | null;
+    remainingInstallments: number;
+    createdAt: string;
 }
 
 export interface CreditDocument {
