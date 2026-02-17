@@ -688,30 +688,45 @@
                                                 <mat-icon class="text-barradas-600 mr-2">info</mat-icon>
                                                 <h4 class="text-barradas-800 text-sm font-semibold">Resumen del crédito seleccionado</h4>
                                             </div>
-                                            @if (hasPermission('credits:update:all:patch:credits.creditId.status')) {
-                                                <div
-                                                    class="flex flex-col gap-2 sm:flex-row"
-                                                    *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'"
+                                            <div class="flex flex-col gap-2 sm:flex-row">
+                                                <button
+                                                    mat-raised-button
+                                                    class="bg-barradas-900 text-sm text-white"
+                                                    *ngIf="
+                                                        hasPermission('payments:create:all:post:payments') &&
+                                                        (credit.status === 'ACTIVE' || credit.status === 'PENDING')
+                                                    "
+                                                    (click)="$event.stopPropagation(); openPaymentDialog(credit)"
                                                 >
-                                                    <button
-                                                        mat-raised-button
-                                                        class="bg-barradas-900 text-sm text-white"
-                                                        (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')"
+                                                    <mat-icon class="mr-1" style="font-size: 18px">payments</mat-icon>
+                                                    Registrar pago
+                                                </button>
+
+                                                @if (hasPermission('credits:update:all:patch:credits.creditId.status')) {
+                                                    <div
+                                                        class="flex flex-col gap-2 sm:flex-row"
+                                                        *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'"
                                                     >
-                                                        <mat-icon class="mr-1" style="font-size: 18px">paid</mat-icon>
-                                                        Marcar como Pagado
-                                                    </button>
-                                                    <button
-                                                        mat-stroked-button
-                                                        color="warn"
-                                                        (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CANCELLED')"
-                                                        class="text-sm"
-                                                    >
-                                                        <mat-icon class="mr-1" style="font-size: 18px">cancel</mat-icon>
-                                                        Cancelar Crédito
-                                                    </button>
-                                                </div>
-                                            }
+                                                        <button
+                                                            mat-raised-button
+                                                            class="bg-barradas-900 text-sm text-white"
+                                                            (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')"
+                                                        >
+                                                            <mat-icon class="mr-1" style="font-size: 18px">paid</mat-icon>
+                                                            Marcar como Pagado
+                                                        </button>
+                                                        <button
+                                                            mat-stroked-button
+                                                            color="warn"
+                                                            (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CANCELLED')"
+                                                            class="text-sm"
+                                                        >
+                                                            <mat-icon class="mr-1" style="font-size: 18px">cancel</mat-icon>
+                                                            Cancelar Crédito
+                                                        </button>
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
                                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                             <div class="border-barradas-100 rounded-lg border bg-white p-3">
@@ -784,119 +799,108 @@
                                         </div>
                                     </div>
 
-                                    <!-- Cuotas del Crédito -->
                                     <div class="border-barradas-100 border-b p-4">
                                         <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                             <div class="flex items-center">
                                                 <mat-icon class="text-barradas-600 mr-2">calendar_view_month</mat-icon>
-                                                <h4 class="text-barradas-800 text-sm font-semibold">Cuotas</h4>
+                                                <h4 class="text-barradas-800 text-sm font-semibold">Timeline de pagos y obligaciones</h4>
                                             </div>
-                                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                                <mat-form-field appearance="outline" class="w-full sm:w-48" subscriptSizing="dynamic">
-                                                    <mat-label>Estado</mat-label>
-                                                    <mat-select
-                                                        [value]="installmentsStatusFilter"
-                                                        (selectionChange)="onInstallmentsStatusFilterChange($event.value)"
-                                                    >
-                                                        <mat-option value="">Todos</mat-option>
-                                                        <mat-option value="PENDING">Pendiente</mat-option>
-                                                        <mat-option value="PARTIAL">Parcial</mat-option>
-                                                        <mat-option value="PAID">Pagado</mat-option>
-                                                        <mat-option value="OVERDUE">Vencido</mat-option>
-                                                    </mat-select>
-                                                </mat-form-field>
-                                                <mat-form-field appearance="outline" class="w-full sm:w-40" subscriptSizing="dynamic">
-                                                    <mat-label>Orden</mat-label>
-                                                    <mat-select
-                                                        [value]="installmentsOrderBy"
-                                                        (selectionChange)="onInstallmentsOrderChange($event.value)"
-                                                    >
-                                                        <mat-option value="asc">Ascendente</mat-option>
-                                                        <mat-option value="desc">Descendente</mat-option>
-                                                    </mat-select>
-                                                </mat-form-field>
-                                            </div>
+                                            <mat-form-field appearance="outline" class="w-full sm:w-56" subscriptSizing="dynamic">
+                                                <mat-label>Tipo</mat-label>
+                                                <mat-select [value]="ledgerTypeFilter" (selectionChange)="onLedgerTypeFilterChange($event.value)">
+                                                    <mat-option value="ALL">Todos</mat-option>
+                                                    <mat-option value="PAYMENT">Pagos</mat-option>
+                                                    <mat-option value="SCHEDULE_EVENT">Obligaciones</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
                                         </div>
+
                                         <div class="border-barradas-100 overflow-x-auto rounded-lg border">
                                             <table class="min-w-full text-sm">
                                                 <thead class="bg-barradas-50 text-left text-xs uppercase text-barradas-700">
                                                     <tr>
-                                                        <th class="px-3 py-2 font-medium">#</th>
-                                                        <th class="px-3 py-2 font-medium">Vencimiento</th>
-                                                        <th class="px-3 py-2 font-medium">Monto esperado</th>
-                                                        <th class="px-3 py-2 font-medium">Pagado</th>
-                                                        <th class="px-3 py-2 font-medium">Días de mora</th>
-                                                        <th class="px-3 py-2 font-medium">Estado</th>
-                                                        <th class="px-3 py-2 text-right font-medium">Acciones</th>
+                                                        <th class="px-3 py-2 font-medium">Fecha</th>
+                                                        <th class="px-3 py-2 font-medium">Tipo</th>
+                                                        <th class="px-3 py-2 font-medium">Detalle</th>
+                                                        <th class="px-3 py-2 font-medium">Monto</th>
+                                                        <th class="px-3 py-2 text-right font-medium">Estado / Método</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="divide-barradas-100 divide-y bg-white">
-                                                    <tr *ngIf="installmentsLoading">
-                                                        <td colspan="7" class="px-3 py-6 text-center text-sm text-gray-500">Cargando cuotas...</td>
+                                                    <tr *ngIf="ledgerLoading && ledgerRows.length === 0">
+                                                        <td colspan="5" class="px-3 py-6 text-center text-sm text-gray-500">Cargando timeline...</td>
                                                     </tr>
-                                                    <tr *ngFor="let inst of installments" class="hover:bg-barradas-50/50">
-                                                        <td class="px-3 py-2 font-medium text-gray-800">{{ inst.number }}</td>
-                                                        <td class="px-3 py-2 text-gray-600">{{ inst.dueDate | date: 'dd/MM/yyyy' }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.expectedAmount) }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">{{ formatCurrency(inst.paidAmount) }}</td>
-                                                        <td class="px-3 py-2 text-gray-700">{{ inst.daysOverdue || 0 }}</td>
+
+                                                    <tr *ngFor="let row of ledgerRows" class="hover:bg-barradas-50/50">
+                                                        <td class="px-3 py-2 text-gray-600">{{ row.date | date: 'dd/MM/yyyy HH:mm' }}</td>
                                                         <td class="px-3 py-2">
                                                             <span
                                                                 class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
                                                                 [ngClass]="{
-                                                                    'bg-blue-100 text-blue-800': inst.status === 'PENDING',
-                                                                    'bg-green-100 text-green-800': inst.status === 'PAID',
-                                                                    'bg-red-100 text-red-800': inst.status === 'OVERDUE',
-                                                                    'bg-amber-100 text-amber-800': inst.status === 'PARTIAL',
-                                                                    'bg-gray-100 text-gray-800': !['PENDING', 'PAID', 'OVERDUE', 'PARTIAL'].includes(
-                                                                        inst.status
-                                                                    ),
+                                                                    'bg-emerald-100 text-emerald-800': row.type === 'PAYMENT',
+                                                                    'bg-blue-100 text-blue-800': row.type === 'SCHEDULE_EVENT',
                                                                 }"
                                                             >
-                                                                {{ statusMapperInstallment[inst.status] || inst.status }}
+                                                                {{ row.type === 'PAYMENT' ? 'Pago' : 'Obligación' }}
                                                             </span>
                                                         </td>
+                                                        <td class="px-3 py-2 text-gray-700">
+                                                            <ng-container *ngIf="row.type === 'PAYMENT'; else scheduleDetail">
+                                                                <div class="font-medium">Abono registrado</div>
+                                                                <div class="text-xs text-gray-500">{{ row.payment.reference || 'Sin referencia' }}</div>
+                                                            </ng-container>
+                                                            <ng-template #scheduleDetail>
+                                                                <div class="font-medium">Evento #{{ row.event.number }}</div>
+                                                                <div class="text-xs text-gray-500">Vence {{ row.event.dueDate | date: 'dd/MM/yyyy' }}</div>
+                                                            </ng-template>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-gray-700">
+                                                            {{
+                                                                formatCurrency(
+                                                                    row.type === 'PAYMENT' ? row.payment.amount : row.event.expectedAmount
+                                                                )
+                                                            }}
+                                                        </td>
                                                         <td class="px-3 py-2 text-right">
-                                                            <div class="flex justify-end gap-1">
-                                                                <button
-                                                                    mat-icon-button
-                                                                    color="accent"
-                                                                    matTooltip="Ver pagos"
-                                                                    (click)="$event.stopPropagation(); openInstallmentPaymentsDialog(inst)"
-                                                                    class="scale-90"
+                                                            <ng-container *ngIf="row.type === 'PAYMENT'; else scheduleStatus">
+                                                                <span class="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
+                                                                    {{ row.payment.method }}
+                                                                </span>
+                                                            </ng-container>
+                                                            <ng-template #scheduleStatus>
+                                                                <span
+                                                                    class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
+                                                                    [ngClass]="{
+                                                                        'bg-blue-100 text-blue-800': row.event.status === 'PENDING',
+                                                                        'bg-green-100 text-green-800': row.event.status === 'PAID',
+                                                                        'bg-red-100 text-red-800': row.event.status === 'OVERDUE',
+                                                                        'bg-amber-100 text-amber-800': row.event.status === 'PARTIAL',
+                                                                        'bg-orange-100 text-orange-800': row.event.status === 'MISSED',
+                                                                        'bg-gray-100 text-gray-800': !['PENDING', 'PAID', 'OVERDUE', 'PARTIAL', 'MISSED'].includes(
+                                                                            row.event.status
+                                                                        ),
+                                                                    }"
                                                                 >
-                                                                    <mat-icon style="font-size: 20px">receipt_long</mat-icon>
-                                                                </button>
-                                                                <button
-                                                                    *ngIf="inst.status !== 'PAID'"
-                                                                    mat-icon-button
-                                                                    color="primary"
-                                                                    matTooltip="Registrar pago"
-                                                                    (click)="$event.stopPropagation(); openPaymentDialog(credit, inst)"
-                                                                    class="scale-90"
-                                                                >
-                                                                    <mat-icon style="font-size: 20px">payments</mat-icon>
-                                                                </button>
-                                                            </div>
+                                                                    {{ statusMapperInstallment[row.event.status] || row.event.status }}
+                                                                </span>
+                                                            </ng-template>
                                                         </td>
                                                     </tr>
-                                                    <tr *ngIf="!installmentsLoading && installments.length === 0">
-                                                        <td colspan="7" class="px-3 py-6 text-center text-sm text-gray-500">
-                                                            No hay cuotas para los filtros seleccionados
+
+                                                    <tr *ngIf="!ledgerLoading && ledgerRows.length === 0">
+                                                        <td colspan="5" class="px-3 py-6 text-center text-sm text-gray-500">
+                                                            No hay movimientos para el filtro seleccionado
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <mat-paginator
-                                            [length]="installmentsTotal"
-                                            [pageSize]="installmentsPageSize"
-                                            [pageIndex]="installmentsPageIndex"
-                                            [pageSizeOptions]="installmentsPageSizeOptions"
-                                            [showFirstLastButtons]="true"
-                                            (page)="onInstallmentsPageChange($event)"
-                                            class="border-barradas-100 mt-3 rounded-lg border bg-white"
-                                        ></mat-paginator>
+
+                                        <div class="mt-3 flex justify-center" *ngIf="ledgerHasMore">
+                                            <button mat-stroked-button class="text-sm" (click)="loadMoreLedger()" [disabled]="ledgerLoading">
+                                                {{ ledgerLoading ? 'Cargando...' : 'Cargar más' }}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <!-- Firma Electrónica del Crédito -->

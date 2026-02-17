@@ -26,7 +26,14 @@ import { AlertsService } from 'app/shared/services/alerts.service';
 import { environment } from 'environment/environment';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { forkJoin, of, ReplaySubject, Subject, switchMap, takeUntil } from 'rxjs';
-import { Credit, CreditInstallment, InstallmentStatus } from '../../clients.interface';
+import {
+    Credit,
+    CreditInstallment,
+    CreditLedgerCursor,
+    CreditLedgerItemType,
+    CreditLedgerRow,
+    InstallmentStatus,
+} from '../../clients.interface';
 import { ClientsService } from '../../clients.service';
 import { InstallmentPaymentsDialogComponent } from '../installment-payments/installment-payments-dialog.component';
 import { RegisterPaymentDialogComponent } from '../register-payment/register-payment-dialog.component';
@@ -129,6 +136,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         PAID: 'Pagado',
         OVERDUE: 'Vencido',
         PARTIAL: 'Parcial',
+        MISSED: 'No pagado',
     };
 
     weekDayCtrl: UntypedFormControl = new UntypedFormControl('');
@@ -181,6 +189,12 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
     readonly installmentsPageSizeOptions: number[] = [10, 20, 50, 100];
     installmentsStatusFilter: InstallmentStatus | '' = '';
     installmentsOrderBy: 'asc' | 'desc' = 'asc';
+    ledgerRows: CreditLedgerRow[] = [];
+    ledgerLoading: boolean = false;
+    ledgerTypeFilter: 'ALL' | CreditLedgerItemType = 'ALL';
+    ledgerHasMore: boolean = false;
+    ledgerNextCursor: CreditLedgerCursor | null = null;
+    readonly ledgerPageSize: number = 20;
 
     showElectronicSignatureDetails: boolean = false;
 
@@ -366,8 +380,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         this.expandedCreditId = credit.id;
         this.selectedCredit = credit;
         this.creditActive = credit;
-        this.installmentsPageIndex = 0;
-        this.loadCreditInstallments();
+        this.loadCreditLedger(true);
         this._changeDetectorRef.markForCheck();
     }
 
@@ -414,14 +427,13 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         this.loadCreditInstallments();
     }
 
-    openPaymentDialog(credit: Credit, installment: CreditInstallment): void {
+    openPaymentDialog(credit: Credit): void {
         const dialogRef = this.dialog.open(RegisterPaymentDialogComponent, {
             width: '600px',
             maxWidth: '95vw',
             data: {
                 clientId: this.clientDetails.id,
                 credit,
-                installment,
             },
         });
 
@@ -431,7 +443,74 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
             .subscribe((result) => {
                 if (result) {
                     this.reloadClientCredits();
+                    this.loadCreditLedger(true);
                 }
+            });
+    }
+
+    onLedgerTypeFilterChange(type: 'ALL' | CreditLedgerItemType): void {
+        this.ledgerTypeFilter = type;
+        this.loadCreditLedger(true);
+    }
+
+    loadMoreLedger(): void {
+        if (!this.ledgerHasMore || this.ledgerLoading) {
+            return;
+        }
+
+        this.loadCreditLedger(false);
+    }
+
+    private loadCreditLedger(reset: boolean): void {
+        if (!this.selectedCredit?.id) {
+            this.ledgerRows = [];
+            this.ledgerHasMore = false;
+            this.ledgerNextCursor = null;
+            return;
+        }
+
+        if (reset) {
+            this.ledgerRows = [];
+            this.ledgerHasMore = false;
+            this.ledgerNextCursor = null;
+        }
+
+        let params = new HttpParams().set('limit', String(this.ledgerPageSize));
+
+        if (this.ledgerTypeFilter !== 'ALL') {
+            params = params.set('type', this.ledgerTypeFilter);
+        }
+
+        if (!reset && this.ledgerNextCursor) {
+            params = params
+                .set('cursorDate', this.ledgerNextCursor.cursorDate)
+                .set('cursorType', this.ledgerNextCursor.cursorType)
+                .set('cursorId', this.ledgerNextCursor.cursorId);
+        }
+
+        this.ledgerLoading = true;
+
+        this.clientesService
+            .getCreditLedger(this.selectedCredit.id, params)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    const incoming = response.data || [];
+                    this.ledgerRows = reset ? incoming : [...this.ledgerRows, ...incoming];
+                    this.ledgerHasMore = Boolean(response.hasMore);
+                    this.ledgerNextCursor = response.nextCursor || null;
+                    this.ledgerLoading = false;
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: () => {
+                    this.ledgerLoading = false;
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al cargar el historial de pagos y obligaciones',
+                        title: 'Error',
+                    });
+                    this._changeDetectorRef.markForCheck();
+                },
             });
     }
 
@@ -1217,7 +1296,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         const params = new HttpParams().set('limit', String(this.creditsPageSize)).set('page', String(this.creditsPageIndex + 1));
 
         this.clientesService.getClientCredits(this.clientDetails.id, params).subscribe();
-        this.loadCreditInstallments();
+        this.loadCreditLedger(true);
     }
 
     onCreditsPageChange(event: PageEvent): void {

@@ -2,7 +2,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
 import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
-import { PaginatedInstallmentsResponse, PaymentResponse, RegisterPaymentDto } from './clients.interface';
+import {
+    CreditLedgerResponse,
+    CreditProjectedScheduleResponse,
+    PaginatedInstallmentsResponse,
+    PaymentResponse,
+    RegisterPaymentDto,
+} from './clients.interface';
 import { CreateInvitationFiles, CreateInvitationPayload, CreateInvitationResponse } from './invitation.types';
 
 @Injectable({
@@ -158,7 +164,15 @@ export class ClientsService {
         return this.httpClient.get<PaginatedInstallmentsResponse>(`${this._url}/installments/credit/${creditId}/paginated`, { params });
     }
 
-    getInstallmentPayments(installmentId: string): Observable<PaymentResponse[]> {
-        return this.httpClient.get<PaymentResponse[]>(`${this._url}/payments/installment/${installmentId}`);
+    getInstallmentPayments(paymentScheduleEventId: string): Observable<PaymentResponse[]> {
+        return this.httpClient.get<PaymentResponse[]>(`${this._url}/payments/schedule-event/${paymentScheduleEventId}`);
+    }
+
+    getCreditSchedule(creditId: string): Observable<CreditProjectedScheduleResponse> {
+        return this.httpClient.get<CreditProjectedScheduleResponse>(`${this._url}/credits/${creditId}/schedule`);
+    }
+
+    getCreditLedger(creditId: string, params: HttpParams): Observable<CreditLedgerResponse> {
+        return this.httpClient.get<CreditLedgerResponse>(`${this._url}/payments/credit/${creditId}/ledger`, { params });
     }
 }

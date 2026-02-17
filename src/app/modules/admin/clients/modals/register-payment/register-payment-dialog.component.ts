@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { AlertsService } from 'app/shared/services/alerts.service';
-import { of, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { PaymentDialogData, PaymentMethod, RegisterPaymentDto } from '../../clients.interface';
 import { ClientsService } from '../../clients.service';
 
@@ -36,7 +36,7 @@ import { ClientsService } from '../../clients.service';
                     <div class="mr-3 rounded-full bg-white/20 p-2">
                         <mat-icon class="text-white">payments</mat-icon>
                     </div>
-                    <h2 class="text-lg font-semibold">Registrar Pago — Cuota #{{ data.installment.number }}</h2>
+                    <h2 class="text-lg font-semibold">Registrar Pago de Credito</h2>
                 </div>
                 <button mat-icon-button (click)="onCancel()" class="hover:bg-white/20" [disabled]="isSubmitting">
                     <mat-icon class="text-white">close</mat-icon>
@@ -45,19 +45,15 @@ import { ClientsService } from '../../clients.service';
         </div>
 
         <mat-dialog-content class="px-4 py-6">
-            <div class="mb-6 rounded-lg border border-barradas-300 bg-barradas-50 p-4">
-                <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="mb-4 rounded-lg border border-barradas-300 bg-barradas-50 p-4">
+                <div class="grid grid-cols-1 gap-2 text-sm text-gray-700 md:grid-cols-2">
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Monto Esperado</div>
-                        <div class="text-lg font-bold text-gray-800">{{ formatCurrency(data.installment.expectedAmount) }}</div>
+                        <span class="font-medium">Credito:</span>
+                        <span class="ml-1">{{ data.credit.id }}</span>
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Ya Pagado</div>
-                        <div class="text-lg font-bold text-green-600">{{ formatCurrency(data.installment.paidAmount) }}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Saldo Pendiente</div>
-                        <div class="text-lg font-bold text-red-600">{{ formatCurrency(getPendingAmount()) }}</div>
+                        <span class="font-medium">Saldo actual:</span>
+                        <span class="ml-1">{{ formatCurrency(data.credit.outstandingPrincipal || 0) }}</span>
                     </div>
                 </div>
             </div>
@@ -65,16 +61,15 @@ import { ClientsService } from '../../clients.service';
             <form [formGroup]="paymentForm" class="space-y-4" autocomplete="off">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-                        <mat-label>Monto a Pagar</mat-label>
+                        <mat-label>Monto a pagar</mat-label>
                         <input matInput type="number" formControlName="amount" placeholder="0.00" min="0.01" step="0.01" />
                         <mat-icon matPrefix class="text-gray-400">attach_money</mat-icon>
-                        <mat-error *ngIf="paymentForm.get('amount')?.hasError('required')"> El monto es requerido </mat-error>
-                        <mat-error *ngIf="paymentForm.get('amount')?.hasError('min')"> El monto debe ser mayor a 0 </mat-error>
-                        <mat-error *ngIf="paymentForm.get('amount')?.hasError('max')"> El monto excede el saldo pendiente </mat-error>
+                        <mat-error *ngIf="paymentForm.get('amount')?.hasError('required')">El monto es requerido</mat-error>
+                        <mat-error *ngIf="paymentForm.get('amount')?.hasError('min')">El monto debe ser mayor a 0</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-                        <mat-label>Método de Pago</mat-label>
+                        <mat-label>Metodo de pago</mat-label>
                         <mat-select formControlName="method">
                             <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
                                 {{ method.label }}
@@ -92,16 +87,16 @@ import { ClientsService } from '../../clients.service';
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-                        <mat-label>Fecha de Pago</mat-label>
+                        <mat-label>Fecha de pago</mat-label>
                         <input matInput [matDatepicker]="picker" formControlName="paidAt" placeholder="DD/MM/AAAA" />
                         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                         <mat-datepicker #picker></mat-datepicker>
-                        <mat-error *ngIf="paymentForm.get('paidAt')?.hasError('required')"> La fecha es requerida </mat-error>
+                        <mat-error *ngIf="paymentForm.get('paidAt')?.hasError('required')">La fecha es requerida</mat-error>
                     </mat-form-field>
                 </div>
 
                 <div class="mt-2">
-                    <label class="mb-2 block text-sm font-medium text-gray-700">Comprobante de Pago (Opcional)</label>
+                    <label class="mb-2 block text-sm font-medium text-gray-700">Comprobante de Pago <span class="text-red-500">*</span></label>
                     <div class="flex items-center">
                         <input
                             type="file"
@@ -132,6 +127,7 @@ export class RegisterPaymentDialogComponent {
     paymentForm: FormGroup;
     isSubmitting = false;
     evidenceFile: File | null = null;
+    readonly data = inject<PaymentDialogData>(MAT_DIALOG_DATA);
 
     readonly paymentMethods: { value: PaymentMethod; label: string }[] = [
         { value: 'CASH', label: 'Efectivo' },
@@ -143,24 +139,15 @@ export class RegisterPaymentDialogComponent {
     constructor(
         private fb: FormBuilder,
         public dialogRef: MatDialogRef<RegisterPaymentDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: PaymentDialogData,
         private _clientsService: ClientsService,
-        private _alertsService: AlertsService
+        private _alertsService: AlertsService,
     ) {
-        const pendingAmount = this.getPendingAmount();
-
         this.paymentForm = this.fb.group({
-            amount: [pendingAmount, [Validators.required, Validators.min(0.01), Validators.max(pendingAmount)]],
+            amount: [null, [Validators.required, Validators.min(0.01)]],
             method: ['CASH', Validators.required],
             reference: [''],
             paidAt: [new Date(), Validators.required],
         });
-    }
-
-    getPendingAmount(): number {
-        const expectedAmount = this.parseMoney(this.data.installment.expectedAmount);
-        const paidAmount = this.parseMoney(this.data.installment.paidAmount);
-        return this.parseMoney(Math.max(0, expectedAmount - paidAmount));
     }
 
     parseMoney(value: string | number): number {
@@ -168,13 +155,13 @@ export class RegisterPaymentDialogComponent {
         if (!Number.isFinite(numericValue)) {
             return 0;
         }
-
         return Math.round((numericValue + Number.EPSILON) * 100) / 100;
     }
 
     formatCurrency(value: string | number): string {
         const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(numValue);
+        const safeValue = Number.isFinite(numValue) ? numValue : 0;
+        return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(safeValue);
     }
 
     onFileSelected(event: Event): void {
@@ -193,37 +180,50 @@ export class RegisterPaymentDialogComponent {
             return;
         }
 
+        if (!this.evidenceFile) {
+            this._alertsService.showAlertMessage({
+                title: 'Evidencia requerida',
+                text: 'Debes subir comprobante de pago.',
+                type: 'error',
+            });
+            return;
+        }
+
         this.isSubmitting = true;
         const formValue = this.paymentForm.value;
 
-        const upload$ = this.evidenceFile
-            ? this._clientsService.uploadFileToClient(this.data.clientId, this.evidenceFile, 'PAYMENT_EVIDENCE', this.data.credit.id)
-            : of(null);
-
-        upload$
+        this._clientsService
+            .uploadFileToClient(this.data.clientId, this.evidenceFile, 'PAYMENT_EVIDENCE', this.data.credit.id)
             .pipe(
                 switchMap((uploadResponse: any) => {
                     const payload: RegisterPaymentDto = {
                         creditId: this.data.credit.id,
-                        installmentId: this.data.installment.id,
                         amount: this.parseMoney(formValue.amount),
                         method: formValue.method,
                         reference: formValue.reference?.trim() || undefined,
                         paidAt: new Date(formValue.paidAt).toISOString(),
-                        evidenceDocumentId: uploadResponse ? uploadResponse.id : undefined,
+                        evidenceDocumentId: uploadResponse.id,
                     };
 
                     return this._clientsService.registerPayment(payload);
-                })
+                }),
             )
             .subscribe({
                 next: () => {
-                    this._alertsService.showAlertMessage({ title: 'Éxito', text: 'Pago registrado exitosamente', type: 'success' });
+                    this._alertsService.showAlertMessage({
+                        title: 'Exito',
+                        text: 'Pago registrado exitosamente',
+                        type: 'success',
+                    });
                     this.dialogRef.close(true);
                 },
                 error: (err) => {
                     console.error('Error registering payment:', err);
-                    this._alertsService.showAlertMessage({ title: 'Error', text: 'Error al registrar el pago', type: 'error' });
+                    this._alertsService.showAlertMessage({
+                        title: 'Error',
+                        text: 'Error al registrar el pago',
+                        type: 'error',
+                    });
                     this.isSubmitting = false;
                 },
             });
