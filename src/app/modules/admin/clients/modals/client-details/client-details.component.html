@@ -711,31 +711,6 @@
                                                     <mat-icon class="mr-1" style="font-size: 18px">sync_alt</mat-icon>
                                                     Renegociar credito
                                                 </button>
-
-                                                <!-- @if (hasPermission('credits:update:all:patch:credits.creditId.status')) {
-                                                    <div
-                                                        class="flex flex-col gap-2 sm:flex-row"
-                                                        *ngIf="credit.status === 'ACTIVE' || credit.status === 'PENDING'"
-                                                    >
-                                                        <button
-                                                            mat-raised-button
-                                                            class="bg-barradas-900 text-sm text-white"
-                                                            (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CLOSED')"
-                                                        >
-                                                            <mat-icon class="mr-1" style="font-size: 18px">paid</mat-icon>
-                                                            Marcar como Pagado
-                                                        </button>
-                                                        <button
-                                                            mat-stroked-button
-                                                            color="warn"
-                                                            (click)="$event.stopPropagation(); updateCreditStatusForCredit(credit, 'CANCELLED')"
-                                                            class="text-sm"
-                                                        >
-                                                            <mat-icon class="mr-1" style="font-size: 18px">cancel</mat-icon>
-                                                            Cancelar Crédito
-                                                        </button>
-                                                    </div>
-                                                } -->
                                             </div>
                                         </div>
                                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -752,6 +727,12 @@
                                             <div class="border-barradas-100 rounded-lg border bg-white p-3">
                                                 <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Pago restante</p>
                                                 <p class="mt-1 text-sm font-semibold text-gray-800">{{ formatCurrency(credit.outstandingPrincipal || 0) }}</p>
+                                            </div>
+                                            <div class="border-barradas-100 rounded-lg border bg-white p-3">
+                                                <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Cuota a pagar</p>
+                                                <p class="mt-1 text-sm font-semibold text-gray-800">
+                                                    {{ formatCurrency(credit.installmentAmount || 0) }}
+                                                </p>
                                             </div>
                                             <div class="border-barradas-100 rounded-lg border bg-white p-3">
                                                 <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Pagos en mora</p>
@@ -940,8 +921,6 @@
                                                                         'bg-red-100 text-red-800': row.event.status === 'OVERDUE',
                                                                         'bg-amber-100 text-amber-800': row.event.status === 'PARTIAL',
                                                                         'bg-orange-100 text-orange-800': row.event.status === 'MISSED',
-                                                                        'underline decoration-red-600 decoration-2 underline-offset-2':
-                                                                            row.event.status === 'MISSED',
                                                                         'bg-gray-100 text-gray-800': !['PENDING', 'PAID', 'OVERDUE', 'PARTIAL', 'MISSED'].includes(
                                                                             row.event.status
                                                                         ),

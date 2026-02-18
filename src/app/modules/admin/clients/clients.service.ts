@@ -154,10 +154,6 @@ export class ClientsService {
         return this.httpClient.get<any>(`${this._url}/credits/${creditId}/by-id`);
     }
 
-    updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {
-        return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
-    }
-
     getCreditTerms(): Observable<any> {
         return this.httpClient.get(`${this._url}/credits/payment-terms`);
     }
@@ -170,16 +166,8 @@ export class ClientsService {
         return this.httpClient.patch<Credit>(`${this._url}/credits/${creditId}/renegotiate`, payload);
     }
 
-    getCreditInstallmentsPaginated(creditId: string, params: HttpParams): Observable<PaginatedInstallmentsResponse> {
-        return this.httpClient.get<PaginatedInstallmentsResponse>(`${this._url}/installments/credit/${creditId}/paginated`, { params });
-    }
-
     getInstallmentPayments(paymentScheduleEventId: string): Observable<PaymentResponse[]> {
         return this.httpClient.get<PaymentResponse[]>(`${this._url}/payments/schedule-event/${paymentScheduleEventId}`);
-    }
-
-    getCreditSchedule(creditId: string): Observable<CreditProjectedScheduleResponse> {
-        return this.httpClient.get<CreditProjectedScheduleResponse>(`${this._url}/credits/${creditId}/schedule`);
     }
 
     getCreditLedger(creditId: string, params: HttpParams): Observable<CreditLedgerResponse> {

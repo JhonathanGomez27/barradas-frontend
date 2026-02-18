@@ -571,51 +571,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
         this.uploadFileToClient(credit.id);
     }
 
-    updateCreditStatusForCredit(credit: Credit, newStatus: 'CLOSED' | 'CANCELLED'): void {
-        const dialog = this._fuseConfirmationService.open({
-            title: 'Confirmar actualización de estado',
-            message: `¿Estás seguro de que deseas cambiar el estado del crédito a ${this.statusMapperCredit[newStatus]}?`,
-            icon: {
-                show: true,
-                name: 'heroicons_outline:exclamation-triangle',
-                color: 'info',
-            },
-            actions: {
-                confirm: { show: true, label: 'Sí', color: 'primary' },
-                cancel: { show: true, label: 'No' },
-            },
-        });
-
-        dialog
-            .afterClosed()
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((result) => {
-                if (result === 'confirmed') {
-                    this.clientesService
-                        .updateCreditStatus(credit.id, newStatus)
-                        .pipe(takeUntil(this._unsubscribeAll))
-                        .subscribe({
-                            next: (response) => {
-                                this._alertsService.showAlertMessage({
-                                    type: 'success',
-                                    text: 'Estado del crédito actualizado correctamente',
-                                    title: 'Éxito',
-                                });
-                                this.reloadClientCredits();
-                            },
-                            error: (error) => {
-                                console.error('Error al actualizar el estado del crédito:', error);
-                                this._alertsService.showAlertMessage({
-                                    type: 'error',
-                                    text: 'Error al actualizar el estado del crédito',
-                                    title: 'Error',
-                                });
-                            },
-                        });
-                }
-            });
-    }
-
     deleteElectronicSignatureProcessForCredit(credit: Credit): void {
         const signature = this.getCreditSignature(credit);
         if (!signature) return;
@@ -1077,66 +1032,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy, AfterViewInit 
             default:
                 return 'help_outline';
         }
-    }
-
-    // Actualizar estado del crédito
-    updateCreditStatus(newStatus: 'CLOSED' | 'CANCELLED'): void {
-        if (!this.creditActive) {
-            this._alertsService.showAlertMessage({
-                type: 'error',
-                text: 'No hay un crédito activo para actualizar.',
-                title: 'Error',
-            });
-            return;
-        }
-
-        const statusText = newStatus === 'CLOSED' ? 'Pagado' : 'Cancelado';
-
-        const dialog = this._fuseConfirmationService.open({
-            title: 'Confirmar actualización de estado',
-            message: `¿Estás seguro de que deseas marcar el crédito como "${statusText}"?`,
-            icon: {
-                show: true,
-                name: 'heroicons_outline:exclamation-triangle',
-                color: 'info',
-            },
-            actions: {
-                confirm: { show: true, label: 'Sí', color: 'primary' },
-                cancel: { show: true, label: 'No' },
-            },
-        });
-
-        dialog
-            .afterClosed()
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((result) => {
-                if (result === 'confirmed') {
-                    this.clientesService
-                        .updateCreditStatus(this.creditActive.id, newStatus)
-                        .pipe(takeUntil(this._unsubscribeAll))
-                        .subscribe({
-                            next: (response) => {
-                                this._alertsService.showAlertMessage({
-                                    type: 'success',
-                                    text: `Crédito actualizado a ${statusText} correctamente.`,
-                                    title: 'Éxito',
-                                });
-
-                                // Actualizar los datos del crédito
-                                this.creditActive = response;
-                                this._changeDetectorRef.markForCheck();
-                            },
-                            error: (error) => {
-                                console.error('Error al actualizar el estado del crédito:', error);
-                                this._alertsService.showAlertMessage({
-                                    type: 'error',
-                                    text: 'Error al actualizar el estado del crédito.',
-                                    title: 'Error',
-                                });
-                            },
-                        });
-                }
-            });
     }
 
     toggleEditMode(): void {

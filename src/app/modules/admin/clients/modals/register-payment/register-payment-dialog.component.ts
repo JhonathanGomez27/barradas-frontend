@@ -142,12 +142,27 @@ export class RegisterPaymentDialogComponent {
         private _clientsService: ClientsService,
         private _alertsService: AlertsService,
     ) {
+        const defaultInstallmentAmount = this.parseDefaultInstallmentAmount(this.data.credit.installmentAmount);
+
         this.paymentForm = this.fb.group({
-            amount: [null, [Validators.required, Validators.min(0.01)]],
+            amount: [defaultInstallmentAmount, [Validators.required, Validators.min(0.01)]],
             method: ['CASH', Validators.required],
             reference: [''],
             paidAt: [new Date(), Validators.required],
         });
+    }
+
+    private parseDefaultInstallmentAmount(value: string | number | null | undefined): number | null {
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+
+        const parsedValue = typeof value === 'string' ? Number(value) : value;
+        if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+            return null;
+        }
+
+        return Math.round((parsedValue + Number.EPSILON) * 100) / 100;
     }
 
     parseMoney(value: string | number): number {
