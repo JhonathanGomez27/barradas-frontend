@@ -93,20 +93,14 @@ export class AuthService {
                     email: response.user.email,
                     name: userName,
                     rol: response.roleName,
-                    storeId: response.user?.storeId ? response.user?.storeId : '',
+                    stores: response.user?.stores ? response.user.stores : [],
                     storeName: response.user?.store?.name ? response.user.store.name : '',
                     storeCity: response.user?.store?.city?.name ? response.user.store.city.name : '',
                     permissions: response.user?.permissions ? response.user.permissions : [],
                     roleId: response.user?.roleId ? response.user.roleId : ''
                 };
 
-                // if (rol !== 'admin') this._storesService.setStores([{
-                //     id: response.agent.storeId,
-                //     name: response.agent.store.name,
-                //     address: response.agent.store.address,
-                //     cityId: response.agent.store.cityId,
-                //     city: response.agent.store.city.name
-                // }]);
+                this._storesService.setStores(response.user?.stores ? response.user.stores : []);
 
                 // Return a new observable with the response
                 return of(response);
@@ -151,7 +145,7 @@ export class AuthService {
                         email: response.user.email,
                         name: userName,
                         rol: response.roleName,
-                        storeId: response.user?.storeId ? response.user?.storeId : '',
+                        stores: response.user?.stores ? response.user.stores : [],
                         storeName: response.user?.store?.name ? response.user.store.name : '',
                         storeCity: response.user?.store?.city?.name ? response.user.store.city.name : '',
                         permissions: response.user?.permissions ? response.user.permissions : [],
@@ -159,6 +153,8 @@ export class AuthService {
                     };
 
                     const redirectURL = '/signed-in-redirect';
+
+                    this._storesService.setStores(response.user?.stores ? response.user.stores : []);
 
                     if (location.pathname === '/sign-in' || location.pathname === '/') {
                         // Navigate to the redirect url

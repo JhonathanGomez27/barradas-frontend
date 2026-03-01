@@ -57,7 +57,7 @@ interface FileUpload {
 })
 export class InviteComponent implements OnInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-    readonly data = inject<{ storeId: string; rol: string; agentId: string | null }>(MAT_DIALOG_DATA);
+    readonly data = inject<{ stores: any[]; rol: string; agentId: string | null }>(MAT_DIALOG_DATA);
 
     inviteForm: FormGroup;
     isLoading: boolean = false;
@@ -95,13 +95,15 @@ export class InviteComponent implements OnInit {
     storeFilterCtrl: FormControl = new FormControl('');
     filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
 
-    storeId: string = '';
+    storeIds: any[] = [];
     rol: string = '';
-    selectedStore: Store | null = null;
+    selectedStore: Store | undefined = undefined;
 
     agents: Agent[] = [];
     agentFilterCtrl: FormControl = new FormControl('');
     filteredAgents: ReplaySubject<Agent[]> = new ReplaySubject<Agent[]>(1);
+
+    showStores: boolean = false;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -147,19 +149,25 @@ export class InviteComponent implements OnInit {
     ngOnInit(): void {
 
         this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
-            this.storeId = this.data.storeId;
+            if(response.length > 1) this.showStores = true;
+
+            this.storeIds = this.data.stores;
             this.rol = this.data.rol;
 
             this.stores = response;
-            this.selectedStore = this.stores.find(store => store.id === this.storeId);
 
-            if (this.storeId) {
+            if(this.rol !== 'super_admin' && this.storeIds.length > 0){
+                this.selectedStore = this.stores.find(store => store.id === this.storeIds[0].id) || undefined;
+            }
+
+            if (this.storeIds.length > 0) {
                 this.inviteForm.patchValue({
-                    storeId: this.storeId
+                    storeId: this.storeIds[0]
                 });
             }
 
             this.filteredStores.next(this.stores.slice());
+            this.filterStores();
             this._changeDetectorRef.markForCheck();
         });
 
@@ -175,7 +183,7 @@ export class InviteComponent implements OnInit {
         });
 
         this.inviteForm.get('storeId')?.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((storeId) => {
-            if (this.rol === 'admin') {
+            if (this.rol === 'super_admin' && storeId) {
                 this.inviteForm.get('agentId')?.setValue(null, { emitEvent: false });
             }
 
@@ -184,13 +192,17 @@ export class InviteComponent implements OnInit {
                 return;
             }
 
-            if(this.rol === 'admin'){
+            if(this.hasPermission('agents:read:all:get:agents')){
                 this.loadAgentsByStore(storeId);
             }
         });
 
         this.getCreditTerms();
         this.setupFormListeners();
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     setupFormListeners(): void {

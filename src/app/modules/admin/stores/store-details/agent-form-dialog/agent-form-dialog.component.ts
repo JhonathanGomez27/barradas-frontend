@@ -224,7 +224,7 @@ export class AgentFormDialogComponent implements OnInit {
 
             this.dialogRef.close({
                 ...formValue,
-                storeId: this.data.storeId
+                storeIds: [this.data.storeId],
             });
         }
     }
