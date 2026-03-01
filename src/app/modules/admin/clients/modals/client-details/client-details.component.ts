@@ -156,7 +156,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
     credits: Credit[] = [];
     selectedCredit: Credit | null = null;
-    creditActive: Credit | null = null;
+    creditActive: Credit = {} as Credit;
     expandedCreditId: string | null = null;
 
     showElectronicSignatureDetails: boolean = false;
@@ -361,7 +361,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     }
 
     hasCreditSignatures(credit: Credit): boolean {
-        return credit.signatures && credit.signatures.length > 0;
+        return credit.signatures && credit.signatures.length > 0 || false;
     }
 
     getCreditSignatures(credit: Credit): any[] {
@@ -932,7 +932,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
             }
 
             if (key === 'agentId' && (value === null || value === '')) {
-                formData.append(key, null);
+                formData.append(key, ''); // Asegurar que se envíe un valor vacío para desasociar el agente
             }
         });
 

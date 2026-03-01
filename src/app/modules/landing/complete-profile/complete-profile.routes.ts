@@ -8,7 +8,7 @@ const invitationResolver: ResolveFn<any> = (route: ActivatedRouteSnapshot, state
     //query param token
     const token = route.queryParamMap.get('token');
 
-    return _invitationService.validateToken(token);
+    return _invitationService.validateToken(token || '');
 }
 
 export default [
