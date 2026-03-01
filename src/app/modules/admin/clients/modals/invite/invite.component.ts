@@ -149,18 +149,17 @@ export class InviteComponent implements OnInit {
     ngOnInit(): void {
 
         this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
-            if(response.length > 1) this.showStores = true;
-
             this.storeIds = this.data.stores;
             this.rol = this.data.rol;
 
             this.stores = response;
 
-            if(this.rol !== 'super_admin' && this.storeIds.length > 0){
+            /////
+            if(this.hasPermission('stores:read:store:get:stores.all')){
+                this.showStores = true;
+            } else {
+                this.showStores = false;
                 this.selectedStore = this.stores.find(store => store.id === this.storeIds[0].id) || undefined;
-            }
-
-            if (this.storeIds.length > 0) {
                 this.inviteForm.patchValue({
                     storeId: this.storeIds[0]
                 });

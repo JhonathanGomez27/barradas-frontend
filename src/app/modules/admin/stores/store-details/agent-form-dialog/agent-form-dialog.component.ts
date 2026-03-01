@@ -102,25 +102,27 @@ export interface AgentDialogData {
         </mat-form-field>
 
         <!-- Rol -->
-        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-          <mat-label>Rol</mat-label>
-          <mat-select formControlName="roleId" placeholder="Seleccionar rol">
-            <mat-option [value]="null">
-              <span class="flex items-center">
-                <mat-icon class="mr-2 text-gray-400 scale-75">remove_circle_outline</mat-icon>
-                Sin rol asignado
-              </span>
-            </mat-option>
-            <mat-option *ngFor="let role of roles" [value]="role.id">
-              <span class="flex items-center">
-                <!-- <mat-icon class="mr-2 text-barradas-500 scale-75"></mat-icon> -->
-                {{ role.displayName }}
-              </span>
-            </mat-option>
-          </mat-select>
-          <mat-icon matPrefix class="text-gray-400">admin_panel_settings</mat-icon>
-          <mat-hint>Asigna un rol para definir los permisos del agente</mat-hint>
-        </mat-form-field>
+         @if(hasPermission('admin:read:all:get:admin.rbac.roles')){
+             <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+               <mat-label>Rol</mat-label>
+               <mat-select formControlName="roleId" placeholder="Seleccionar rol">
+                 <mat-option [value]="null">
+                   <span class="flex items-center">
+                     <mat-icon class="mr-2 text-gray-400 scale-75">remove_circle_outline</mat-icon>
+                     Sin rol asignado
+                   </span>
+                 </mat-option>
+                 <mat-option *ngFor="let role of roles" [value]="role.id">
+                   <span class="flex items-center">
+                     <!-- <mat-icon class="mr-2 text-barradas-500 scale-75"></mat-icon> -->
+                     {{ role.displayName }}
+                   </span>
+                 </mat-option>
+               </mat-select>
+               <mat-icon matPrefix class="text-gray-400">admin_panel_settings</mat-icon>
+               <mat-hint>Asigna un rol para definir los permisos del agente</mat-hint>
+             </mat-form-field>
+         }
 
         <!-- Contraseña -->
         <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
@@ -189,9 +191,13 @@ export class AgentFormDialogComponent implements OnInit {
 
     ngOnInit(): void {
         // Solo cargar roles si tiene permiso
-        if (this._permissionService.hasPermission('admin:read:all:get:admin.rbac.roles')) {
+        if (this.hasPermission('admin:read:all:get:admin.rbac.roles')) {
             this.loadRoles();
         }
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._permissionService.hasPermission(permission);
     }
 
     loadRoles(): void {
