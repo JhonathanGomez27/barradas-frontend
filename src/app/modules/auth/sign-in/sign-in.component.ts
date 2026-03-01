@@ -36,13 +36,13 @@ import { AuthService } from 'app/core/auth/auth.service';
     ],
 })
 export class AuthSignInComponent implements OnInit {
-    @ViewChild('signInNgForm') signInNgForm: NgForm;
+    @ViewChild('signInNgForm') signInNgForm: NgForm = {} as NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
         type: 'success',
         message: '',
     };
-    signInForm: UntypedFormGroup;
+    signInForm: UntypedFormGroup = {} as UntypedFormGroup;
     showAlert: boolean = false;
 
     /**
@@ -101,18 +101,10 @@ export class AuthSignInComponent implements OnInit {
 
                 // Navigate to the redirect url
                 this._router.navigateByUrl(redirectURL);
-                // if (response.role === 'admin') {
-                // }
-
-                // if (response.role === 'agent') {
-                //     const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/clients-store';
-
-                //     // Navigate to the redirect url
-                //     this._router.navigateByUrl(redirectURL);
-                // }
 
             },
             error: (error) => {
+                console.log(error);
                 // Re-enable the form
                 this.signInForm.enable();
 
