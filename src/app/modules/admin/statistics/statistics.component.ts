@@ -65,7 +65,7 @@ export type ChartOptions = {
   templateUrl: './statistics.component.html'
 })
 export class StatisticsComponent implements OnInit, OnDestroy {
-  @ViewChild('chart') chart: ChartComponent;
+  @ViewChild('chart') chart: ChartComponent | undefined;
 
   // ── Existing data ───────────────────────────────────────────────────────────
   clientStats: any;
@@ -93,8 +93,17 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   commercialAgentChartOptions: Partial<ChartOptions>;
   collectionChartOptions: Partial<ChartOptions>;
 
-  filterForm: FormGroup;
+  filterForm: FormGroup = new FormGroup({ });
   clientStatuses: ClientStatus[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'NO_CONTRACT_SENDED', 'CONTRACT_SENDED', 'COMPLETED'];
+  clientStatusesMapper: { [key: string]: string } = {
+        'CREATED': 'Creado',
+        'INVITED': 'Invitación enviada',
+        'IN_PROGRESS': 'Pendiente de completar Documentación',
+        'COMPLETED': 'Finalizado con contrato',
+        'NO_CONTRACT_SENDED': 'Gestionado sin contrato',
+        'CONTRACT_SENDED': 'Gestionado con contrato sin firmar'
+  };
+
   creditStatuses: CreditStatus[] = ['PENDING', 'ACTIVE', 'CLOSED', 'COMPLETED', 'DEFAULTED', 'CANCELLED'];
   paymentTypes: { value: PaymentType; label: string }[] = [
     { value: 'WEEKLY', label: 'Semanal' },
@@ -134,7 +143,7 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   storeFilter: string = '';
   storeFilterCtrl: FormControl = new FormControl('');
   filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
-  user: User;
+  user: User | null = null;
 
   // Date shortcuts
   dateShortcuts = [
@@ -471,7 +480,7 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._userService.user$
         .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe((user: User) => {
+        .subscribe((user) => {
             this.user = user;
         });
 
@@ -921,9 +930,9 @@ export class StatisticsComponent implements OnInit, OnDestroy {
 
   getAlertDetailLink(alert: AlertItem): string[] | null {
     const d = alert.details;
-    if (d['storeId']) return ['/admin/stores', d['storeId']];
-    if (d['clientId']) return ['/admin/clients', d['clientId']];
-    if (d['agentId']) return ['/admin/agents', d['agentId']];
+    if (d['storeId']) return ['/stores', d['storeId']];
+    if (d['clientId']) return ['/clients', d['clientId']];
+    if (d['agentId']) return ['/agents', d['agentId']];
     return null;
   }
 
