@@ -10,10 +10,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexGrid, ApexLegend, ApexNonAxisChartSeries, ApexPlotOptions, ApexResponsive, ApexStroke, ApexTitleSubtitle, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent, NgApexchartsModule } from 'ng-apexcharts';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterModule } from '@angular/router';
+import { ApexAxisChartSeries, ApexAnnotations, ApexChart, ApexDataLabels, ApexFill, ApexGrid, ApexLegend, ApexNonAxisChartSeries, ApexPlotOptions, ApexResponsive, ApexStroke, ApexTitleSubtitle, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent, NgApexchartsModule } from 'ng-apexcharts';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { StatisticsService } from './statistics.service';
-import { AgentCreditEntry, AgentCreditStatsResponse, AgentPerformanceEntry, AgentPerformanceResponse, ClientStatus, CreditStatus, DashboardStatsResponse } from './statistics.types';
+import { AgentCreditEntry, AgentCreditStatsResponse, AgentPerformanceEntry, AgentPerformanceResponse, AlertItem, AlertsStatsResponse, ClientStatus, ClientStatusEntry, CollectionStatsResponse, CommercialStatsResponse, CreditStatus, DashboardStatsResponse, PaymentType, PortfolioStatsResponse, SummaryStatsResponse, TrendStatsResponse } from './statistics.types';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Store, StoresService } from '../stores/stores.service';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
@@ -45,6 +47,7 @@ export type ChartOptions = {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterModule,
     MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -54,8 +57,8 @@ export type ChartOptions = {
     MatIconModule,
     MatSnackBarModule,
     MatProgressBarModule,
+    MatTooltipModule,
     NgApexchartsModule,
-    // FuseCardComponent,
     ScrollingModule,
     NgxMatSelectSearchModule
   ],
@@ -64,6 +67,7 @@ export type ChartOptions = {
 export class StatisticsComponent implements OnInit, OnDestroy {
   @ViewChild('chart') chart: ChartComponent;
 
+  // ── Existing data ───────────────────────────────────────────────────────────
   clientStats: any;
   creditStats: any;
   storeStats: any;
@@ -71,21 +75,48 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   agentCreditStats: AgentCreditStatsResponse | null = null;
   agentPerformanceStats: AgentPerformanceResponse | null = null;
 
+  // ── New data (Dashboard Guide) ──────────────────────────────────────────────
+  summaryStats: SummaryStatsResponse | null = null;
+  trendStats: TrendStatsResponse | null = null;
+  commercialStats: CommercialStatsResponse | null = null;
+  portfolioStats: PortfolioStatsResponse | null = null;
+  collectionStats: CollectionStatsResponse | null = null;
+  alertsStats: AlertsStatsResponse | null = null;
+  alertsOpen: boolean = true;
+
+  // ── Chart options ───────────────────────────────────────────────────────────
   clientChartOptions: Partial<ChartOptions>;
   creditChartOptions: Partial<ChartOptions>;
   agentCreditsChartOptions: Partial<ChartOptions>;
+  trendChartOptions: Partial<ChartOptions>;
+  commercialStoreChartOptions: Partial<ChartOptions>;
+  commercialAgentChartOptions: Partial<ChartOptions>;
+  collectionChartOptions: Partial<ChartOptions>;
 
   filterForm: FormGroup;
   clientStatuses: ClientStatus[] = ['CREATED', 'INVITED', 'IN_PROGRESS', 'NO_CONTRACT_SENDED', 'CONTRACT_SENDED', 'COMPLETED'];
   creditStatuses: CreditStatus[] = ['PENDING', 'ACTIVE', 'CLOSED', 'COMPLETED', 'DEFAULTED', 'CANCELLED'];
+  paymentTypes: { value: PaymentType; label: string }[] = [
+    { value: 'WEEKLY', label: 'Semanal' },
+    { value: 'DAILY', label: 'Diaria' }
+  ];
 
   statusMapper: { [key: string]: string } = {
-    'CREATED': 'Creado',
-    'INVITED': 'Invitación enviada',
-    'IN_PROGRESS': 'Pendiente de completar Documentación',
-    'COMPLETED': 'Finalizado con contrato',
-    'NO_CONTRACT_SENDED': 'Gestionado sin contrato',
-    'CONTRACT_SENDED': 'Gestionado con contrato sin firmar'
+    'CREATED': 'Cliente capturado',
+    'INVITED': 'Invitado / Link enviado',
+    'IN_PROGRESS': 'En progreso',
+    'COMPLETED': 'Venta realizada',
+    'NO_CONTRACT_SENDED': 'Pendiente contrato',
+    'CONTRACT_SENDED': 'Contrato enviado'
+  };
+
+  pipelineColors: { [key: string]: string } = {
+    'CREATED': '#3b82f6',
+    'INVITED': '#8b5cf6',
+    'IN_PROGRESS': '#f59e0b',
+    'NO_CONTRACT_SENDED': '#f97316',
+    'CONTRACT_SENDED': '#6b7280',
+    'COMPLETED': '#4CAF50'
   };
 
   statusCreditsMapper: { [key: string]: string } = {
@@ -104,6 +135,14 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   storeFilterCtrl: FormControl = new FormControl('');
   filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
   user: User;
+
+  // Date shortcuts
+  dateShortcuts = [
+    { label: 'Hoy', days: 0 },
+    { label: 'Últ. 7 días', days: 6 },
+    { label: 'Este mes', type: 'month' },
+    { label: 'Mes ant.', type: 'prev-month' }
+  ];
 
   constructor(
     private _statisticsService: StatisticsService,
@@ -278,6 +317,103 @@ export class StatisticsComponent implements OnInit, OnDestroy {
       }
     };
 
+    this.trendChartOptions = {
+      series: [],
+      chart: {
+        type: 'line',
+        height: 300,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: false },
+        zoom: { enabled: false }
+      },
+      stroke: { curve: 'smooth', width: 2 },
+      colors: ['#66a8ee', '#4CAF50'],
+      xaxis: { categories: [] },
+      yaxis: {
+        labels: {
+          formatter: (val: number) => this.formatCurrency(val)
+        }
+      },
+      legend: { position: 'top' },
+      grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: { formatter: (val: number) => this.formatCurrency(val) }
+      },
+      dataLabels: { enabled: false }
+    };
+
+    this.commercialStoreChartOptions = {
+      series: [],
+      chart: {
+        type: 'bar',
+        height: 300,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: false }
+      },
+      plotOptions: {
+        bar: { horizontal: true, borderRadius: 4, distributed: true }
+      },
+      colors: ['#66a8ee'],
+      dataLabels: { enabled: false },
+      xaxis: { categories: [] },
+      legend: { show: false },
+      grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+      tooltip: {
+        y: { formatter: (val: number) => `${val} créditos` }
+      }
+    };
+
+    this.commercialAgentChartOptions = {
+      series: [],
+      chart: {
+        type: 'bar',
+        height: 300,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: false }
+      },
+      plotOptions: {
+        bar: { horizontal: true, borderRadius: 4, distributed: true }
+      },
+      colors: ['#66a8ee'],
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => `${val.toFixed(1)}%`,
+        offsetX: 30,
+        style: { fontSize: '12px', colors: ['#374151'] }
+      },
+      xaxis: { categories: [], max: 100 },
+      legend: { show: false },
+      grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+      tooltip: {
+        y: { formatter: (val: number) => `${val.toFixed(1)}%` }
+      }
+    };
+
+    this.collectionChartOptions = {
+      series: [],
+      chart: {
+        type: 'bar',
+        height: 300,
+        fontFamily: 'Inter, sans-serif',
+        toolbar: { show: false }
+      },
+      plotOptions: {
+        bar: { horizontal: false, borderRadius: 4, columnWidth: '55%' }
+      },
+      colors: ['#E0E0E0', '#66a8ee'],
+      dataLabels: { enabled: false },
+      xaxis: { categories: [] },
+      legend: { position: 'top' },
+      grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: { formatter: (val: number) => this.formatCurrency(val) }
+      }
+    };
+
     this.agentCreditsChartOptions = {
       series: [],
       chart: {
@@ -341,10 +477,12 @@ export class StatisticsComponent implements OnInit, OnDestroy {
 
     this.filterForm = new FormGroup({
       storeId: new FormControl(null),
+      agentId: new FormControl(null),
       startDate: new FormControl(null),
       endDate: new FormControl(null),
       clientStatus: new FormControl(null),
-      creditStatus: new FormControl(null)
+      creditStatus: new FormControl(null),
+      paymentType: new FormControl(null)
     });
 
     this.loadAllSections();
@@ -400,17 +538,48 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     if (this._permissionService.hasPermission('stats:read:all:get:stats.agents.performance')) {
         this.loadAgentPerformance(baseFilters);
     }
+
+    // New endpoints
+    this.loadSummaryStats(baseFilters);
+    this.loadTrendStats(baseFilters);
+    this.loadCommercialStats(baseFilters);
+    this.loadPortfolioStats(baseFilters);
+    this.loadCollectionStats(baseFilters);
+    this.loadAlertsStats(baseFilters);
   }
 
   private buildBaseFilters() {
     const filters = this.filterForm.value;
     return {
       storeId: filters.storeId || undefined,
+      agentId: filters.agentId || undefined,
       clientStatus: filters.clientStatus || undefined,
       creditStatus: filters.creditStatus || undefined,
+      paymentType: filters.paymentType || undefined,
       startDate: filters.startDate ? (filters.startDate instanceof Date ? filters.startDate.toISOString() : new Date(filters.startDate).toISOString()) : undefined,
       endDate: filters.endDate ? (filters.endDate instanceof Date ? filters.endDate.toISOString() : new Date(filters.endDate).toISOString()) : undefined
     };
+  }
+
+  applyDateShortcut(shortcut: any): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let start: Date;
+    let end: Date = new Date(today);
+    end.setHours(23, 59, 59, 999);
+
+    if (shortcut.type === 'month') {
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+    } else if (shortcut.type === 'prev-month') {
+      start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      end = new Date(today.getFullYear(), today.getMonth(), 0);
+      end.setHours(23, 59, 59, 999);
+    } else {
+      start = new Date(today);
+      start.setDate(today.getDate() - shortcut.days);
+    }
+
+    this.filterForm.patchValue({ startDate: start, endDate: end });
   }
 
   private loadClientStats(baseFilters: any): void {
@@ -508,6 +677,82 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadSummaryStats(baseFilters: any): void {
+    this._statisticsService.getSummaryStatistics({
+      storeId: baseFilters.storeId,
+      agentId: baseFilters.agentId,
+      paymentType: baseFilters.paymentType,
+      creditStatus: baseFilters.creditStatus
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => { this.summaryStats = res; this._changeDetectorRef.markForCheck(); },
+      error: () => {} // silently fail if endpoint not yet implemented
+    });
+  }
+
+  private loadTrendStats(baseFilters: any): void {
+    this._statisticsService.getTrendStatistics({
+      storeId: baseFilters.storeId,
+      agentId: baseFilters.agentId
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => {
+        this.trendStats = res;
+        this.updateTrendChart(res);
+        this._changeDetectorRef.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  private loadCommercialStats(baseFilters: any): void {
+    this._statisticsService.getCommercialStatistics({
+      storeId: baseFilters.storeId,
+      agentId: baseFilters.agentId,
+      startDate: baseFilters.startDate,
+      endDate: baseFilters.endDate
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => {
+        this.commercialStats = res;
+        this.updateCommercialCharts(res);
+        this._changeDetectorRef.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  private loadPortfolioStats(baseFilters: any): void {
+    this._statisticsService.getPortfolioStatistics({
+      storeId: baseFilters.storeId,
+      agentId: baseFilters.agentId
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => { this.portfolioStats = res; this._changeDetectorRef.markForCheck(); },
+      error: () => {}
+    });
+  }
+
+  private loadCollectionStats(baseFilters: any): void {
+    this._statisticsService.getCollectionStatistics({
+      storeId: baseFilters.storeId,
+      agentId: baseFilters.agentId
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => {
+        this.collectionStats = res;
+        this.updateCollectionChart(res);
+        this._changeDetectorRef.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  private loadAlertsStats(baseFilters: any): void {
+    this._statisticsService.getAlertsStatistics({
+      storeId: baseFilters.storeId,
+      agentId: baseFilters.agentId
+    }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: (res) => { this.alertsStats = res; this._changeDetectorRef.markForCheck(); },
+      error: () => {}
+    });
+  }
+
   private loadAgentPerformance(baseFilters: any): void {
     this._statisticsService.getAgentPerformanceStatistics({
       storeId: baseFilters.storeId,
@@ -525,10 +770,54 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private updateTrendChart(data: TrendStatsResponse): void {
+    if (!data?.days?.length) return;
+    this.trendChartOptions = {
+      ...this.trendChartOptions,
+      series: [
+        { name: 'Ventas', data: data.days.map(d => d.sales.amount) },
+        { name: 'Recaudo', data: data.days.map(d => d.collection.amount) }
+      ],
+      xaxis: { categories: data.days.map(d => d.dayName) }
+    };
+  }
+
+  private updateCommercialCharts(data: CommercialStatsResponse): void {
+    if (data?.salesByStore?.length) {
+      const sorted = [...data.salesByStore].sort((a, b) => b.creditCount - a.creditCount);
+      this.commercialStoreChartOptions = {
+        ...this.commercialStoreChartOptions,
+        series: [{ name: 'Créditos', data: sorted.map(s => s.creditCount) }],
+        xaxis: { categories: sorted.map(s => s.storeName) }
+      };
+    }
+    if (data?.salesByAgent?.length) {
+      const sorted = [...data.salesByAgent].sort((a, b) => b.approvalRate - a.approvalRate);
+      this.commercialAgentChartOptions = {
+        ...this.commercialAgentChartOptions,
+        series: [{ name: '% Aprobación', data: sorted.map(a => +a.approvalRate.toFixed(1)) }],
+        xaxis: { categories: sorted.map(a => a.agentName), max: 100 }
+      };
+    }
+  }
+
+  private updateCollectionChart(data: CollectionStatsResponse): void {
+    if (!data?.days?.length) return;
+    this.collectionChartOptions = {
+      ...this.collectionChartOptions,
+      series: [
+        { name: 'Esperado', data: data.days.map(d => d.expected) },
+        { name: 'Real', data: data.days.map(d => d.actual) }
+      ],
+      xaxis: { categories: data.days.map(d => d.dayName) }
+    };
+  }
+
   updateClientChart(data: any): void {
     if (data && data.statuses) {
       this.clientChartOptions.series = data.statuses.map((s: any) => s.count);
       this.clientChartOptions.labels = data.statuses.map((s: any) => this.statusMapper[s.status] || s.status);
+      this.clientChartOptions.colors = data.statuses.map((s: any) => this.pipelineColors[s.status] || '#6b7280');
     }
   }
 
@@ -588,6 +877,58 @@ export class StatisticsComponent implements OnInit, OnDestroy {
       return true;
     }
     return false;
+  }
+
+  formatDelta(delta: number | null | undefined): string {
+    if (delta === null || delta === undefined) return '';
+    const sign = delta >= 0 ? '+' : '';
+    return `${sign}${delta.toFixed(1)}%`;
+  }
+
+  isDeltaPositive(delta: number | null | undefined): boolean {
+    return delta !== null && delta !== undefined && delta > 0;
+  }
+
+  isDeltaNegative(delta: number | null | undefined): boolean {
+    return delta !== null && delta !== undefined && delta < 0;
+  }
+
+  hasDelta(delta: number | null | undefined): boolean {
+    return delta !== null && delta !== undefined;
+  }
+
+  getPipelineAlertClass(entry: ClientStatusEntry): string {
+    if (entry.status === 'NO_CONTRACT_SENDED' && entry.percentOfTotal > 20) return 'text-orange-600 font-semibold';
+    if (entry.status === 'CREATED' && entry.avgDaysInStatus > 3) return 'text-red-600 font-semibold';
+    return '';
+  }
+
+  getAlertSeverityIcon(severity: string): string {
+    return severity === 'critical' ? 'error' : severity === 'warning' ? 'warning' : 'info';
+  }
+
+  getAlertSeverityClass(severity: string): string {
+    if (severity === 'critical') return 'text-red-500 bg-red-50 border-red-200';
+    if (severity === 'warning') return 'text-amber-500 bg-amber-50 border-amber-200';
+    return 'text-blue-500 bg-blue-50 border-blue-200';
+  }
+
+  getAlertIconClass(severity: string): string {
+    if (severity === 'critical') return 'text-red-500';
+    if (severity === 'warning') return 'text-amber-500';
+    return 'text-blue-500';
+  }
+
+  getAlertDetailLink(alert: AlertItem): string[] | null {
+    const d = alert.details;
+    if (d['storeId']) return ['/admin/stores', d['storeId']];
+    if (d['clientId']) return ['/admin/clients', d['clientId']];
+    if (d['agentId']) return ['/admin/agents', d['agentId']];
+    return null;
+  }
+
+  toggleAlerts(): void {
+    this.alertsOpen = !this.alertsOpen;
   }
 
   formatCurrency(value?: number): string {

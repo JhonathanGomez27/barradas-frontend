@@ -40,10 +40,17 @@
 
             <div class="p-4 sm:p-6">
                 <form [formGroup]="filterForm">
+                    <!-- Date Shortcuts -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button *ngFor="let s of dateShortcuts" type="button" mat-stroked-button
+                            class="text-xs !py-0.5 !px-3 !min-w-0" (click)="applyDateShortcut(s)">
+                            {{ s.label }}
+                        </button>
+                    </div>
                     <!-- Grid de Filtros -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                         <!-- Rango de Fechas -->
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full xl:col-span-2">
                             <mat-label>Rango de Fechas</mat-label>
                             <mat-date-range-input [rangePicker]="picker">
                                 <input matStartDate formControlName="startDate" placeholder="Fecha inicial">
@@ -54,61 +61,7 @@
                             <mat-icon matPrefix class="text-gray-400">date_range</mat-icon>
                         </mat-form-field>
 
-                        <!-- Estado del Cliente -->
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                            <mat-label>Estado del Cliente</mat-label>
-                            <mat-select formControlName="clientStatus">
-                                <mat-option [value]="null">
-                                    <span class="flex items-center">
-                                        <mat-icon svgIcon="mat_outline:all_inclusive"
-                                            class="mr-2 text-gray-400 scale-75"></mat-icon>
-                                        Todos los estados
-                                    </span>
-                                </mat-option>
-                                <mat-option *ngFor="let status of clientStatuses" [value]="status">
-                                    <span class="flex items-center">
-                                        <mat-icon class="mr-2 scale-75" [ngClass]="{
-                                            'text-green-500': status === 'COMPLETED',
-                                            'text-blue-500': status === 'INVITED',
-                                            'text-yellow-500': status === 'IN_PROGRESS',
-                                            'text-violet-500': status === 'NO_CONTRACT_SENDED',
-                                            'text-orange-500': status === 'CONTRACT_SENDED',
-                                            'text-gray-500': status === 'CREATED'
-                                        }" svgIcon="mat_outline:circle"></mat-icon>
-                                        {{statusMapper[status] || status}}
-                                    </span>
-                                </mat-option>
-                            </mat-select>
-                            <mat-icon matPrefix class="text-gray-400">person</mat-icon>
-                        </mat-form-field>
-
-                        <!-- Estado del Crédito -->
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                            <mat-label>Estado del Crédito</mat-label>
-                            <mat-select formControlName="creditStatus">
-                                <mat-option [value]="null">
-                                    <span class="flex items-center">
-                                        <mat-icon svgIcon="mat_outline:all_inclusive"
-                                            class="mr-2 text-gray-400 scale-75"></mat-icon>
-                                        Todos los estados
-                                    </span>
-                                </mat-option>
-                                <mat-option *ngFor="let status of creditStatuses" [value]="status">
-                                    <span class="flex items-center">
-                                        <mat-icon svgIcon="mat_outline:credit_card" class="mr-2 scale-75" [ngClass]="{
-                                            'text-green-500': status === 'CLOSED',
-                                            'text-blue-500': status === 'ACTIVE',
-                                            'text-yellow-500': status === 'PENDING',
-                                            'text-red-500': status === 'DEFAULTED',
-                                            'text-gray-500': status === 'CANCELLED'
-                                        }"></mat-icon>
-                                        {{statusCreditsMapper[status] || status}}
-                                    </span>
-                                </mat-option>
-                            </mat-select>
-                            <mat-icon matPrefix class="text-gray-400">account_balance_wallet</mat-icon>
-                        </mat-form-field>
-
+                        <!-- Tienda -->
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                             <mat-label>Tienda</mat-label>
                             <mat-select formControlName="storeId">
@@ -136,166 +89,532 @@
                             <mat-icon matPrefix class="text-gray-400">storefront</mat-icon>
                         </mat-form-field>
 
-                        <!-- ID de Tienda -->
-                        <!-- <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                            <mat-label>ID de Tienda</mat-label>
-                            <input matInput formControlName="storeId" placeholder="UUID">
-                            <mat-icon matPrefix class="text-gray-400">storefront</mat-icon>
-                        </mat-form-field> -->
+                        <!-- ID de Asesor -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>ID de Asesor</mat-label>
+                            <input matInput formControlName="agentId" placeholder="UUID del asesor">
+                            <mat-icon matPrefix class="text-gray-400">support_agent</mat-icon>
+                        </mat-form-field>
+
+                        <!-- Frecuencia -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Frecuencia</mat-label>
+                            <mat-select formControlName="paymentType">
+                                <mat-option [value]="null">Todas</mat-option>
+                                <mat-option *ngFor="let pt of paymentTypes" [value]="pt.value">{{ pt.label }}</mat-option>
+                            </mat-select>
+                            <mat-icon matPrefix class="text-gray-400">repeat</mat-icon>
+                        </mat-form-field>
+
+                        <!-- Estado del Crédito -->
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                            <mat-label>Estado Crédito</mat-label>
+                            <mat-select formControlName="creditStatus">
+                                <mat-option [value]="null">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:all_inclusive"
+                                            class="mr-2 text-gray-400 scale-75"></mat-icon>
+                                        Todos
+                                    </span>
+                                </mat-option>
+                                <mat-option *ngFor="let status of creditStatuses" [value]="status">
+                                    <span class="flex items-center">
+                                        <mat-icon svgIcon="mat_outline:credit_card" class="mr-2 scale-75" [ngClass]="{
+                                            'text-green-500': status === 'CLOSED',
+                                            'text-blue-500': status === 'ACTIVE',
+                                            'text-yellow-500': status === 'PENDING',
+                                            'text-red-500': status === 'DEFAULTED',
+                                            'text-gray-500': status === 'CANCELLED'
+                                        }"></mat-icon>
+                                        {{statusCreditsMapper[status] || status}}
+                                    </span>
+                                </mat-option>
+                            </mat-select>
+                            <mat-icon matPrefix class="text-gray-400">account_balance_wallet</mat-icon>
+                        </mat-form-field>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <!-- ═══ MÓDULO 1: KPI Cards (Summary) ═══════════════════════════════════════ -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+
+            <!-- Ventas hoy (count) -->
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Clientes totales</div>
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ventas hoy</div>
                 <div class="flex items-end justify-between mt-2">
                     <div class="text-3xl font-bold text-gray-900">
-                        {{ dashboardStats?.clients?.total ?? '—' }}
+                        {{ summaryStats?.salesToday?.count ?? '—' }}
                     </div>
                     <div class="bg-barradas-100 p-2 rounded-lg">
-                        <mat-icon class="text-barradas-700">people</mat-icon>
+                        <mat-icon class="text-barradas-700">trending_up</mat-icon>
                     </div>
                 </div>
-                <div class="mt-3 text-xs text-gray-500 flex justify-between">
-                    <span>Completados: {{ dashboardStats?.clients?.completed ?? 0 }}</span>
-                    <span>En curso: {{ dashboardStats?.clients?.inProgress ?? 0 }}</span>
+                <div class="mt-2 flex items-center text-sm" *ngIf="hasDelta(summaryStats?.salesToday?.deltaCount)">
+                    <mat-icon class="text-base mr-1"
+                        [ngClass]="isDeltaPositive(summaryStats?.salesToday?.deltaCount) ? 'text-green-500' : 'text-red-500'">
+                        {{ isDeltaPositive(summaryStats?.salesToday?.deltaCount) ? 'arrow_upward' : 'arrow_downward' }}
+                    </mat-icon>
+                    <span [ngClass]="isDeltaPositive(summaryStats?.salesToday?.deltaCount) ? 'text-green-600' : 'text-red-600'">
+                        {{ formatDelta(summaryStats?.salesToday?.deltaCount) }} vs ayer
+                    </span>
                 </div>
             </div>
 
+            <!-- Monto hoy -->
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Créditos totales</div>
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Monto hoy</div>
                 <div class="flex items-end justify-between mt-2">
-                    <div class="text-3xl font-bold text-gray-900">
-                        {{ dashboardStats?.credits?.total ?? '—' }}
+                    <div class="text-2xl font-bold text-gray-900">
+                        {{ formatCurrency(summaryStats?.salesToday?.amount) }}
                     </div>
                     <div class="bg-barradas-100 p-2 rounded-lg">
-                        <mat-icon class="text-barradas-700">account_balance_wallet</mat-icon>
+                        <mat-icon class="text-barradas-700">attach_money</mat-icon>
                     </div>
                 </div>
-                <div class="mt-3 text-xs text-gray-500 flex justify-between">
-                    <span>Activos: {{ dashboardStats?.credits?.active ?? 0 }}</span>
-                    <span>Completados: {{ dashboardStats?.credits?.completed ?? 0 }}</span>
+                <div class="mt-2 flex items-center text-sm" *ngIf="hasDelta(summaryStats?.salesToday?.deltaAmount)">
+                    <mat-icon class="text-base mr-1"
+                        [ngClass]="isDeltaPositive(summaryStats?.salesToday?.deltaAmount) ? 'text-green-500' : 'text-red-500'">
+                        {{ isDeltaPositive(summaryStats?.salesToday?.deltaAmount) ? 'arrow_upward' : 'arrow_downward' }}
+                    </mat-icon>
+                    <span [ngClass]="isDeltaPositive(summaryStats?.salesToday?.deltaAmount) ? 'text-green-600' : 'text-red-600'">
+                        {{ formatDelta(summaryStats?.salesToday?.deltaAmount) }} vs ayer
+                    </span>
                 </div>
             </div>
 
+            <!-- Recaudo hoy -->
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Monto gestionado</div>
-                <div class="text-3xl font-bold text-gray-900 mt-2">
-                    {{ formatCurrency(dashboardStats?.credits?.totalAmount) }}
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recaudo hoy</div>
+                <div class="flex items-end justify-between mt-2">
+                    <div class="text-2xl font-bold text-gray-900">
+                        {{ formatCurrency(summaryStats?.collectionToday?.amount) }}
+                    </div>
+                    <div class="bg-green-100 p-2 rounded-lg">
+                        <mat-icon class="text-green-700">payments</mat-icon>
+                    </div>
                 </div>
-                <div class="mt-3 text-xs text-gray-500">
-                    Monto activo: {{ formatCurrency(dashboardStats?.credits?.activeAmount) }}
+                <div class="mt-2 flex items-center text-sm" *ngIf="hasDelta(summaryStats?.collectionToday?.delta)">
+                    <mat-icon class="text-base mr-1"
+                        [ngClass]="isDeltaPositive(summaryStats?.collectionToday?.delta) ? 'text-green-500' : 'text-red-500'">
+                        {{ isDeltaPositive(summaryStats?.collectionToday?.delta) ? 'arrow_upward' : 'arrow_downward' }}
+                    </mat-icon>
+                    <span [ngClass]="isDeltaPositive(summaryStats?.collectionToday?.delta) ? 'text-green-600' : 'text-red-600'">
+                        {{ formatDelta(summaryStats?.collectionToday?.delta) }} vs ayer
+                    </span>
                 </div>
             </div>
 
+            <!-- Cartera total -->
             <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Tasa de cumplimiento</div>
-                <div class="text-3xl font-bold text-gray-900 mt-2">
-                    {{ formatPercent(getClientsCompletionRate()) }}
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cartera total</div>
+                <div class="flex items-end justify-between mt-2">
+                    <div class="text-2xl font-bold text-gray-900">
+                        {{ formatCurrency(summaryStats?.portfolio?.total) }}
+                    </div>
+                    <div class="bg-blue-100 p-2 rounded-lg">
+                        <mat-icon class="text-blue-700">account_balance</mat-icon>
+                    </div>
                 </div>
-                <mat-progress-bar class="mt-3" color="primary" mode="determinate"
-                    [value]="getClientsCompletionRate()"></mat-progress-bar>
-                <div class="text-xs text-gray-500 mt-2">
-                    Créditos activos: {{ formatPercent(getCreditsActiveRate()) }}
+                <div class="mt-2 text-xs text-gray-500">
+                    Vencida: {{ formatCurrency(summaryStats?.portfolio?.overdueAmount) }}
+                </div>
+            </div>
+
+            <!-- % Mora -->
+            <div class="bg-white rounded-xl border p-5 shadow-sm"
+                [ngClass]="(summaryStats?.portfolio?.delinquencyRate ?? 0) > 10
+                    ? 'border-red-400 bg-red-50'
+                    : 'border-gray-200'">
+                <div class="text-xs font-semibold uppercase tracking-wide"
+                    [ngClass]="(summaryStats?.portfolio?.delinquencyRate ?? 0) > 10 ? 'text-red-600' : 'text-gray-500'">
+                    % Mora
+                </div>
+                <div class="flex items-end justify-between mt-2">
+                    <div class="text-3xl font-bold"
+                        [ngClass]="(summaryStats?.portfolio?.delinquencyRate ?? 0) > 10 ? 'text-red-600' : 'text-gray-900'">
+                        {{ summaryStats?.portfolio?.delinquencyRate != null
+                            ? ((summaryStats?.portfolio?.delinquencyRate ?? 0) | number:'1.1-1') + '%'
+                            : '—' }}
+                    </div>
+                    <div class="p-2 rounded-lg"
+                        [ngClass]="(summaryStats?.portfolio?.delinquencyRate ?? 0) > 10 ? 'bg-red-200' : 'bg-gray-100'">
+                        <mat-icon [ngClass]="(summaryStats?.portfolio?.delinquencyRate ?? 0) > 10 ? 'text-red-700' : 'text-gray-700'">
+                            warning
+                        </mat-icon>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs"
+                    [ngClass]="(summaryStats?.portfolio?.delinquencyRate ?? 0) > 10 ? 'text-red-500' : 'text-gray-400'">
+                    {{ (summaryStats?.portfolio?.delinquencyRate ?? 0) > 10 ? 'Supera umbral del 10%' : 'Umbral: 10%' }}
                 </div>
             </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-screen-xl mx-auto">
+        <!-- ═══ MÓDULO 1: Tendencia 7 días ══════════════════════════════════════════ -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                        <mat-icon class="text-barradas-700 text-xl">show_chart</mat-icon>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 text-base md:text-lg">Tendencia 7 días</h3>
+                    <span class="ml-3 text-xs text-gray-400" *ngIf="trendStats?.period">
+                        {{ trendStats.period.startDate }} – {{ trendStats.period.endDate }}
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="h-72">
+                    <apx-chart *ngIf="trendStats?.days?.length"
+                        [series]="trendChartOptions.series"
+                        [chart]="trendChartOptions.chart"
+                        [xaxis]="trendChartOptions.xaxis"
+                        [yaxis]="trendChartOptions.yaxis"
+                        [stroke]="trendChartOptions.stroke"
+                        [colors]="trendChartOptions.colors"
+                        [legend]="trendChartOptions.legend"
+                        [grid]="trendChartOptions.grid"
+                        [tooltip]="trendChartOptions.tooltip"
+                        [dataLabels]="trendChartOptions.dataLabels">
+                    </apx-chart>
+                    <div *ngIf="!trendStats?.days?.length"
+                        class="flex h-full items-center justify-center text-gray-400">
+                        <div class="text-center">
+                            <mat-icon class="text-6xl mb-2">show_chart</mat-icon>
+                            <p class="text-sm">Sin datos de tendencia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Clients Chart -->
-            <div
-                class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
-                <div
-                    class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+        <!-- ═══ MÓDULO 2: Vista Comercial ════════════════════════════════════════════ -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+            <!-- Ventas por Tienda -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+                <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">store</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Ventas por Tienda</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="h-72">
+                        <apx-chart *ngIf="commercialStats?.salesByStore?.length"
+                            [series]="commercialStoreChartOptions.series"
+                            [chart]="commercialStoreChartOptions.chart"
+                            [plotOptions]="commercialStoreChartOptions.plotOptions"
+                            [dataLabels]="commercialStoreChartOptions.dataLabels"
+                            [colors]="commercialStoreChartOptions.colors"
+                            [xaxis]="commercialStoreChartOptions.xaxis"
+                            [legend]="commercialStoreChartOptions.legend"
+                            [grid]="commercialStoreChartOptions.grid"
+                            [tooltip]="commercialStoreChartOptions.tooltip">
+                        </apx-chart>
+                        <div *ngIf="!commercialStats?.salesByStore?.length"
+                            class="flex h-full items-center justify-center text-gray-400">
+                            <div class="text-center">
+                                <mat-icon class="text-6xl mb-2">bar_chart</mat-icon>
+                                <p class="text-sm">Sin datos comerciales</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- % Aprobación por Asesor -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+                <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">support_agent</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">% Aprobación por Asesor</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="h-72">
+                        <apx-chart *ngIf="commercialStats?.salesByAgent?.length"
+                            [series]="commercialAgentChartOptions.series"
+                            [chart]="commercialAgentChartOptions.chart"
+                            [plotOptions]="commercialAgentChartOptions.plotOptions"
+                            [dataLabels]="commercialAgentChartOptions.dataLabels"
+                            [colors]="commercialAgentChartOptions.colors"
+                            [xaxis]="commercialAgentChartOptions.xaxis"
+                            [legend]="commercialAgentChartOptions.legend"
+                            [grid]="commercialAgentChartOptions.grid"
+                            [tooltip]="commercialAgentChartOptions.tooltip">
+                        </apx-chart>
+                        <div *ngIf="!commercialStats?.salesByAgent?.length"
+                            class="flex h-full items-center justify-center text-gray-400">
+                            <div class="text-center">
+                                <mat-icon class="text-6xl mb-2">bar_chart</mat-icon>
+                                <p class="text-sm">Sin datos de asesores</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ MÓDULO 3: Cartera y Recaudo ══════════════════════════════════════════ -->
+
+        <!-- Portfolio Semaphore Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <!-- Vigente -->
+            <div class="bg-white rounded-xl border-l-4 border-green-500 p-5 shadow-sm flex items-center gap-4">
+                <div class="bg-green-100 p-3 rounded-full flex-shrink-0">
+                    <mat-icon class="text-green-600 text-2xl">check_circle</mat-icon>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cartera Vigente</div>
+                    <div class="text-2xl font-bold text-green-700 mt-1">
+                        {{ portfolioStats?.current?.rate != null ? ((portfolioStats?.current?.rate ?? 0) | number:'1.1-1') + '%' : '—' }}
+                    </div>
+                    <div class="text-sm text-gray-500">{{ formatCurrency(portfolioStats?.current?.amount) }}</div>
+                </div>
+            </div>
+            <!-- Vencida -->
+            <div class="bg-white rounded-xl border-l-4 border-amber-500 p-5 shadow-sm flex items-center gap-4">
+                <div class="bg-amber-100 p-3 rounded-full flex-shrink-0">
+                    <mat-icon class="text-amber-600 text-2xl">schedule</mat-icon>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cartera Vencida</div>
+                    <div class="text-2xl font-bold text-amber-700 mt-1">
+                        {{ portfolioStats?.overdue?.rate != null ? ((portfolioStats?.overdue?.rate ?? 0) | number:'1.1-1') + '%' : '—' }}
+                    </div>
+                    <div class="text-sm text-gray-500">{{ formatCurrency(portfolioStats?.overdue?.amount) }}</div>
+                </div>
+            </div>
+            <!-- Mora Crítica -->
+            <div class="bg-white rounded-xl border-l-4 border-red-500 p-5 shadow-sm flex items-center gap-4">
+                <div class="bg-red-100 p-3 rounded-full flex-shrink-0">
+                    <mat-icon class="text-red-600 text-2xl">error</mat-icon>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Mora Crítica</div>
+                    <div class="text-2xl font-bold text-red-700 mt-1">
+                        {{ portfolioStats?.critical?.rate != null ? ((portfolioStats?.critical?.rate ?? 0) | number:'1.1-1') + '%' : '—' }}
+                    </div>
+                    <div class="text-sm text-gray-500">{{ formatCurrency(portfolioStats?.critical?.amount) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recaudo Esperado vs Real -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-barradas-700 text-xl">compare_arrows</mat-icon>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Recaudo Esperado vs Real</h3>
+                    </div>
+                    <div class="text-sm text-gray-500" *ngIf="collectionStats?.totals">
+                        Eficiencia:
+                        <span class="font-semibold"
+                            [ngClass]="(collectionStats.totals.efficiency ?? 0) >= 90 ? 'text-green-600' : 'text-amber-600'">
+                            {{ collectionStats.totals.efficiency | number:'1.1-1' }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="h-72">
+                    <apx-chart *ngIf="collectionStats?.days?.length"
+                        [series]="collectionChartOptions.series"
+                        [chart]="collectionChartOptions.chart"
+                        [plotOptions]="collectionChartOptions.plotOptions"
+                        [dataLabels]="collectionChartOptions.dataLabels"
+                        [colors]="collectionChartOptions.colors"
+                        [xaxis]="collectionChartOptions.xaxis"
+                        [legend]="collectionChartOptions.legend"
+                        [grid]="collectionChartOptions.grid"
+                        [tooltip]="collectionChartOptions.tooltip">
+                    </apx-chart>
+                    <div *ngIf="!collectionStats?.days?.length"
+                        class="flex h-full items-center justify-center text-gray-400">
+                        <div class="text-center">
+                            <mat-icon class="text-6xl mb-2">bar_chart</mat-icon>
+                            <p class="text-sm">Sin datos de recaudo</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Totals row -->
+                <div class="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-100" *ngIf="collectionStats?.totals">
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 uppercase tracking-wide">Esperado</div>
+                        <div class="text-lg font-bold text-gray-700 mt-1">{{ formatCurrency(collectionStats.totals.expected) }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 uppercase tracking-wide">Real</div>
+                        <div class="text-lg font-bold text-blue-600 mt-1">{{ formatCurrency(collectionStats.totals.actual) }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 uppercase tracking-wide">Eficiencia</div>
+                        <div class="text-lg font-bold mt-1"
+                            [ngClass]="(collectionStats.totals.efficiency ?? 0) >= 90 ? 'text-green-600' : 'text-amber-600'">
+                            {{ collectionStats.totals.efficiency | number:'1.1-1' }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ MÓDULO 4: Pipeline de Estados ═══════════════════════════════════════ -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
                             <mat-icon class="text-barradas-700 text-xl">people</mat-icon>
                         </div>
-                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Distribución de Clientes</h3>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Pipeline de Estados</h3>
                     </div>
+                    <span class="text-sm text-gray-500 font-semibold">{{ clientStats?.total || 0 }} total</span>
                 </div>
-                <div class="p-6">
-                    <div class="flex flex-col flex-auto h-80">
-                        <apx-chart *ngIf="clientChartOptions.series?.length" [series]="clientChartOptions.series"
-                            [chart]="clientChartOptions.chart" [labels]="clientChartOptions.labels"
-                            [responsive]="clientChartOptions.responsive" [legend]="clientChartOptions.legend"
-                            [colors]="clientChartOptions.colors">
-                        </apx-chart>
-                        <div *ngIf="!clientChartOptions.series?.length"
-                            class="flex flex-auto items-center justify-center text-gray-400">
-                            <div class="text-center">
-                                <mat-icon class="text-6xl mb-2">pie_chart_outline</mat-icon>
-                                <p class="text-sm">No hay datos disponibles</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <div class="flex items-baseline justify-between">
-                            <div>
-                                <div class="text-3xl font-bold text-gray-900">{{clientStats?.total || 0}}</div>
-                                <div class="text-sm text-gray-500 mt-1">Total de Clientes</div>
-                            </div>
-                            <div class="bg-barradas-100 p-3 rounded-lg">
-                                <mat-icon class="text-barradas-700">people</mat-icon>
-                            </div>
-                        </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-barradas-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Estado</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Cant.</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">% total</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor acum.</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Prom. días</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            <tr *ngFor="let entry of clientStats?.statuses"
+                                class="hover:bg-barradas-50 cursor-pointer transition-colors"
+                                [routerLink]="['/admin/clients']"
+                                [queryParams]="{ status: entry.status }">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                                        [ngStyle]="{ 'background-color': pipelineColors[entry.status] + '22', 'color': pipelineColors[entry.status] }">
+                                        {{ statusMapper[entry.status] || entry.status }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-right text-sm font-semibold text-gray-800">{{ entry.count }}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-600">
+                                    <span [ngClass]="getPipelineAlertClass(entry)">
+                                        {{ entry.percentOfTotal != null ? (entry.percentOfTotal | number:'1.1-1') + '%' : '—' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-600">
+                                    {{ entry.accumulatedValue > 0 ? formatCurrency(entry.accumulatedValue) : '—' }}
+                                </td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-600">
+                                    {{ entry.avgDaysInStatus != null ? (entry.avgDaysInStatus | number:'1.1-1') + ' d' : '—' }}
+                                </td>
+                            </tr>
+                            <tr *ngIf="!clientStats?.statuses?.length">
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-400 text-sm">Sin datos</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Donut Chart -->
+                <div class="p-6 flex flex-col items-center justify-center">
+                    <apx-chart *ngIf="clientChartOptions.series?.length"
+                        [series]="clientChartOptions.series"
+                        [chart]="clientChartOptions.chart"
+                        [labels]="clientChartOptions.labels"
+                        [responsive]="clientChartOptions.responsive"
+                        [legend]="clientChartOptions.legend"
+                        [colors]="clientChartOptions.colors"
+                        [plotOptions]="clientChartOptions.plotOptions"
+                        [dataLabels]="clientChartOptions.dataLabels">
+                    </apx-chart>
+                    <div *ngIf="!clientChartOptions.series?.length"
+                        class="flex flex-col items-center justify-center text-gray-400 py-16">
+                        <mat-icon class="text-6xl mb-2">donut_large</mat-icon>
+                        <p class="text-sm">Sin datos disponibles</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Credits Chart -->
-            <div
-                class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
-                <div
-                    class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
+        <!-- ═══ MÓDULO 6: Panel de Alertas ════════════════════════════════════════════ -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6 transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-red-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200 cursor-pointer"
+                (click)="toggleAlerts()">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <div class="bg-barradas-300/20 p-2 rounded-lg mr-3 flex-shrink-0">
-                            <mat-icon class="text-barradas-700 text-xl">account_balance_wallet</mat-icon>
+                        <div class="bg-red-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <mat-icon class="text-red-600 text-xl">notifications_active</mat-icon>
                         </div>
-                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Estado de Créditos</h3>
+                        <h3 class="font-semibold text-gray-800 text-base md:text-lg">Alertas del Sistema</h3>
+                        <span *ngIf="alertsStats?.totalAlerts"
+                            class="ml-3 inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold">
+                            {{ alertsStats.totalAlerts }}
+                        </span>
+                        <span *ngIf="!alertsStats?.totalAlerts"
+                            class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            Sin alertas
+                        </span>
                     </div>
-                </div>
-                <div class="p-6">
-                    <div class="flex flex-col flex-auto h-80">
-                        <apx-chart *ngIf="hasSeriesData(creditChartOptions)" [series]="creditChartOptions.series"
-                            [chart]="creditChartOptions.chart" [xaxis]="creditChartOptions.xaxis"
-                            [plotOptions]="creditChartOptions.plotOptions" [dataLabels]="creditChartOptions.dataLabels"
-                            [colors]="creditChartOptions.colors">
-                        </apx-chart>
-                        <div *ngIf="!hasSeriesData(creditChartOptions)"
-                            class="flex flex-auto items-center justify-center text-gray-400">
-                            <div class="text-center">
-                                <mat-icon class="text-6xl mb-2">bar_chart</mat-icon>
-                                <p class="text-sm">No hay datos disponibles</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <div class="flex items-baseline justify-between">
-                            <div>
-                                <div class="text-3xl font-bold text-gray-900">{{creditStats?.total || 0}}</div>
-                                <div class="text-sm text-gray-500 mt-1">Total de Créditos</div>
-                            </div>
-                            <div class="bg-barradas-100 p-3 rounded-lg">
-                                <mat-icon class="text-barradas-700">account_balance_wallet</mat-icon>
-                            </div>
-                        </div>
-                    </div>
+                    <mat-icon class="text-gray-400 transition-transform duration-200"
+                        [ngClass]="alertsOpen ? 'rotate-180' : ''">expand_more</mat-icon>
                 </div>
             </div>
+            <div [ngClass]="alertsOpen ? 'block' : 'hidden'">
+                <div *ngIf="alertsStats?.alerts?.length; else noAlerts" class="divide-y divide-gray-100">
+                    <div *ngFor="let alert of alertsStats.alerts"
+                        class="p-4 sm:p-5 border-l-4 flex items-start gap-4"
+                        [ngClass]="getAlertSeverityClass(alert.severity)">
+                        <mat-icon class="flex-shrink-0 mt-0.5" [ngClass]="getAlertIconClass(alert.severity)">
+                            {{ getAlertSeverityIcon(alert.severity) }}
+                        </mat-icon>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-gray-800">{{ alert.message }}</p>
+                            <div class="mt-2 text-xs text-gray-500 flex flex-wrap gap-x-4 gap-y-1">
+                                <span *ngIf="alert.details['storeName']">Tienda: <strong>{{ alert.details['storeName'] }}</strong></span>
+                                <span *ngIf="alert.details['agentName']">Asesor: <strong>{{ alert.details['agentName'] }}</strong></span>
+                                <span *ngIf="alert.details['clientName']">Cliente: <strong>{{ alert.details['clientName'] }}</strong></span>
+                                <span *ngIf="alert.details['daysInStatus']">Días: <strong>{{ alert.details['daysInStatus'] }}</strong></span>
+                                <span *ngIf="alert.details['delinquencyRate'] != null">
+                                    Mora: <strong>{{ alert.details['delinquencyRate'] | number:'1.1-1' }}%</strong>
+                                </span>
+                            </div>
+                        </div>
+                        <a *ngIf="getAlertDetailLink(alert)" mat-stroked-button
+                            class="flex-shrink-0 text-xs !py-0.5 !px-2"
+                            [routerLink]="getAlertDetailLink(alert)">
+                            Ver detalle
+                        </a>
+                    </div>
+                </div>
+                <ng-template #noAlerts>
+                    <div class="p-8 text-center text-gray-400">
+                        <mat-icon class="text-5xl mb-2 text-green-400">check_circle_outline</mat-icon>
+                        <p class="text-sm">No hay alertas activas</p>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
 
-
+        <!-- ═══ Análisis Detallado ════════════════════════════════════════════════════ -->
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Análisis Detallado</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
         </div>
 
         <!-- Agent Insights -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div class="grid grid-cols-1 gap-6 mt-0">
             <!-- Agent Credits Chart -->
-            <div
+            <!-- <div
                 class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
                 <div
                     class="bg-gradient-to-r from-barradas-50 to-white px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
@@ -351,7 +670,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Agent Performance -->
             <div
