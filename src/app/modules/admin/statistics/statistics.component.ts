@@ -83,6 +83,8 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   collectionStats: CollectionStatsResponse | null = null;
   alertsStats: AlertsStatsResponse | null = null;
   alertsOpen: boolean = true;
+  performanceOpen: boolean = true;
+  storesOpen: boolean = true;
 
   // ── Chart options ───────────────────────────────────────────────────────────
   clientChartOptions: Partial<ChartOptions>;
@@ -938,6 +940,14 @@ export class StatisticsComponent implements OnInit, OnDestroy {
 
   toggleAlerts(): void {
     this.alertsOpen = !this.alertsOpen;
+  }
+
+  togglePerformance(): void {
+    this.performanceOpen = !this.performanceOpen;
+  }
+
+  toggleStores(): void {
+    this.storesOpen = !this.storesOpen;
   }
 
   formatCurrency(value?: number): string {
