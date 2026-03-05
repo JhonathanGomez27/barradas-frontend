@@ -446,13 +446,11 @@
 
                                 <!-- Pago Inicial -->
                                 <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-                                    <mat-label>Pago Inicial</mat-label>
-                                    <input matInput formControlName="initialPayment" type="number" min="0" required />
+                                    <mat-label>Pago Inicial (opcional)</mat-label>
+                                    <input matInput formControlName="initialPayment" type="number" min="0" />
                                     <span matTextSuffix>&nbsp;MXN</span>
                                     <mat-icon matPrefix class="mr-2">payment</mat-icon>
                                     <mat-hint>{{ newCreditForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
-                                    <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('required')">El pago
-                                        inicial es obligatorio</mat-error>
                                     <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('exceedsTotal')">El pago
                                         inicial no puede superar el monto total</mat-error>
                                 </mat-form-field>
@@ -527,7 +525,7 @@
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         <mat-icon class="align-middle mr-1" style="font-size: 16px;">payment</mat-icon>
-                                        Pago Inicial <span class="text-red-500">*</span>
+                                        Pago Inicial <span class="text-gray-400 text-xs">(opcional)</span>
                                     </label>
                                     <div class="flex items-center gap-2">
                                         <input type="file" #initialPaymentFileInput
@@ -553,7 +551,7 @@
                                     Cancelar
                                 </button>
                                 <button mat-raised-button class="bg-barradas-900 text-white" type="submit"
-                                    [disabled]="!newCreditForm.valid || !newCreditQuoteFile || !newCreditInitialPaymentFile">
+                                    [disabled]="!newCreditForm.valid || !newCreditQuoteFile">
                                     <mat-icon class="mr-1">add</mat-icon>
                                     Crear Crédito
                                 </button>

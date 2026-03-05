@@ -218,7 +218,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
 
         this.newCreditForm = this.fb.group({
             totalAmount: [null, [Validators.required, Validators.min(1)]],
-            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            initialPayment: [null, [Validators.min(0)]],
             initialPaymentRate: [{ value: null, disabled: true }],
             paymentType: ['WEEKLY', [Validators.required]],
             selectedTerm: [null, [Validators.required, Validators.min(1)]],
@@ -697,16 +697,18 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         }
 
         const formValue = this.newCreditForm.getRawValue();
-        const creditData = {
+        const creditData: any = {
             clientId: this.clientDetails.id,
-            initialPayment: formValue.initialPayment,
-            initialPaymentRate: parseFloat(formValue.initialPaymentRate),
             totalAmount: formValue.totalAmount,
             paymentType: formValue.paymentType,
             selectedTerm: formValue.selectedTerm,
             repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
             status: 'PENDING'
         };
+        if (formValue.initialPayment !== null && formValue.initialPayment !== undefined && formValue.initialPayment !== '') {
+            creditData.initialPayment = formValue.initialPayment;
+            creditData.initialPaymentRate = parseFloat(formValue.initialPaymentRate) || 0;
+        }
 
         this.clientesService.createCredit(creditData)
             .pipe(takeUntil(this._unsubscribeAll))

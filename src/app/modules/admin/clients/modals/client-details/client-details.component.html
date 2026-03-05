@@ -477,12 +477,11 @@
 
                                 <!-- Pago Inicial -->
                                 <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-                                    <mat-label>Pago Inicial</mat-label>
-                                    <input matInput formControlName="initialPayment" type="number" min="0" required />
+                                    <mat-label>Pago Inicial (opcional)</mat-label>
+                                    <input matInput formControlName="initialPayment" type="number" min="0" />
                                     <span matTextSuffix>&nbsp;MXN</span>
                                     <mat-icon matPrefix class="mr-2">payment</mat-icon>
                                     <mat-hint>{{ newCreditForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
-                                    <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('required')">El pago inicial es obligatorio</mat-error>
                                     <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('exceedsTotal')">El pago inicial no puede superar el monto total</mat-error>
                                 </mat-form-field>
 
@@ -555,7 +554,7 @@
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         <mat-icon class="align-middle mr-1" style="font-size: 16px;">payment</mat-icon>
-                                        Pago Inicial <span class="text-red-500">*</span>
+                                        Pago Inicial <span class="text-gray-400 text-xs">(opcional)</span>
                                     </label>
                                     <div class="flex items-center gap-2">
                                         <input type="file"
@@ -582,7 +581,7 @@
                                 <button mat-stroked-button type="button" (click)="toggleCreateCreditForm()">
                                     Cancelar
                                 </button>
-                                <button mat-raised-button class="bg-barradas-900 text-white" type="submit" [disabled]="!newCreditForm.valid || !newCreditQuoteFile || !newCreditInitialPaymentFile">
+                                <button mat-raised-button class="bg-barradas-900 text-white" type="submit" [disabled]="!newCreditForm.valid || !newCreditQuoteFile">
                                     <mat-icon class="mr-1">add</mat-icon>
                                     Crear Crédito
                                 </button>
@@ -758,6 +757,62 @@
                                                 <mat-icon class="mr-1" style="font-size: 18px;">cancel</mat-icon>
                                                 Cancelar Crédito
                                             </button>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Editar Términos del Crédito -->
+                                @if(hasPermission('credits:update:all:patch:credits.creditId')){
+                                    <div class="p-4 border-b border-barradas-100">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="flex items-center">
+                                                <mat-icon class="text-barradas-600 mr-2">tune</mat-icon>
+                                                <h4 class="font-semibold text-gray-700 text-sm">Términos del Crédito</h4>
+                                            </div>
+                                            <button mat-stroked-button class="text-xs"
+                                                    (click)="$event.stopPropagation(); toggleEditCreditTerms(credit)">
+                                                <mat-icon class="mr-1" style="font-size: 16px;">{{ editingCreditTermsId === credit.id ? 'close' : 'edit' }}</mat-icon>
+                                                {{ editingCreditTermsId === credit.id ? 'Cancelar' : 'Editar' }}
+                                            </button>
+                                        </div>
+                                        <div *ngIf="editingCreditTermsId === credit.id" [formGroup]="editCreditTermsForm" class="flex flex-col gap-3">
+                                            <div>
+                                                <label class="text-xs font-medium text-gray-600 mb-1 block">Tipo de Pago</label>
+                                                <mat-button-toggle-group formControlName="paymentType" class="w-full"
+                                                    (change)="onEditCreditPaymentTypeChange($event.value)">
+                                                    <mat-button-toggle value="WEEKLY" class="flex-1">Semanal</mat-button-toggle>
+                                                    <mat-button-toggle value="DAILY" class="flex-1">Diario</mat-button-toggle>
+                                                </mat-button-toggle-group>
+                                            </div>
+                                            <div class="w-full grid grid-cols-2 gap-3">
+                                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+                                                    <mat-label>Plazo</mat-label>
+                                                    <mat-select formControlName="selectedTerm">
+                                                        <mat-option *ngFor="let term of availableTermsForEdit" [value]="term">
+                                                            {{ getTermLabel(term, editCreditTermsForm.get('paymentType')?.value) }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed"
+                                                    *ngIf="editCreditTermsForm.get('paymentType')?.value === 'WEEKLY'">
+                                                    <mat-label>Día de Pago Semanal</mat-label>
+                                                    <mat-select formControlName="repaymentDay">
+                                                        <mat-option *ngFor="let day of weekDays" [value]="day.value">
+                                                            {{ day.fullName }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                    <mat-icon matPrefix class="mr-2">calendar_today</mat-icon>
+                                                </mat-form-field>
+                                            </div>
+                                            <button mat-raised-button class="bg-barradas-900 text-white text-sm"
+                                                    (click)="$event.stopPropagation(); saveCreditTerms(credit)">
+                                                <mat-icon class="mr-1" style="font-size: 18px;">save</mat-icon>
+                                                Guardar Cambios
+                                            </button>
+                                        </div>
+                                        <div *ngIf="editingCreditTermsId !== credit.id" class="text-sm text-gray-600 flex items-center gap-2">
+                                            <mat-icon class="text-barradas-400" style="font-size: 16px; width: 16px; height: 16px;">schedule</mat-icon>
+                                            {{ getPaymentTypeLabel(credit.paymentType) }} — {{ getTermLabel(credit.selectedTerm, credit.paymentType) }}
                                         </div>
                                     </div>
                                 }

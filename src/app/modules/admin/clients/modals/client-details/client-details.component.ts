@@ -177,6 +177,11 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
     // Archivos de pago inicial para créditos existentes (creditId -> File)
     initialPaymentFilesByCreditId: { [creditId: string]: File } = {};
 
+    // Edición de términos de crédito existente
+    editingCreditTermsId: string | null = null;
+    editCreditTermsForm: FormGroup;
+    availableTermsForEdit: number[] = [];
+
     stores: Store[] = [];
     storeFilterCtrl: FormControl = new FormControl('');
     filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
@@ -214,11 +219,17 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
 
         this.newCreditForm = this.fb.group({
             totalAmount: [null, [Validators.required, Validators.min(1)]],
-            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            initialPayment: [null, [Validators.min(0)]],
             initialPaymentRate: [{ value: null, disabled: true }],
             paymentType: ['WEEKLY', [Validators.required]],
             selectedTerm: [null, [Validators.required, Validators.min(1)]],
             repaymentDay: ['MONDAY', [Validators.required]],
+        });
+
+        this.editCreditTermsForm = this.fb.group({
+            paymentType: [null],
+            selectedTerm: [null],
+            repaymentDay: [null],
         });
     }
 
@@ -653,6 +664,80 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         }
     }
 
+    updateAvailableTermsForEdit(paymentType: string): void {
+        if (paymentType === 'WEEKLY') {
+            this.availableTermsForEdit = this.creditTerms.weeklyTerms || [];
+        } else if (paymentType === 'DAILY') {
+            this.availableTermsForEdit = this.creditTerms.dailyTerms || [];
+        } else {
+            this.availableTermsForEdit = [];
+        }
+    }
+
+    toggleEditCreditTerms(credit: Credit): void {
+        if (this.editingCreditTermsId === credit.id) {
+            this.editingCreditTermsId = null;
+            this.editCreditTermsForm.reset();
+        } else {
+            this.editingCreditTermsId = credit.id;
+            this.updateAvailableTermsForEdit(credit.paymentType);
+            this.editCreditTermsForm.patchValue({
+                paymentType: credit.paymentType,
+                selectedTerm: credit.selectedTerm,
+                repaymentDay: credit.repaymentDay || 'MONDAY',
+            });
+        }
+    }
+
+    onEditCreditPaymentTypeChange(paymentType: string): void {
+        this.updateAvailableTermsForEdit(paymentType);
+        this.editCreditTermsForm.patchValue({ selectedTerm: null, repaymentDay: paymentType === 'WEEKLY' ? 'MONDAY' : null });
+    }
+
+    saveCreditTerms(credit: Credit): void {
+        const value = this.editCreditTermsForm.value;
+        const payload: { paymentType?: 'WEEKLY' | 'DAILY'; selectedTerm?: number; repaymentDay?: string | null } = {};
+        if (value.paymentType !== null && value.paymentType !== undefined) {
+            payload.paymentType = value.paymentType;
+        }
+        if (value.selectedTerm !== null && value.selectedTerm !== undefined) {
+            payload.selectedTerm = value.selectedTerm;
+        }
+        if (value.repaymentDay !== null && value.repaymentDay !== undefined) {
+            payload.repaymentDay = value.paymentType === 'WEEKLY' ? value.repaymentDay : null;
+        }
+        if (Object.keys(payload).length === 0) {
+            this._alertsService.showAlertMessage({
+                type: 'warning',
+                text: 'No hay cambios que guardar.',
+                title: 'Aviso'
+            });
+            return;
+        }
+        this.clientesService.patchCredit(credit.id, payload)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: () => {
+                    this._alertsService.showAlertMessage({
+                        type: 'success',
+                        text: 'Términos del crédito actualizados correctamente.',
+                        title: 'Éxito'
+                    });
+                    this.editingCreditTermsId = null;
+                    this.editCreditTermsForm.reset();
+                    this.reloadClientCredits();
+                },
+                error: (error) => {
+                    console.error('Error al actualizar los términos del crédito:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al actualizar los términos del crédito.',
+                        title: 'Error'
+                    });
+                }
+            });
+    }
+
     toggleCreateCreditForm(): void {
         this.showCreateCreditForm = !this.showCreateCreditForm;
         if (!this.showCreateCreditForm) {
@@ -699,16 +784,18 @@ export class ClientDetailsComponent implements OnInit, OnDestroy{
         }
 
         const formValue = this.newCreditForm.getRawValue();
-        const creditData = {
+        const creditData: any = {
             clientId: this.clientDetails.id,
-            initialPayment: formValue.initialPayment,
-            initialPaymentRate: parseFloat(formValue.initialPaymentRate),
             totalAmount: formValue.totalAmount,
             paymentType: formValue.paymentType,
             selectedTerm: formValue.selectedTerm,
             repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
             status: 'PENDING'
         };
+        if (formValue.initialPayment !== null && formValue.initialPayment !== undefined && formValue.initialPayment !== '') {
+            creditData.initialPayment = formValue.initialPayment;
+            creditData.initialPaymentRate = parseFloat(formValue.initialPaymentRate) || 0;
+        }
 
         this.clientesService.createCredit(creditData)
             .pipe(takeUntil(this._unsubscribeAll))

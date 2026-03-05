@@ -152,6 +152,10 @@ export class ClientsService {
         return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
     }
 
+    patchCredit(creditId: string, data: { paymentType?: 'WEEKLY' | 'DAILY'; selectedTerm?: number; repaymentDay?: string | null }): Observable<any> {
+        return this.httpClient.patch(`${this._url}/credits/${creditId}`, data);
+    }
+
     getCreditTerms(): Observable<any> {
         return this.httpClient.get(`${this._url}/credits/payment-terms`);
     }
