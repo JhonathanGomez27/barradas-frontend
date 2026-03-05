@@ -150,10 +150,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         INE_BACK: { file: null, preview: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
         PROOF_ADDRESS: { file: null, preview: null, name: 'PROOF_ADDRESS', label: 'Comprobante de domicilio', required: true },
         PROOF_ADDRESS_OWNER: { file: null, preview: null, name: 'PROOF_ADDRESS_OWNER', label: 'Comprobante del propietario', required: false },
-        FACADE: { file: null, preview: null, name: 'FACADE', label: 'Fachada', required: true },
-        // CONTRACT_SIGNED: { file: null, preview: null, name: 'CONTRACT_SIGNED', label: 'Contrato firmado', required: true },
-        QUOTE: { file: null, preview: null, name: 'QUOTE', label: 'Cotización', required: true },
-        INITIAL_PAYMENT: { file: null, preview: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
+        FACADE: { file: null, preview: null, name: 'FACADE', label: 'Fachada', required: true }
     };
 
     contractElectronicSignature: any = null;
@@ -176,9 +173,13 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     newCreditForm: FormGroup;
     showCreateCreditForm: boolean = false;
     newCreditQuoteFile: File | null = null;
+    newCreditInitialPaymentFile: File | null = null;
 
     // Archivos de contrato por crédito (creditId -> File)
     contractFilesByCreditId: { [creditId: string]: File } = {};
+
+    // Archivos de pago inicial para créditos existentes (creditId -> File)
+    initialPaymentFilesByCreditId: { [creditId: string]: File } = {};
 
     stores: Store[] = [];
     storeFilterCtrl: FormControl = new FormControl('');
@@ -217,7 +218,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
 
         this.newCreditForm = this.fb.group({
             totalAmount: [null, [Validators.required, Validators.min(1)]],
-            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            initialPayment: [null, [Validators.min(0)]],
             initialPaymentRate: [{ value: null, disabled: true }],
             paymentType: ['WEEKLY', [Validators.required]],
             selectedTerm: [null, [Validators.required, Validators.min(1)]],
@@ -354,7 +355,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     }
 
     hasCreditSignatures(credit: Credit): boolean {
-        return credit.signatures && credit.signatures.length > 0;
+        return credit.signatures && credit.signatures.length > 0 || false;
     }
 
     getCreditSignatures(credit: Credit): any[] {
@@ -510,6 +511,57 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         return file ? file.name : '';
     }
 
+    hasInitialPaymentDocument(credit: Credit): boolean {
+        return credit.documents?.some((doc: any) => doc.docType === 'INITIAL_PAYMENT') || false;
+    }
+
+    getInitialPaymentFileForExistingCredit(creditId: string): File | null {
+        return this.initialPaymentFilesByCreditId[creditId] || null;
+    }
+
+    getInitialPaymentFileNameForExistingCredit(creditId: string): string {
+        const file = this.initialPaymentFilesByCreditId[creditId];
+        return file ? file.name : '';
+    }
+
+    onInitialPaymentFileSelectedForExistingCredit(event: any, credit: Credit): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.initialPaymentFilesByCreditId[credit.id] = file;
+        }
+    }
+
+    uploadInitialPaymentForExistingCredit(credit: Credit): void {
+        const file = this.initialPaymentFilesByCreditId[credit.id];
+        if (!file) return;
+
+        this.clientesService.uploadFileToClient(
+            this.clientDetails.id,
+            file,
+            'INITIAL_PAYMENT',
+            credit.id
+        ).pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: () => {
+                    this._alertsService.showAlertMessage({
+                        type: 'success',
+                        text: 'Pago inicial subido correctamente.',
+                        title: 'Éxito'
+                    });
+                    delete this.initialPaymentFilesByCreditId[credit.id];
+                    this.reloadClientCredits();
+                },
+                error: (error) => {
+                    console.error('Error al subir el pago inicial:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al subir el pago inicial.',
+                        title: 'Error'
+                    });
+                }
+            });
+    }
+
     formatCurrency(value: string | number): string {
         const numValue = typeof value === 'string' ? parseFloat(value) : value;
         return new Intl.NumberFormat('es-MX', {
@@ -607,6 +659,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                 repaymentDay: 'MONDAY'
             });
             this.newCreditQuoteFile = null;
+            this.newCreditInitialPaymentFile = null;
         }
     }
 
@@ -614,6 +667,13 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         const file = event.target.files[0];
         if (file) {
             this.newCreditQuoteFile = file;
+        }
+    }
+
+    onInitialPaymentFileSelectedForNewCredit(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.newCreditInitialPaymentFile = file;
         }
     }
 
@@ -637,23 +697,25 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         }
 
         const formValue = this.newCreditForm.getRawValue();
-        const creditData = {
+        const creditData: any = {
             clientId: this.clientDetails.id,
-            initialPayment: formValue.initialPayment,
-            initialPaymentRate: parseFloat(formValue.initialPaymentRate),
             totalAmount: formValue.totalAmount,
             paymentType: formValue.paymentType,
             selectedTerm: formValue.selectedTerm,
             repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : null,
             status: 'PENDING'
         };
+        if (formValue.initialPayment !== null && formValue.initialPayment !== undefined && formValue.initialPayment !== '') {
+            creditData.initialPayment = formValue.initialPayment;
+            creditData.initialPaymentRate = parseFloat(formValue.initialPaymentRate) || 0;
+        }
 
         this.clientesService.createCredit(creditData)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
                     // Subir el archivo QUOTE asociado al crédito recién creado
-                    this.uploadQuoteForCredit(response.id);
+                    this.uploadQuoteForCredit(response.id, this.newCreditInitialPaymentFile ?? undefined);
                 },
                 error: (error) => {
                     console.error('Error al crear el crédito:', error);
@@ -666,7 +728,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             });
     }
 
-    uploadQuoteForCredit(creditId: string): void {
+    uploadQuoteForCredit(creditId: string, initialPaymentFile?: File): void {
         if (!this.newCreditQuoteFile) return;
 
         this.clientesService.uploadFileToClient(
@@ -676,20 +738,54 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
             creditId
         ).pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
-                next: (response) => {
-                    this._alertsService.showAlertMessage({
-                        type: 'success',
-                        text: 'Crédito creado exitosamente con su cotización.',
-                        title: 'Éxito'
-                    });
-                    this.reloadClientCredits();
-                    this.toggleCreateCreditForm();
+                next: () => {
+                    if (initialPaymentFile) {
+                        this.uploadInitialPaymentForCredit(creditId, initialPaymentFile);
+                    } else {
+                        this._alertsService.showAlertMessage({
+                            type: 'success',
+                            text: 'Crédito creado exitosamente con su cotización.',
+                            title: 'Éxito'
+                        });
+                        this.reloadClientCredits();
+                        this.toggleCreateCreditForm();
+                    }
                 },
                 error: (error) => {
                     console.error('Error al subir la cotización:', error);
                     this._alertsService.showAlertMessage({
                         type: 'error',
                         text: 'El crédito fue creado pero hubo un error al subir la cotización.',
+                        title: 'Error'
+                    });
+                    this.reloadClientCredits();
+                    this.toggleCreateCreditForm();
+                }
+            });
+    }
+
+    uploadInitialPaymentForCredit(creditId: string, file: File): void {
+        this.clientesService.uploadFileToClient(
+            this.clientDetails.id,
+            file,
+            'INITIAL_PAYMENT',
+            creditId
+        ).pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: () => {
+                    this._alertsService.showAlertMessage({
+                        type: 'success',
+                        text: 'Crédito creado exitosamente con cotización y pago inicial.',
+                        title: 'Éxito'
+                    });
+                    this.reloadClientCredits();
+                    this.toggleCreateCreditForm();
+                },
+                error: (error) => {
+                    console.error('Error al subir el pago inicial:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'El crédito y cotización fueron creados pero hubo un error al subir el pago inicial.',
                         title: 'Error'
                     });
                     this.reloadClientCredits();
@@ -1018,7 +1114,7 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
 
         dialog.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
             if (result === 'confirmed') {
-                this.clientesService.updateCreditStatus(this.creditActive.id, newStatus)
+                this.clientesService.updateCreditStatus(this.creditActive?.id || '', newStatus)
                     .pipe(takeUntil(this._unsubscribeAll))
                     .subscribe({
                         next: (response) => {

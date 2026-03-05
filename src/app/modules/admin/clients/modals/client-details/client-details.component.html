@@ -477,12 +477,11 @@
 
                                 <!-- Pago Inicial -->
                                 <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-                                    <mat-label>Pago Inicial</mat-label>
-                                    <input matInput formControlName="initialPayment" type="number" min="0" required />
+                                    <mat-label>Pago Inicial (opcional)</mat-label>
+                                    <input matInput formControlName="initialPayment" type="number" min="0" />
                                     <span matTextSuffix>&nbsp;MXN</span>
                                     <mat-icon matPrefix class="mr-2">payment</mat-icon>
                                     <mat-hint>{{ newCreditForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
-                                    <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('required')">El pago inicial es obligatorio</mat-error>
                                     <mat-error *ngIf="newCreditForm.get('initialPayment')?.hasError('exceedsTotal')">El pago inicial no puede superar el monto total</mat-error>
                                 </mat-form-field>
 
@@ -529,7 +528,7 @@
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         <mat-icon class="align-middle mr-1" style="font-size: 16px;">receipt</mat-icon>
-                                        Cotización (QUOTE) <span class="text-red-500">*</span>
+                                        Cotización<span class="text-red-500">*</span>
                                     </label>
                                     <div class="flex items-center gap-2">
                                         <input type="file"
@@ -548,6 +547,32 @@
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1" *ngIf="newCreditQuoteFile">
                                         Archivo seleccionado: <span class="font-medium">{{ newCreditQuoteFile.name }}</span>
+                                    </p>
+                                </div>
+
+                                <!-- Archivo de Pago Inicial (INITIAL_PAYMENT) -->
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <mat-icon class="align-middle mr-1" style="font-size: 16px;">payment</mat-icon>
+                                        Pago Inicial <span class="text-gray-400 text-xs">(opcional)</span>
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="file"
+                                            #initialPaymentFileInput
+                                            (change)="onInitialPaymentFileSelectedForNewCredit($event)"
+                                            class="block w-full text-sm text-gray-500
+                                                    file:mr-3 file:py-2 file:px-4
+                                                    file:rounded-lg file:border-0
+                                                    file:text-sm file:font-medium
+                                                    file:bg-barradas-50 file:text-barradas-700
+                                                    hover:file:bg-barradas-100
+                                                    file:cursor-pointer
+                                                    cursor-pointer
+                                                    border border-gray-300 rounded-lg p-2"
+                                            accept=".pdf,.jpg,.jpeg,.png" />
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1" *ngIf="newCreditInitialPaymentFile">
+                                        Archivo seleccionado: <span class="font-medium">{{ newCreditInitialPaymentFile.name }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -682,6 +707,32 @@
                                     </div>
                                 </div>
 
+                                <!-- Subir Pago Inicial (si no existe) -->
+                                <div class="px-4 py-2 border-b border-barradas-100" *ngIf="!hasInitialPaymentDocument(credit)">
+                                    <div class="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2 border border-dashed border-amber-200">
+                                        <mat-icon class="text-amber-500 flex-shrink-0" style="font-size: 15px; width: 15px; height: 15px;">payment</mat-icon>
+                                        <span class="text-xs text-amber-700 font-medium flex-shrink-0 whitespace-nowrap">Pago inicial pendiente</span>
+                                        <input type="file"
+                                            (change)="onInitialPaymentFileSelectedForExistingCredit($event, credit)"
+                                            class="flex-1 min-w-0 text-xs text-gray-500
+                                                    file:mr-2 file:py-0.5 file:px-2
+                                                    file:rounded file:border-0
+                                                    file:text-xs file:font-medium
+                                                    file:bg-white file:text-barradas-700
+                                                    hover:file:bg-barradas-50
+                                                    file:cursor-pointer cursor-pointer"
+                                            accept=".pdf,.jpg,.jpeg,.png" />
+                                        <button mat-icon-button
+                                                class="flex-shrink-0 text-barradas-700"
+                                                style="width: 28px; height: 28px; line-height: 28px;"
+                                                (click)="$event.stopPropagation(); uploadInitialPaymentForExistingCredit(credit)"
+                                                [disabled]="!getInitialPaymentFileForExistingCredit(credit.id)"
+                                                matTooltip="Subir pago inicial">
+                                            <mat-icon style="font-size: 16px;">upload_file</mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <!-- Gestión del Estado del Crédito -->
                                 @if(hasPermission('credits:update:all:patch:credits.creditId.status')){
 
@@ -706,6 +757,62 @@
                                                 <mat-icon class="mr-1" style="font-size: 18px;">cancel</mat-icon>
                                                 Cancelar Crédito
                                             </button>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Editar Términos del Crédito -->
+                                @if(hasPermission('credits:update:all:patch:credits.creditId')){
+                                    <div class="p-4 border-b border-barradas-100">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="flex items-center">
+                                                <mat-icon class="text-barradas-600 mr-2">tune</mat-icon>
+                                                <h4 class="font-semibold text-gray-700 text-sm">Términos del Crédito</h4>
+                                            </div>
+                                            <button mat-stroked-button class="text-xs"
+                                                    (click)="$event.stopPropagation(); toggleEditCreditTerms(credit)">
+                                                <mat-icon class="mr-1" style="font-size: 16px;">{{ editingCreditTermsId === credit.id ? 'close' : 'edit' }}</mat-icon>
+                                                {{ editingCreditTermsId === credit.id ? 'Cancelar' : 'Editar' }}
+                                            </button>
+                                        </div>
+                                        <div *ngIf="editingCreditTermsId === credit.id" [formGroup]="editCreditTermsForm" class="flex flex-col gap-3">
+                                            <div>
+                                                <label class="text-xs font-medium text-gray-600 mb-1 block">Tipo de Pago</label>
+                                                <mat-button-toggle-group formControlName="paymentType" class="w-full"
+                                                    (change)="onEditCreditPaymentTypeChange($event.value)">
+                                                    <mat-button-toggle value="WEEKLY" class="flex-1">Semanal</mat-button-toggle>
+                                                    <mat-button-toggle value="DAILY" class="flex-1">Diario</mat-button-toggle>
+                                                </mat-button-toggle-group>
+                                            </div>
+                                            <div class="w-full grid grid-cols-2 gap-3">
+                                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
+                                                    <mat-label>Plazo</mat-label>
+                                                    <mat-select formControlName="selectedTerm">
+                                                        <mat-option *ngFor="let term of availableTermsForEdit" [value]="term">
+                                                            {{ getTermLabel(term, editCreditTermsForm.get('paymentType')?.value) }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed"
+                                                    *ngIf="editCreditTermsForm.get('paymentType')?.value === 'WEEKLY'">
+                                                    <mat-label>Día de Pago Semanal</mat-label>
+                                                    <mat-select formControlName="repaymentDay">
+                                                        <mat-option *ngFor="let day of weekDays" [value]="day.value">
+                                                            {{ day.fullName }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                    <mat-icon matPrefix class="mr-2">calendar_today</mat-icon>
+                                                </mat-form-field>
+                                            </div>
+                                            <button mat-raised-button class="bg-barradas-900 text-white text-sm"
+                                                    (click)="$event.stopPropagation(); saveCreditTerms(credit)">
+                                                <mat-icon class="mr-1" style="font-size: 18px;">save</mat-icon>
+                                                Guardar Cambios
+                                            </button>
+                                        </div>
+                                        <div *ngIf="editingCreditTermsId !== credit.id" class="text-sm text-gray-600 flex items-center gap-2">
+                                            <mat-icon class="text-barradas-400" style="font-size: 16px; width: 16px; height: 16px;">schedule</mat-icon>
+                                            {{ getPaymentTypeLabel(credit.paymentType) }} — {{ getTermLabel(credit.selectedTerm, credit.paymentType) }}
                                         </div>
                                     </div>
                                 }
