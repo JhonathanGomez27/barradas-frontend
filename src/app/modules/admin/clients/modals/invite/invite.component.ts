@@ -67,7 +67,7 @@ export class InviteComponent implements OnInit {
         INE_FRONT: { file: null, name: 'INE_FRONT', label: 'INE (Frente)', required: true },
         INE_BACK: { file: null, name: 'INE_BACK', label: 'INE (Reverso)', required: true },
         QUOTE: { file: null, name: 'QUOTE', label: 'Cotización', required: true },
-        INITIAL_PAYMENT: { file: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: true }
+        INITIAL_PAYMENT: { file: null, name: 'INITIAL_PAYMENT', label: 'Pago inicial', required: false }
     };
 
     // Días de la semana para el selector
@@ -123,7 +123,7 @@ export class InviteComponent implements OnInit {
             agentId: new FormControl({ value: this.data.agentId, disabled: true }),
             // Información del crédito
             totalAmount: [null, [Validators.required, Validators.min(1)]],
-            initialPayment: [null, [Validators.required, Validators.min(0)]],
+            initialPayment: [null, [Validators.min(0)]],
             initialPaymentRate: [{ value: null, disabled: true }],
             paymentType: ['WEEKLY', [Validators.required]],
             selectedTerm: [null, [Validators.required, Validators.min(1)]],
@@ -315,13 +315,15 @@ export class InviteComponent implements OnInit {
             locationAddress: formValue.locationAddress,
             storeId: formValue.storeId ?? undefined,
             agentId: formValue.agentId ?? undefined,
-            initialPayment: formValue.initialPayment,
-            initialPaymentRate: formValue.initialPaymentRate != null ? parseFloat(formValue.initialPaymentRate) : undefined,
             totalAmount: formValue.totalAmount,
             paymentType: formValue.paymentType,
             selectedTerm: formValue.selectedTerm,
             repaymentDay: formValue.paymentType === 'WEEKLY' ? formValue.repaymentDay : undefined,
         };
+        if (formValue.initialPayment !== null && formValue.initialPayment !== undefined && formValue.initialPayment !== '') {
+            payload.initialPayment = formValue.initialPayment;
+            payload.initialPaymentRate = formValue.initialPaymentRate != null ? parseFloat(formValue.initialPaymentRate) : undefined;
+        }
 
         const files: CreateInvitationFiles = {};
         if (this.fileUploads['INE_FRONT'].file) files.INE_FRONT = this.fileUploads['INE_FRONT'].file;

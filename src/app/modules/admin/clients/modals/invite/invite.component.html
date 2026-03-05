@@ -138,14 +138,12 @@
 
         <!-- Pago Inicial -->
         <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
-          <mat-label>Pago Inicial</mat-label>
-          <input matInput formControlName="initialPayment" type="number" min="0" required />
+          <mat-label>Pago Inicial (opcional)</mat-label>
+          <input matInput formControlName="initialPayment" type="number" min="0" />
           <!-- <span matTextPrefix>$&nbsp;</span> -->
           <span matTextSuffix>&nbsp;MXN</span>
           <mat-icon matPrefix class="mr-2">payment</mat-icon>
           <mat-hint>{{ inviteForm.get('initialPaymentRate')?.value }}% del total</mat-hint>
-          <mat-error *ngIf="inviteForm.get('initialPayment')?.hasError('required')">El pago inicial es
-            obligatorio</mat-error>
           <mat-error *ngIf="inviteForm.get('initialPayment')?.hasError('exceedsTotal')">El pago inicial no puede superar
             el monto total</mat-error>
         </mat-form-field>
@@ -340,7 +338,7 @@
         <div class="w-full">
           <div class="flex items-center justify-between mb-2">
             <label class="text-sm font-medium text-gray-600">{{ fileUploads['INITIAL_PAYMENT'].label }}</label>
-            <span class="text-xs text-red-500" *ngIf="fileUploads['INITIAL_PAYMENT'].required">*Requerido</span>
+            <span class="text-xs text-gray-400" *ngIf="!fileUploads['INITIAL_PAYMENT'].required">(opcional)</span>
           </div>
           <div class="border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors min-h-[80px]">
             <div *ngIf="!fileUploads['INITIAL_PAYMENT'].file" class="flex items-center justify-center h-full">
