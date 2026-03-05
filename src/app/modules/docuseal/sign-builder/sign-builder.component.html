@@ -51,15 +51,16 @@
                             </div>
 
                             <!-- Botón de envío -->
-                            <button mat-raised-button
-                                    *ngIf="hasPermission('docuseal:create:all:post:docuseal.send-submission-email')"
-                                    color="primary"
-                                    (click)="confirmSignatureRequest()"
-                                    [disabled]="loadingRequest"
-                                    class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
-                                <mat-icon class="mr-2">{{ loadingRequest ? 'hourglass_empty' : 'send' }}</mat-icon>
-                                <span>{{ loadingRequest ? 'Enviando...' : 'Enviar solicitud de firma' }}</span>
-                            </button>
+                            @if(hasPermission('docuseal:create:all:post:docuseal.send-submission-email')) {
+                                <button mat-raised-button
+                                        color="primary"
+                                        (click)="confirmSignatureRequest()"
+                                        [disabled]="loadingRequest"
+                                        class="transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
+                                    <mat-icon class="mr-2">{{ loadingRequest ? 'hourglass_empty' : 'send' }}</mat-icon>
+                                    <span>{{ loadingRequest ? 'Enviando...' : 'Enviar solicitud de firma' }}</span>
+                                </button>
+                            }
                         </div>
                     </div>
                 </div>
