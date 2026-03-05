@@ -151,7 +151,7 @@ export class InviteComponent implements OnInit {
             this.rol = this.data.rol;
 
             this.stores = response;
-            this.selectedStore = this.stores.find(store => store.id === this.storeId);
+            this.selectedStore = this.stores.find(store => store.id === this.storeId) ?? null;
 
             if (this.storeId) {
                 this.inviteForm.patchValue({

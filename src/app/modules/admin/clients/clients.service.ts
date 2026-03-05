@@ -65,9 +65,12 @@ export class ClientsService {
         }).pipe(
             map(response => {
                 const blob = response.body;
+                if (!blob) {
+                    throw new Error('Response body is null');
+                }
                 // Obtener el tipo MIME del Content-Type header o del blob
                 const contentType = response.headers.get('Content-Type') || blob.type || 'application/octet-stream';
-                return { blob: blob, mimeType: contentType };
+                return { blob, mimeType: contentType };
             }),
             catchError(error => {
                 console.error('Error obteniendo el archivo:', error);

@@ -503,7 +503,7 @@
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         <mat-icon class="align-middle mr-1" style="font-size: 16px;">receipt</mat-icon>
-                                        Cotización (QUOTE) <span class="text-red-500">*</span>
+                                        Cotización <span class="text-red-500">*</span>
                                     </label>
                                     <div class="flex items-center gap-2">
                                         <input type="file" #quoteFileInput
@@ -522,6 +522,30 @@
                                         Archivo seleccionado: <span class="font-medium">{{ newCreditQuoteFile.name }}</span>
                                     </p>
                                 </div>
+
+                                <!-- Archivo de Pago Inicial (INITIAL_PAYMENT) -->
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <mat-icon class="align-middle mr-1" style="font-size: 16px;">payment</mat-icon>
+                                        Pago Inicial <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="file" #initialPaymentFileInput
+                                            (change)="onInitialPaymentFileSelectedForNewCredit($event)" class="block w-full text-sm text-gray-500
+                                                        file:mr-3 file:py-2 file:px-4
+                                                        file:rounded-lg file:border-0
+                                                        file:text-sm file:font-medium
+                                                        file:bg-barradas-50 file:text-barradas-700
+                                                        hover:file:bg-barradas-100
+                                                        file:cursor-pointer
+                                                        cursor-pointer
+                                                        border border-gray-300 rounded-lg p-2"
+                                            accept=".pdf,.jpg,.jpeg,.png" />
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1" *ngIf="newCreditInitialPaymentFile">
+                                        Archivo seleccionado: <span class="font-medium">{{ newCreditInitialPaymentFile.name }}</span>
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="flex justify-end gap-2 mt-4">
@@ -529,7 +553,7 @@
                                     Cancelar
                                 </button>
                                 <button mat-raised-button class="bg-barradas-900 text-white" type="submit"
-                                    [disabled]="!newCreditForm.valid || !newCreditQuoteFile">
+                                    [disabled]="!newCreditForm.valid || !newCreditQuoteFile || !newCreditInitialPaymentFile">
                                     <mat-icon class="mr-1">add</mat-icon>
                                     Crear Crédito
                                 </button>
