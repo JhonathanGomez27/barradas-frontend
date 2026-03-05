@@ -178,6 +178,9 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     // Archivos de contrato por crédito (creditId -> File)
     contractFilesByCreditId: { [creditId: string]: File } = {};
 
+    // Archivos de pago inicial para créditos existentes (creditId -> File)
+    initialPaymentFilesByCreditId: { [creditId: string]: File } = {};
+
     stores: Store[] = [];
     storeFilterCtrl: FormControl = new FormControl('');
     filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
@@ -506,6 +509,57 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
     getContractFileNameForCredit(creditId: string): string {
         const file = this.contractFilesByCreditId[creditId];
         return file ? file.name : '';
+    }
+
+    hasInitialPaymentDocument(credit: Credit): boolean {
+        return credit.documents?.some((doc: any) => doc.docType === 'INITIAL_PAYMENT') || false;
+    }
+
+    getInitialPaymentFileForExistingCredit(creditId: string): File | null {
+        return this.initialPaymentFilesByCreditId[creditId] || null;
+    }
+
+    getInitialPaymentFileNameForExistingCredit(creditId: string): string {
+        const file = this.initialPaymentFilesByCreditId[creditId];
+        return file ? file.name : '';
+    }
+
+    onInitialPaymentFileSelectedForExistingCredit(event: any, credit: Credit): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.initialPaymentFilesByCreditId[credit.id] = file;
+        }
+    }
+
+    uploadInitialPaymentForExistingCredit(credit: Credit): void {
+        const file = this.initialPaymentFilesByCreditId[credit.id];
+        if (!file) return;
+
+        this.clientesService.uploadFileToClient(
+            this.clientDetails.id,
+            file,
+            'INITIAL_PAYMENT',
+            credit.id
+        ).pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: () => {
+                    this._alertsService.showAlertMessage({
+                        type: 'success',
+                        text: 'Pago inicial subido correctamente.',
+                        title: 'Éxito'
+                    });
+                    delete this.initialPaymentFilesByCreditId[credit.id];
+                    this.reloadClientCredits();
+                },
+                error: (error) => {
+                    console.error('Error al subir el pago inicial:', error);
+                    this._alertsService.showAlertMessage({
+                        type: 'error',
+                        text: 'Error al subir el pago inicial.',
+                        title: 'Error'
+                    });
+                }
+            });
     }
 
     formatCurrency(value: string | number): string {

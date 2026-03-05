@@ -708,6 +708,32 @@
                                     </div>
                                 </div>
 
+                                <!-- Subir Pago Inicial (si no existe) -->
+                                <div class="px-4 py-2 border-b border-barradas-100" *ngIf="!hasInitialPaymentDocument(credit)">
+                                    <div class="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2 border border-dashed border-amber-200">
+                                        <mat-icon class="text-amber-500 flex-shrink-0" style="font-size: 15px; width: 15px; height: 15px;">payment</mat-icon>
+                                        <span class="text-xs text-amber-700 font-medium flex-shrink-0 whitespace-nowrap">Pago inicial pendiente</span>
+                                        <input type="file"
+                                            (change)="onInitialPaymentFileSelectedForExistingCredit($event, credit)"
+                                            class="flex-1 min-w-0 text-xs text-gray-500
+                                                    file:mr-2 file:py-0.5 file:px-2
+                                                    file:rounded file:border-0
+                                                    file:text-xs file:font-medium
+                                                    file:bg-white file:text-barradas-700
+                                                    hover:file:bg-barradas-50
+                                                    file:cursor-pointer cursor-pointer"
+                                            accept=".pdf,.jpg,.jpeg,.png" />
+                                        <button mat-icon-button
+                                                class="flex-shrink-0 text-barradas-700"
+                                                style="width: 28px; height: 28px; line-height: 28px;"
+                                                (click)="$event.stopPropagation(); uploadInitialPaymentForExistingCredit(credit)"
+                                                [disabled]="!getInitialPaymentFileForExistingCredit(credit.id)"
+                                                matTooltip="Subir pago inicial">
+                                            <mat-icon style="font-size: 16px;">upload_file</mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <!-- Gestión del Estado del Crédito -->
                                 @if(hasPermission('credits:update:all:patch:credits.creditId.status')){
 
