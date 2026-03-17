@@ -63,56 +63,60 @@
         </mat-form-field>
 
         <!-- Selector de Tienda (Solo para Admin) -->
-        <mat-form-field *ngIf="rol === 'admin'" appearance="outline" class="w-full col-span-1 md:col-span-2"
-          subscriptSizing="fixed">
-          <mat-label>Tienda</mat-label>
-          <mat-select formControlName="storeId" placeholder="Seleccionar tienda">
-            <mat-option>
-              <ngx-mat-select-search [formControl]="storeFilterCtrl" placeholderLabel="Buscar tienda..."
-                noEntriesFoundLabel="No se encontraron tiendas">
-              </ngx-mat-select-search>
-            </mat-option>
-            <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
-              <span class="flex items-center">
-                <mat-icon class="mr-2 text-barradas-500 scale-75" svgIcon="mat_outline:storefront"></mat-icon>
-                {{ store.name }}
-              </span>
-            </mat-option>
-          </mat-select>
-          <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
-          <mat-error *ngIf="inviteForm.get('storeId')?.hasError('required')">La tienda es obligatoria</mat-error>
-        </mat-form-field>
+        @if(showStores){
+            <mat-form-field appearance="outline" class="w-full col-span-1 md:col-span-2"
+              subscriptSizing="fixed">
+              <mat-label>Tienda</mat-label>
+              <mat-select formControlName="storeId" placeholder="Seleccionar tienda">
+                <mat-option>
+                  <ngx-mat-select-search [formControl]="storeFilterCtrl" placeholderLabel="Buscar tienda..."
+                    noEntriesFoundLabel="No se encontraron tiendas">
+                  </ngx-mat-select-search>
+                </mat-option>
+                <mat-option *ngFor="let store of filteredStores | async" [value]="store.id">
+                  <span class="flex items-center">
+                    <mat-icon class="mr-2 text-barradas-500 scale-75" svgIcon="mat_outline:storefront"></mat-icon>
+                    {{ store.name }}
+                  </span>
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:storefront"></mat-icon>
+              <mat-error *ngIf="inviteForm.get('storeId')?.hasError('required')">La tienda es obligatoria</mat-error>
+            </mat-form-field>
+        }
 
         <!-- Visualización de Tienda (Solo para Agente) -->
-        <mat-form-field *ngIf="rol === 'agent'" appearance="outline" class="w-full col-span-1 md:col-span-2"
-          subscriptSizing="fixed">
-          <mat-label>Tienda</mat-label>
-          <input matInput [value]="selectedStore?.name || 'Cargando...'" disabled class="text-gray-700 font-medium">
-          <mat-icon matPrefix class="mr-2 text-barradas-500">store</mat-icon>
-        </mat-form-field>
+        @if(!showStores){
+            <mat-form-field appearance="outline" class="w-full col-span-1 md:col-span-2"
+              subscriptSizing="fixed">
+              <mat-label>Tienda</mat-label>
+              <input matInput [value]="selectedStore?.name || 'Cargando...'" disabled class="text-gray-700 font-medium">
+              <mat-icon matPrefix class="mr-2 text-barradas-500">store</mat-icon>
+            </mat-form-field>
+        }
 
-        <!-- Selector de Agente (Solo para Admin) -->
-        <mat-form-field *ngIf="rol === 'admin'" appearance="outline" class="w-full col-span-1 md:col-span-2"
-          subscriptSizing="fixed">
-          <mat-label>Agente</mat-label>
-          <mat-select formControlName="agentId" placeholder="Seleccionar agente">
-            <mat-option>
-              <ngx-mat-select-search [formControl]="agentFilterCtrl" placeholderLabel="Buscar agente..."
-                noEntriesFoundLabel="No se encontraron agentes">
-              </ngx-mat-select-search>
-            </mat-option>
-            <!-- no agent option -->
-            <mat-option [value]="null">Sin agente</mat-option>
-            <mat-option *ngFor="let agent of filteredAgents | async" [value]="agent.id">
-              <span class="flex items-center">
-                <mat-icon class="mr-2 text-barradas-500 scale-75" svgIcon="mat_outline:person"></mat-icon>
-                {{ agent.firstName }} {{ agent.lastName }}
-              </span>
-            </mat-option>
-          </mat-select>
-          <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:person"></mat-icon>
-          <mat-error *ngIf="inviteForm.get('agentId')?.hasError('required')">El agente es obligatorio</mat-error>
-        </mat-form-field>
+        @if(showStores){
+            <!-- Selector de Agente (Solo para Admin) -->
+            <mat-form-field appearance="outline" class="w-full col-span-1 md:col-span-2"
+              subscriptSizing="fixed">
+              <mat-label>Agente</mat-label>
+              <mat-select formControlName="agentId" placeholder="Seleccionar agente">
+                <mat-option>
+                  <ngx-mat-select-search [formControl]="agentFilterCtrl" placeholderLabel="Buscar agente..."
+                    noEntriesFoundLabel="No se encontraron agentes">
+                  </ngx-mat-select-search>
+                </mat-option>
+                <mat-option *ngFor="let agent of filteredAgents | async" [value]="agent.id">
+                  <span class="flex items-center">
+                    <mat-icon class="mr-2 text-barradas-500 scale-75" svgIcon="mat_outline:person"></mat-icon>
+                    {{ agent.firstName }} {{ agent.lastName }}
+                  </span>
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix class="text-gray-400" svgIcon="mat_outline:person"></mat-icon>
+              <mat-error *ngIf="inviteForm.get('agentId')?.hasError('required')">El agente es obligatorio</mat-error>
+            </mat-form-field>
+        }
       </div>
     </div>
 
@@ -127,7 +131,7 @@
         <!-- Monto Total del Crédito -->
         <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
           <mat-label>Monto Total del Crédito</mat-label>
-          <input matInput formControlName="totalAmount" type="number" min="1" required />
+          <input matInput formControlName="totalAmount" type="number" min="1" />
           <!-- <span matTextPrefix>$&nbsp;</span> -->
           <span matTextSuffix>&nbsp;MXN</span>
           <mat-icon matPrefix class="mr-2">attach_money</mat-icon>
@@ -166,7 +170,7 @@
         <!-- Plazo del Crédito -->
         <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed">
           <mat-label>Plazo del Crédito</mat-label>
-          <mat-select formControlName="selectedTerm" required>
+          <mat-select formControlName="selectedTerm">
             <mat-option [value]="0" disabled>Selecciona un plazo</mat-option>
             <mat-option *ngFor="let term of availableTerms" [value]="term">
               {{ term }} {{ inviteForm.get('paymentType')?.value === 'WEEKLY' ? 'semanas' : 'días' }}
@@ -180,7 +184,7 @@
         <mat-form-field appearance="outline" class="w-full" subscriptSizing="fixed"
           *ngIf="inviteForm.get('paymentType')?.value === 'WEEKLY'">
           <mat-label>Día de Pago Semanal</mat-label>
-          <mat-select formControlName="repaymentDay" required>
+          <mat-select formControlName="repaymentDay">
             <mat-option *ngFor="let day of weekDays" [value]="day.value">
               {{ day.fullName }}
             </mat-option>
@@ -224,11 +228,10 @@
       </div>
     </div>
 
-    <!-- Documentos Requeridos -->
     <div class="border-t border-gray-200 pt-6">
       <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
         <mat-icon class="mr-2 text-barradas-700">upload_file</mat-icon>
-        Documentos Requeridos
+        Documentos Opcionales
       </h3>
 
       <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">

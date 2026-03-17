@@ -5,6 +5,7 @@ import { UserService } from 'app/core/user/user.service';
 import { environment } from 'environment/environment';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { StoresService } from 'app/modules/admin/stores/stores.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
     private _router = inject(Router);
+    private _storesService = inject(StoresService);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -69,7 +71,7 @@ export class AuthService {
     signIn(credentials: { email: string; password: string }): Observable<any> {
         // Throw error, if the user is already logged in
         if (this._authenticated) {
-            return throwError('User is already logged in.');
+            return throwError(() => new Error('User is already logged in.'));
         }
 
         return this._httpClient.post(`${this._url}/login`, credentials).pipe(
@@ -81,22 +83,24 @@ export class AuthService {
                 // Set the authenticated flag to true
                 this._authenticated = true;
 
-                const rol = response.role;
-                const decodedToken = AuthUtils.decodeToken(response.access_token);
-                const permissions = decodedToken?.permissions || [];
+                const userName = response.user.firstName ? response.user.firstName + ' ' + response.user.lastName : '';
+
+                console.log(response);
 
                 // Store the user on the user service
                 this._userService.user = {
-                    id: rol === 'admin' ? response.admin.id : response.agent.id,
-                    email: rol === 'admin' ? response.admin.email : response.agent.email,
-                    name: rol === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
-                    rol: rol,
-                    storeId: rol === 'admin' ? null : response.agent.storeId,
-                    storeName: rol === 'admin' ? null : response.agent.store.name,
-                    storeCity: rol === 'admin' ? null : response.agent.store.city.name,
-                    permissions: permissions,
-                    roleId: decodedToken?.roleId
+                    id: response.user.id,
+                    email: response.user.email,
+                    name: userName,
+                    rol: response.roleName,
+                    stores: response.user?.stores ? response.user.stores : [],
+                    storeName: response.user?.store?.name ? response.user.store.name : '',
+                    storeCity: response.user?.store?.city?.name ? response.user.store.city.name : '',
+                    permissions: response.user?.permissions ? response.user.permissions : [],
+                    roleId: response.user?.roleId ? response.user.roleId : ''
                 };
+
+                this._storesService.setStores(response.user?.stores ? response.user.stores : []);
 
                 // Return a new observable with the response
                 return of(response);
@@ -134,40 +138,37 @@ export class AuthService {
                     // Set the authenticated flag to true
                     this._authenticated = true;
 
-                    // Store the user on the user service
-                    const decodedToken = AuthUtils.decodeToken(this.accessToken);
-                    const permissions = decodedToken?.permissions || [];
-                    // console.log(permissions);
+                    const userName = response.user.firstName ? response.user.firstName + ' ' + response.user.lastName : '';
 
                     this._userService.user = {
-                        id: response.role === 'admin' ? response.admin.id : response.agent.id,
-                        email: response.role === 'admin' ? response.admin.email : response.agent.email,
-                        name: response.role === 'admin' ? 'Administrador' : response.agent.firstName + ' ' + response.agent.lastName,
-                        rol: response.role,
-                        storeId: response.role === 'admin' ? null : response.agent.storeId,
-                        storeName: response.role === 'admin' ? null : response.agent.store.name,
-                        storeCity: response.role === 'admin' ? null : response.agent.store.city.name,
-                        permissions: permissions,
-                        roleId: decodedToken?.roleId
+                        id: response.user.id,
+                        email: response.user.email,
+                        name: userName,
+                        rol: response.roleName,
+                        stores: response.user?.stores ? response.user.stores : [],
+                        storeName: response.user?.store?.name ? response.user.store.name : '',
+                        storeCity: response.user?.store?.city?.name ? response.user.store.city.name : '',
+                        permissions: response.user?.permissions ? response.user.permissions : [],
+                        roleId: response.user?.roleId ? response.user.roleId : ''
                     };
 
-                    if (response.role === 'admin') {
-                        const redirectURL = '/signed-in-redirect';
+                    const redirectURL = '/signed-in-redirect';
 
-                        if (location.pathname === '/sign-in' || location.pathname === '/') {
-                            // Navigate to the redirect url
-                            this._router.navigateByUrl(redirectURL);
-                        }
+                    this._storesService.setStores(response.user?.stores ? response.user.stores : []);
+
+                    if (location.pathname === '/sign-in' || location.pathname === '/') {
+                        // Navigate to the redirect url
+                        this._router.navigateByUrl(redirectURL);
                     }
 
-                    if (response.role === 'agent') {
-                        const redirectURL = '/clients-store';
+                    // if (response.role !== 'admin') this._storesService.setStores([{
+                    //     id: response.agent.storeId,
+                    //     name: response.agent.store.name,
+                    //     address: response.agent.store.address,
+                    //     cityId: response.agent.store.cityId,
+                    //     city: response.agent.store.city.name
+                    // }]);
 
-                        if (location.pathname === '/sign-in' || location.pathname === '/') {
-                            // Navigate to the redirect url
-                            this._router.navigateByUrl(redirectURL);
-                        }
-                    }
 
                     // Return true
                     return of(true);

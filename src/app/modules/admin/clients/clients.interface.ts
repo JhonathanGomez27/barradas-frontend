@@ -16,20 +16,78 @@ export interface Client {
     updatedAt: string;
 }
 
+export interface CreditInstallment {
+    id: string;
+    creditId: string;
+    number: number;
+    dueDate: string;
+    expectedAmount: string;
+    paidAmount: string;
+    lateFeeAccrued: string;
+    daysOverdue?: number;
+    status: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export type InstallmentStatus = 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE' | 'MISSED';
+
+export interface PaginatedInstallmentsResponse {
+    data: CreditInstallment[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export interface Credit {
     id: string;
     clientId: string;
-    initalPayment: number | null;
-    initialPaymentRate: string;
+    /** @deprecated use initialPaymentAmount */
+    initalPayment?: number | null;
+    initialPaymentAmount?: string;
+    initialPaymentRate?: string;
     totalAmount: string;
+    financedAmount?: string;
+    installmentAmount?: string | null;
+    outstandingPrincipal?: string;
+    missedPaymentsCount?: number;
+    remainingInstallments?: number;
+    lateFeeRate?: string;
     paymentType: 'WEEKLY' | 'DAILY';
     selectedTerm: number;
     repaymentDay: string | null;
+    startDate?: string;
     status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERDUE' | 'CLOSED' | 'DEFAULTED';
     createdAt: string;
     updatedAt: string;
     documents?: CreditDocument[];
     signatures?: CreditSignature[];
+    installments?: CreditInstallment[];
+    renegotiations?: CreditRenegotiation[];
+}
+
+export interface RenegotiateCreditDto {
+    newTotalAmount: number;
+    reason: string;
+}
+
+export interface CreditRenegotiation {
+    id: string;
+    creditId: string;
+    reason: string;
+    actorUserId: string;
+    actorRole: string;
+    oldTotalAmount: string;
+    newTotalAmount: string;
+    oldFinancedAmount: string;
+    newFinancedAmount: string;
+    oldOutstandingPrincipal: string;
+    newOutstandingPrincipal: string;
+    oldInstallmentAmount: string | null;
+    newInstallmentAmount: string | null;
+    remainingInstallments: number;
+    createdAt: string;
 }
 
 export interface CreditDocument {
@@ -37,14 +95,15 @@ export interface CreditDocument {
     clientId: string;
     docType: string;
     title: string;
-    provider: string;
-    key: string;
-    originalName: string;
-    storageUrl: string;
+    provider?: string;
+    key?: string;
+    originalName?: string;
+    storageUrl?: string;
     mimeType: string;
-    sizeBytes: string;
+    sizeBytes?: string;
     uploadedAt: string;
     creditId: string;
+    paymentId?: string | null;
 }
 
 export interface CreditSignature {
@@ -80,4 +139,115 @@ export interface UpdateCreditDto {
 export interface CreditTerms {
     weeklyTerms: number[];
     dailyTerms: number[];
+}
+
+export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CARD' | 'OTHER';
+
+export interface RegisterPaymentDto {
+    creditId: string;
+    amount: number;
+    method: PaymentMethod;
+    reference?: string;
+    paidAt: string;
+    evidenceDocumentId: string;
+}
+
+export interface PaymentResponse {
+    id: string;
+    creditId?: string;
+    paymentScheduleEventId: string | null;
+    amount: string;
+    paidAt: string;
+    method: PaymentMethod;
+    reference?: string;
+    appliedToPrincipal: string;
+    appliedToLateFee: string;
+    createdAt: string;
+    updatedAt: string;
+    document?: CreditDocument;
+}
+
+export interface InstallmentPaymentsDialogData {
+    installment: CreditInstallment;
+}
+
+export interface PaymentDialogData {
+    clientId: string;
+    credit: Credit;
+}
+
+export interface CreditProjectedInstallment {
+    date: string;
+    amount: string;
+    isLast: boolean;
+}
+
+export interface CreditProjectedScheduleResponse {
+    creditId: string;
+    remainingInstallments: number;
+    installments: CreditProjectedInstallment[];
+}
+
+export type CreditLedgerItemType = 'PAYMENT' | 'SCHEDULE_EVENT';
+
+export interface CreditLedgerPaymentItem {
+    id: string;
+    paymentScheduleEventId: string | null;
+    amount: string;
+    paidAt: string;
+    method: PaymentMethod;
+    reference?: string | null;
+    appliedToPrincipal: string;
+    appliedToLateFee: string;
+    arrearsCountAfterPayment?: number | null;
+    createdAt: string;
+    updatedAt: string;
+    document?: {
+        id: string;
+        docType: string;
+        title?: string | null;
+        provider?: string | null;
+        originalName?: string | null;
+        mimeType?: string | null;
+        sizeBytes?: string | null;
+        uploadedAt: string;
+    } | null;
+}
+
+export interface CreditLedgerScheduleEventItem {
+    id: string;
+    number: number;
+    dueDate: string;
+    expectedAmount: string;
+    paidAmount: string;
+    lateFeeAccrued: string;
+    status: InstallmentStatus;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type CreditLedgerRow =
+    | {
+          type: 'PAYMENT';
+          date: string;
+          id: string;
+          payment: CreditLedgerPaymentItem;
+      }
+    | {
+          type: 'SCHEDULE_EVENT';
+          date: string;
+          id: string;
+          event: CreditLedgerScheduleEventItem;
+      };
+
+export interface CreditLedgerCursor {
+    cursorDate: string;
+    cursorType: CreditLedgerItemType;
+    cursorId: string;
+}
+
+export interface CreditLedgerResponse {
+    data: CreditLedgerRow[];
+    hasMore: boolean;
+    nextCursor: CreditLedgerCursor | null;
 }

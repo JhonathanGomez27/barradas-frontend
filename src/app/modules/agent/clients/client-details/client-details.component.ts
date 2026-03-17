@@ -199,7 +199,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
         private _docusealService: DocusealService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
-        private _storesService: StoresService,
         private _userService: UserService,
         private _permissionService: PermissionService
     ) {
@@ -253,12 +252,6 @@ export class ClientDetailsComponent implements OnInit, OnDestroy {
                 this.selectedCredit = this.creditActive;
             }
 
-            this._changeDetectorRef.markForCheck();
-        });
-
-        this._storesService.allStores$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: Store[]) => {
-            this.stores = response;
-            this.filteredStores.next(this.stores.slice());
             this._changeDetectorRef.markForCheck();
         });
 

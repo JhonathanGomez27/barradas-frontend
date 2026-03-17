@@ -126,23 +126,23 @@ export const appRoutes: Route[] = [
         ]
     },
     // Agent routes
-    {
-        path: '',
-        canActivate: [AuthGuard],
-        canActivateChild: [AuthGuard],
-        component: LayoutComponent,
-        resolve: {
-            initialData: initialDataResolver
-        },
-        children: [
-            {
-                path: 'clients-store',
-                canActivate: [hasPermissionGuard],
-                data: {
-                    expectedRole: ['agent']
-                },
-                loadChildren: () => import('app/modules/agent/clients/clients.routes')
-            },
-        ]
-    }
+    // {
+    //     path: '',
+    //     canActivate: [AuthGuard],
+    //     canActivateChild: [AuthGuard],
+    //     component: LayoutComponent,
+    //     resolve: {
+    //         initialData: initialDataResolver
+    //     },
+    //     children: [
+    //         {
+    //             path: 'clients-store',
+    //             canActivate: [hasPermissionGuard],
+    //             data: {
+    //                 expectedRole: ['agent']
+    //             },
+    //             loadChildren: () => import('app/modules/agent/clients/clients.routes')
+    //         },
+    //     ]
+    // }
 ];

@@ -45,15 +45,15 @@ export const defaultNavigation: FuseNavigationItem[] = [
         permissions: ['admin:read:all:get:admin.rbac.roles']
         // roles: ['admin']
     },
-    {
-        id: 'clients-store',
-        title: 'Clientes',
-        type: 'basic',
-        icon: 'heroicons_outline:user-group',
-        link: '/clients-store',
-        roles: ['agent'],
-        permissions: ['agents:read:own:get:agents.me.users']
-    }
+    // {
+    //     id: 'clients-store',
+    //     title: 'Clientes',
+    //     type: 'basic',
+    //     icon: 'heroicons_outline:user-group',
+    //     link: '/clients-store',
+    //     roles: ['agent'],
+    //     permissions: ['agents:read:own:get:agents.me.users']
+    // }
 ];
 export const compactNavigation: FuseNavigationItem[] = [
     {

@@ -5,7 +5,7 @@ export interface User {
     rol?: string;
     storeName?: string;
     storeCity?: string;
-    storeId?: string;
+    stores?: any[];
     avatar?: string;
     status?: string;
     permissions?: string[];

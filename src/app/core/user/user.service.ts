@@ -1,28 +1,21 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { User } from 'app/core/user/user.types';
-import { map, Observable, ReplaySubject, tap } from 'rxjs';
+import { BehaviorSubject, map, Observable, ReplaySubject, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-    private _httpClient = inject(HttpClient);
-    private _user: ReplaySubject<User> = new ReplaySubject<User>(1);
+    private _user = new BehaviorSubject<User | null>(null);
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Accessors
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * Setter & getter for user
-     *
-     * @param value
-     */
-    set user(value: User) {
-        // Store the value
+    set user(value: User | null) {
         this._user.next(value);
     }
 
-    get user$(): Observable<User> {
+    get user$(): Observable<User | null> {
         return this._user.asObservable();
+    }
+
+    // If you expose a sync getter, make it nullable too:
+    get user(): User | null {
+        return this._user.value;
     }
 }

@@ -1,19 +1,23 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environment/environment';
-import { BehaviorSubject, tap, Observable, catchError, throwError, map } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
 import {
-    CreateInvitationFiles,
-    CreateInvitationPayload,
-    CreateInvitationResponse,
-} from './invitation.types';
+    Credit,
+    CreditLedgerResponse,
+    CreditProjectedScheduleResponse,
+    PaginatedInstallmentsResponse,
+    PaymentResponse,
+    RenegotiateCreditDto,
+    RegisterPaymentDto,
+} from './clients.interface';
+import { CreateInvitationFiles, CreateInvitationPayload, CreateInvitationResponse } from './invitation.types';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class ClientsService {
-
-    private _url: string = `${environment.url}`
+    private _url: string = `${environment.url}`;
 
     private _clients: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
     private _client: BehaviorSubject<any> = new BehaviorSubject<any>(null);
@@ -23,16 +27,14 @@ export class ClientsService {
     public client$ = this._client.asObservable();
     public credits$ = this._credits.asObservable();
 
-    constructor(
-        private httpClient: HttpClient
-    ) { }
+    constructor(private httpClient: HttpClient) {}
 
     getClients(params: HttpParams): Observable<any> {
         return this.httpClient.get<any[]>(`${this._url}/users`, { params }).pipe(
             tap((clients) => {
                 this._clients.next(clients);
             })
-        )
+        );
     }
 
     getClient(id: string): Observable<any> {
@@ -52,35 +54,36 @@ export class ClientsService {
         return this.httpClient.post(`${this._url}/documents/admin/clients/${client_id}/documents?docType=${document_type}${queryParams}`, formData);
     }
 
-
     /**
      * Obtener archivo para visualizar
      * @param fileId El ID del archivo
      * @returns Observable con el blob y su tipo MIME
      */
-    getFileUrlClient(fileId: string): Observable<{blob: Blob, mimeType: string}> {
-        return this.httpClient.get(`${this._url}/documents/${fileId}/download`, {
-            responseType: 'blob',
-            observe: 'response'
-        }).pipe(
-            map(response => {
-                const blob = response.body;
-                if (!blob) {
-                    throw new Error('Response body is null');
-                }
-                // Obtener el tipo MIME del Content-Type header o del blob
-                const contentType = response.headers.get('Content-Type') || blob.type || 'application/octet-stream';
-                return { blob, mimeType: contentType };
-            }),
-            catchError(error => {
-                console.error('Error obteniendo el archivo:', error);
-                return throwError(() => error);
+    getFileUrlClient(fileId: string): Observable<{ blob: Blob; mimeType: string }> {
+        return this.httpClient
+            .get(`${this._url}/documents/${fileId}/download`, {
+                responseType: 'blob',
+                observe: 'response',
             })
-        );
+            .pipe(
+                map((response) => {
+                    const blob = response.body;
+                    if (!blob) {
+                        throw new Error('No se recibió contenido del servidor');
+                    }
+                    // Obtener el tipo MIME del Content-Type header o del blob
+                    const contentType = response.headers.get('Content-Type') || blob.type || 'application/octet-stream';
+                    return { blob, mimeType: contentType };
+                }),
+                catchError((error) => {
+                    console.error('Error obteniendo el archivo:', error);
+                    return throwError(() => error);
+                })
+            );
     }
 
-    getFileClient(file_id: string, doc_title: string): void{
-        this.httpClient.get(`${this._url}/documents/${file_id}/download`, {responseType: 'blob'}).subscribe(blob => {
+    getFileClient(file_id: string, doc_title: string): void {
+        this.httpClient.get(`${this._url}/documents/${file_id}/download`, { responseType: 'blob' }).subscribe((blob) => {
             // Crear URL objeto y simular click en enlace de descarga
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -101,10 +104,7 @@ export class ClientsService {
      * Crea una invitación unificada (cliente + crédito + archivos) en una sola petición.
      * Envía FormData al endpoint /invitations.
      */
-    createInvitation(
-        payload: CreateInvitationPayload,
-        files: CreateInvitationFiles = {}
-    ): Observable<CreateInvitationResponse> {
+    createInvitation(payload: CreateInvitationPayload, files: CreateInvitationFiles = {}): Observable<CreateInvitationResponse> {
         const formData = new FormData();
 
         Object.entries(payload).forEach(([key, value]) => {
@@ -118,10 +118,7 @@ export class ClientsService {
         if (files.QUOTE) formData.append('QUOTE', files.QUOTE);
         if (files.INITIAL_PAYMENT) formData.append('INITIAL_PAYMENT', files.INITIAL_PAYMENT);
 
-        return this.httpClient.post<CreateInvitationResponse>(
-            `${this._url}/invitations`,
-            formData
-        );
+        return this.httpClient.post<CreateInvitationResponse>(`${this._url}/invitations`, formData);
     }
 
     deleteClient(id: string): Observable<any> {
@@ -136,7 +133,15 @@ export class ClientsService {
         return this.httpClient.post(`${this._url}/users/${clientId}/documents/${documentId}/sign`, {});
     }
 
-    createCredit(data: {clientId: string, repaymentDay: string, initialPayment?: number, initialPaymentRate?: number, termWeeks?: number, termDays?: number, status?: string}): Observable<any> {
+    createCredit(data: {
+        clientId: string;
+        repaymentDay: string;
+        initialPayment?: number;
+        initialPaymentRate?: number;
+        termWeeks?: number;
+        termDays?: number;
+        status?: string;
+    }): Observable<any> {
         return this.httpClient.post(`${this._url}/credits`, data);
     }
 
@@ -148,8 +153,8 @@ export class ClientsService {
         );
     }
 
-    updateCreditStatus(creditId: string, status: 'CLOSED' | 'CANCELLED'): Observable<any> {
-        return this.httpClient.patch(`${this._url}/credits/${creditId}/status`, { status });
+    getCreditById(creditId: string): Observable<any> {
+        return this.httpClient.get<any>(`${this._url}/credits/${creditId}/by-id`);
     }
 
     patchCredit(creditId: string, data: { paymentType?: 'WEEKLY' | 'DAILY'; selectedTerm?: number; repaymentDay?: string | null }): Observable<any> {
@@ -160,5 +165,19 @@ export class ClientsService {
         return this.httpClient.get(`${this._url}/credits/payment-terms`);
     }
 
+    registerPayment(payload: RegisterPaymentDto): Observable<PaymentResponse> {
+        return this.httpClient.post<PaymentResponse>(`${this._url}/payments`, payload);
+    }
 
+    renegotiateCredit(creditId: string, payload: RenegotiateCreditDto): Observable<Credit> {
+        return this.httpClient.patch<Credit>(`${this._url}/credits/${creditId}/renegotiate`, payload);
+    }
+
+    getInstallmentPayments(paymentScheduleEventId: string): Observable<PaymentResponse[]> {
+        return this.httpClient.get<PaymentResponse[]>(`${this._url}/payments/schedule-event/${paymentScheduleEventId}`);
+    }
+
+    getCreditLedger(creditId: string, params: HttpParams): Observable<CreditLedgerResponse> {
+        return this.httpClient.get<CreditLedgerResponse>(`${this._url}/payments/credit/${creditId}/ledger`, { params });
+    }
 }

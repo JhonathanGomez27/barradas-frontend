@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { ClientsService } from './clients.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Store, StoresService } from '../stores/stores.service';
 
 import { PermissionService } from 'app/shared/services/permission.service';
+import { User } from 'app/core/user/user.types';
+import { UserService } from 'app/core/user/user.service';
 
 @Component({
     selector: 'app-clients',
@@ -47,7 +49,7 @@ import { PermissionService } from 'app/shared/services/permission.service';
     ],
     templateUrl: './clients.component.html'
 })
-export class ClientsComponent implements OnInit, OnDestroy {
+export class ClientsComponent implements OnInit, OnDestroy, AfterViewInit {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     clients: any = [];
     totalClients: number = 0;
@@ -110,6 +112,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
     storeFilterCtrl: FormControl = new FormControl('');
     filteredStores: ReplaySubject<Store[]> = new ReplaySubject<Store[]>(1);
 
+    userLogged: User | null = null;
+
     constructor(
         private _clientsService: ClientsService,
         private _changeDetectorRef: ChangeDetectorRef,
@@ -118,7 +122,8 @@ export class ClientsComponent implements OnInit, OnDestroy {
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
         private _storesService: StoresService,
-        private _permissionService: PermissionService
+        private _permissionService: PermissionService,
+        private _userService: UserService
     ) {
         this.Toast = Swal.mixin({
             toast: true,
@@ -151,6 +156,11 @@ export class ClientsComponent implements OnInit, OnDestroy {
             this._changeDetectorRef.markForCheck();
         });
 
+        this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe((response: any) => {
+            this.userLogged = response;
+            this._changeDetectorRef.markForCheck();
+        });
+
         // Listen for search field value changes
         this.storeFilterCtrl.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
             this.filterStores();
@@ -164,6 +174,13 @@ export class ClientsComponent implements OnInit, OnDestroy {
             this.onClick({ id: client });
         }
 
+
+    }
+
+    ngAfterViewInit(): void {
+        if (this.hasPermission('stores:read:store:get:stores.all')) {
+            this._storesService.getAllStoresNoPagination().pipe(takeUntil(this._unsubscribeAll)).subscribe();
+        }
     }
 
     loadClients(): void {
@@ -246,9 +263,9 @@ export class ClientsComponent implements OnInit, OnDestroy {
         const dialogRef = this._dialog.open(InviteComponent, {
             disableClose: true,
             data: {
-                storeId: null,
-                rol: 'admin',
-                agentId: null
+                stores: this.userLogged?.stores || [],
+                rol: this.userLogged?.rol || '',
+                agentId: this.userLogged?.id || ''
             }
         });
 

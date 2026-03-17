@@ -48,13 +48,7 @@ export const hasPermissionGuard: CanActivateFn = (route, state) => {
         }),
         tap(({ hasAccess, role }) => {
             if (!hasAccess) {
-                if (role === 'admin') {
-                    router.navigate(['/clients']);
-                } else if (role === 'agent') {
-                    router.navigate(['/clients-store']);
-                } else {
-                    router.navigate(['/sign-in']);
-                }
+                router.navigate(['/clients']);
             }
         }),
         map(({ hasAccess }) => hasAccess)
